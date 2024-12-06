@@ -47,6 +47,7 @@ spatialPerCellQC <- function(spe, micronConvFact=0.12,
 
     spe <- addPerCellQC(spe, subsets=idxlist)
     idx <- grep("^subsets_.*_sum$", colnames(colData(spe)))
+    npc = npd = 0
 
     if ( length(idx) !=0 )
     {
@@ -61,6 +62,13 @@ spatialPerCellQC <- function(spe, micronConvFact=0.12,
     spe$target_sum <- spe$sum - npc
     spe$target_detected <- spe$detected - npd
 
+    if(!all(spatialCoordsNames(spe) %in% names(colData(spe)))) # controllare,
+        #forse l'ho tolto perché dava problemi
+    {
+        #### CHANGE SPE constructor WITH COORDINATES IN COLDATA #########
+        colData(spe) <- cbind.DataFrame(colData(spe), spatialCoords(spe))
+    }
+
     #### CHANGE SPE constructor WITH COORDINATES IN COLDATA #########
     colData(spe) <- cbind.DataFrame(colData(spe), spatialCoords(spe))
 
@@ -70,6 +78,12 @@ spatialPerCellQC <- function(spe, micronConvFact=0.12,
         colnames(spnc) <- gsub("px", "um", spatialCoordsNames(spe))
         colData(spe) <- cbind.DataFrame(colData(spe), spnc)
         spe$Area_um <- spe$Area * (micronConvFact^2)
+        ###spe <- computeBorderDistanceCosMx(spe) controllare perché mi dava
+        # un output scorretto che fa sbagliare il calcolo del quality score,
+        # si vede nel plot dei termini del quality score, perché nel plot
+        # della distanza dà un gradiente globale da sinistra a destra che invece
+        # dovrebbe essere un gradiente interno a ciascun fov che parte da ciascun
+        # bordo del fov
     }
 
     #### compute AspectRatio for other technologies ####
