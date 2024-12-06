@@ -82,8 +82,8 @@ spatialPerCellQC <- function(spe, micronConvFact=0.12,
         # un output scorretto che fa sbagliare il calcolo del quality score,
         # si vede nel plot dei termini del quality score, perché nel plot
         # della distanza dà un gradiente globale da sinistra a destra che invece
-        # dovrebbe essere un gradiente interno a ciascun fov che parte da ciascun
-        # bordo del fov
+        # dovrebbe essere un gradiente interno a ciascun fov che parte da
+        # ciascun bordo del fov
     }
 
     #### compute AspectRatio for other technologies ####
