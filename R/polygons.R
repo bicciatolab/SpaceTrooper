@@ -522,10 +522,12 @@ computeAspectRatioFromPolygons <- function(polygons, coldata)
     }) ## to parallelize with bplapply
     names(aspRatL) <- polygons$cell_id[!polygons$is_multi]
 
-    cd$AspectRatio <- NA
+    # cd$AspectRatio <- NA
     posz <- match(names(aspRatL), cd$cell_id)
-    cd$AspectRatio[posz] <- unlist(aspRatL)
-    return(cd)
+    ar <- unlist(aspRatL)
+    ar <- ar[posz]
+    # cd$AspectRatio[posz] <- unlist(aspRatL)
+    return(ar)
 }
 
 #' readh5polygons

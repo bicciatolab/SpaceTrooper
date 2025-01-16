@@ -172,7 +172,7 @@ computeMissingMetricsXenium <- function(pol_file, coldata, keep_polygons=FALSE)
 {
     stopifnot(dir.exists(pol_file))
     polygons <- readPolygonsXenium(pol_file, keepMultiPol=TRUE)
-    cd <- computeAspectRatioFromPolygons(polygons, coldata)
+    cd$AspectRatio <- computeAspectRatioFromPolygons(polygons, coldata)
     if(keep_polygons) cd <- cbind.DataFrame(cd, polygons)
     return(cd)
 }
