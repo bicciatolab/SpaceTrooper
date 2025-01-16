@@ -259,11 +259,11 @@ spe1112 <- spe[,spe$fov %in% c(11:12)]
 plotPolygons(spe1112, bg_color="white")
 
 # Plot polygons colored by cell area
-plotPolygonsSPE(spe1112, colour_by="log2AspectRatio")
-plotPolygonsSPE(spe1112, colour_by="Area_um")
+plotPolygons(spe1112, colour_by="log2AspectRatio")
+plotPolygons(spe1112, colour_by="Area_um")
 
-plotPolygonsSPE(spe1112, colour_by="flag_score", palette="viridis")
-plotPolygonsSPE(spe1112, colour_by="is_fscore_outlier")
+plotPolygons(spe1112, colour_by="flag_score", palette="viridis")
+plotPolygons(spe1112, colour_by="is_fscore_outlier")
 ```
 
 # Fov Zoom and Map
