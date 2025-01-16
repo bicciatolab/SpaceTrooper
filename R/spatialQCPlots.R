@@ -294,11 +294,11 @@ plotPolygonsSPE <- function(spe, colour_by=NULL,sample_id=unique(spe$sample_id),
 
     tmm <- tmm + tm_layout(legend.outside=TRUE,
                             main.title.position=c("left", "top"),
-                            main.title = sample_id,
-                            main.title.fontface = 2,
-                            main.title.size = 1,
-                            inner.margins = c(0, 0, 0, 0),
-                            outer.margins = c(0, 0, 0, 0),
+                            main.title=sample_id,
+                            main.title.fontface=2,
+                            main.title.size=1,
+                            inner.margins=c(0, 0, 0, 0),
+                            outer.margins=c(0, 0, 0, 0),
                             bg.color=bg_color)
     return(tmm)
 }

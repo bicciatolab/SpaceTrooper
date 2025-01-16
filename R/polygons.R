@@ -216,6 +216,8 @@ readAndAddPolygonsToSPE(spe, keepMultiPol=TRUE,
                    },
                "Vizgen_MERFISH"=
                    {
+                       ##### NEED TO HANDLE THE DIFFERENCES BETWEEN HDF5 FILES
+                       ##### AND PARQUET, TO PROPAGATE TO READING FUNCTION
                        # ifelse(boundaries_type=="HDF5", merpol=)
                        polygons <- readPolygonsMerfish(polygonsFolder,
                                         keepMultiPol=TRUE, type=boundaries_type)
