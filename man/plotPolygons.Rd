@@ -7,6 +7,7 @@
 plotPolygons(
   spe,
   colour_by = "darkgrey",
+  colour_log = FALSE,
   sample_id = unique(spe$sample_id),
   fill_alpha = 1,
   palette = NULL,
@@ -21,6 +22,9 @@ plotPolygons(
 
 \item{colour_by}{A column in `colData(spe)` for coloring the polygons or a
 string color in colors(). (Default is "darkgrey")}
+
+\item{colour_log}{Logical to log-transform the data to enhance visualization
+(Default is FALSE).}
 
 \item{sample_id}{Sample ID for plot title. Default is the unique sample ID.}
 

@@ -73,6 +73,8 @@ plotCellsFovs <- function(spe, sample_id=unique(spe$sample_id),
 #' colored the same.
 #' @param order_by An optional character string specifying the column in
 #' `colData(spe)` to use for ordering the points.
+#' @param colour_log Logical to log-transform the data to enhance visualization
+#' (Default is FALSE).
 #' @param sample_id A character string specifying the sample identifier to be
 #' used as the plot title. (Default is the unique sample ID from `spe`)
 #' @param isNegativeProbe A logical value indicating whether to apply a custom
@@ -89,11 +91,6 @@ plotCellsFovs <- function(spe, sample_id=unique(spe$sample_id),
 #' (Default is `0.2`)
 #' @param aspect_ratio A numeric value specifying the aspect ratio of the plot.
 #' (Default is `1`)
-#' @param legend_point_size A numeric value specifying the size of the points
-#' in the legend. (Default is `2`)
-#' @param legend_point_alpha A numeric value specifying the transparency level
-#' of the points in the legend. (Default is `0.8`)
-#'
 #' @return A `ggplot` object representing the spatial coordinates plot of
 #' polygon centroids.
 #'
@@ -105,15 +102,14 @@ plotCellsFovs <- function(spe, sample_id=unique(spe$sample_id),
 #'
 #' @examples
 #' #TBD
-plotCentroids <- function(spe, colour_by=NULL, order_by=NULL,
+plotCentroids <- function(spe, colour_by=NULL, order_by=NULL, colour_log=FALSE,
                         sample_id=unique(spe$sample_id),
                         isNegativeProbe=FALSE, palette=NULL,
                         point_col="darkmagenta", size=0.05, alpha=0.2,
                         aspect_ratio=1)
 {
 
-    stopifnot( all( is(spe, "SpatialExperiment"),
-                    (colour_by %in% names(colData(spe)))))
+    stopifnot(is(spe, "SpatialExperiment"))
     if(is.null(colour_by))
     {
         ggp <- ggplot() +
@@ -124,6 +120,13 @@ plotCentroids <- function(spe, colour_by=NULL, order_by=NULL,
                        fill=point_col,
                        size=size, alpha=alpha)
     } else {
+        if(colour_log)
+        {
+            stopifnot(colour_by %in% names(colData(spe)))
+            colour_byo <- colour_by
+            colour_by <- paste0("log(", colour_byo, ")")
+            colData(spe)[[colour_by]] <- log1p(colData(spe)[[colour_byo]])
+        }
         ## check if column variable is logical to impose our colors
         ggp <- scater::plotColData(spe, x=spatialCoordsNames(spe)[1],
                     y=spatialCoordsNames(spe)[2],
@@ -310,6 +313,8 @@ plotPolygons_tmap <- function(spe, colour_by=NULL,sample_id=unique(spe$sample_id
 #' @param spe A `SpatialExperiment` object with polygon data as an `sf` object.
 #' @param colour_by A column in `colData(spe)` for coloring the polygons or a
 #' string color in colors(). (Default is "darkgrey")
+#' @param colour_log Logical to log-transform the data to enhance visualization
+#' (Default is FALSE).
 #' @param sample_id Sample ID for plot title. Default is the unique sample ID.
 #' @param fill_alpha Transparency level for polygon fill. Default is `1`.
 #' @param palette Colors to use if `colour_by` is a factor. Default is `NULL`.
@@ -329,7 +334,7 @@ plotPolygons_tmap <- function(spe, colour_by=NULL,sample_id=unique(spe$sample_id
 #' @examples
 #' # Assuming `spe` is a SpatialExperiment object with polygon data:
 #' # plotPolygonsSPE_ggplot(spe, colour_by="gene_expression")
-plotPolygons <- function(spe, colour_by="darkgrey",
+plotPolygons <- function(spe, colour_by="darkgrey", colour_log=FALSE,
                                    sample_id=unique(spe$sample_id),
                                    fill_alpha=1, palette=NULL,
                                    border_col=NA,
@@ -343,6 +348,12 @@ plotPolygons <- function(spe, colour_by="darkgrey",
     polflag <- FALSE
     if(!is.null(colour_by)) {
         if(colour_by %in% names(colData(spe))) {
+            if(colour_log)
+            {
+                colour_byo <- colour_by
+                colour_by <- paste0("log(", colour_byo, ")")
+                colData(spe)[[colour_by]] <- log1p(colData(spe)[[colour_byo]])
+            }
             pols[[colour_by]] <- colData(spe)[[colour_by]]
             polflag <- TRUE
         } else {
