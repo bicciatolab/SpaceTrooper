@@ -109,8 +109,7 @@ plotCentroids <- function(spe, colour_by=NULL, order_by=NULL,
                         sample_id=unique(spe$sample_id),
                         isNegativeProbe=FALSE, palette=NULL,
                         point_col="darkmagenta", size=0.05, alpha=0.2,
-                        aspect_ratio=1,
-                        legend_point_size=2, legend_point_alpha=0.8)
+                        aspect_ratio=1)
 {
 
     stopifnot( all( is(spe, "SpatialExperiment"),
@@ -142,6 +141,7 @@ plotCentroids <- function(spe, colour_by=NULL, order_by=NULL,
             {
                 ggp <- ggp + scale_color_manual(values=palette)
             } else if(is.numeric(colData(spe)[[colour_by]])) {
+
                 ggp <- ggp + scale_color_gradientn(colors=palette)
             }
         }
@@ -149,9 +149,8 @@ plotCentroids <- function(spe, colour_by=NULL, order_by=NULL,
 
 
     ggp <- ggp + ggtitle(sample_id) +
-        theme(aspect.ratio=aspect_ratio, plot.title=element_text(hjust=0.5))+
-        guides(colour=guide_legend(override.aes=list(size=legend_point_size,
-                                                    alpha=legend_point_alpha)))
+        theme(aspect.ratio=aspect_ratio, plot.title=element_text(hjust=0.5))
+
 
     if(!isNegativeProbe) ggp <- ggp + theme_bw()
 
