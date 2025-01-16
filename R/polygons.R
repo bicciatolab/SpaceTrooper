@@ -487,8 +487,8 @@ computeAreaFromPolygons <- function(polygons, coldata)
     # cd$Area <- NA
     area <- sf::st_area(polygons)
     # idx <- match(names(area), rownames(cd))
-    cd$um_area <- unlist(area)
-    return(cd)
+    um_area <- unlist(area)
+    return(um_area)
 }
 
 #' computeAspectRatioFromPolygons
