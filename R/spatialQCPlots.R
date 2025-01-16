@@ -58,7 +58,7 @@ plotCellsFovs <- function(spe, sample_id=unique(spe$sample_id),
     return(ggp)
 }
 
-#' plotCentroidsSPE
+#' plotCentroids
 #'
 #' @description
 #' Plot Spatial Coordinates for a SpatialExperiment Object
@@ -105,7 +105,7 @@ plotCellsFovs <- function(spe, sample_id=unique(spe$sample_id),
 #'
 #' @examples
 #' #TBD
-plotCentroidsSPE <- function(spe, colour_by=NULL, order_by=NULL,
+plotCentroids <- function(spe, colour_by=NULL, order_by=NULL,
                         sample_id=unique(spe$sample_id),
                         isNegativeProbe=FALSE, palette=NULL,
                         point_col="darkmagenta", size=0.05, alpha=0.2,
@@ -220,7 +220,7 @@ plotMetricHist <- function(spe, metric, fill_color="#69b3a2",
 }
 
 
-#' plotPolygonsSPE
+#' plotPolygons
 #'
 #' @description
 #' Plot Polygons from a SpatialExperiment Object.
@@ -254,7 +254,7 @@ plotMetricHist <- function(spe, metric, fill_color="#69b3a2",
 #' @examples
 #' # Assuming `spe` is a SpatialExperiment object with polygon data:
 #' # plotPolygonsSPE(spe, colour_by="gene_expression")
-plotPolygonsSPE <- function(spe, colour_by=NULL,sample_id=unique(spe$sample_id),
+plotPolygons <- function(spe, colour_by=NULL,sample_id=unique(spe$sample_id),
                     fill_alpha=NA, palette=NULL, border_col=NA, border_alpha=NA,
                     border_line_width=0.1, bg_color="black")
 {
@@ -304,7 +304,7 @@ plotPolygonsSPE <- function(spe, colour_by=NULL,sample_id=unique(spe$sample_id),
 }
 
 
-#' plotPolygonsSPE_ggplot
+#' plotPolygons_ggplot
 #'
 #' @description Plot polygons from a `SpatialExperiment` object using ggplot2.
 #'
@@ -329,7 +329,7 @@ plotPolygonsSPE <- function(spe, colour_by=NULL,sample_id=unique(spe$sample_id),
 #' @examples
 #' # Assuming `spe` is a SpatialExperiment object with polygon data:
 #' # plotPolygonsSPE_ggplot(spe, colour_by="gene_expression")
-plotPolygonsSPE_ggplot <- function(spe, colour_by=NULL,
+plotPolygons_ggplot <- function(spe, colour_by=NULL,
                                    sample_id=unique(spe$sample_id),
                                    fill_alpha=1, palette=NULL,
                                    border_col=NA,

@@ -4,7 +4,7 @@
 \alias{addPolygonsToSPE}
 \title{addPolygonsToSPE}
 \usage{
-addPolygonsToSPE(spe, polygons)
+addPolygonsToSPE(spe, polygons = NULL)
 }
 \arguments{
 \item{spe}{A `SpatialExperiment` object to which polygons will be added.}
