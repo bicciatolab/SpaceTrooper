@@ -199,10 +199,30 @@ readPolygons <- function(polygonsFile, type=c("csv", "parquet", "h5"),
 
     return(sf)
 }
-
-readAndAddPolygonsToSPE(spe, keepMultiPol=TRUE,
-                    boundaries_type=c("HDF5", "parquet")
-                    )
+#' readAndAddPolygonsToSPE
+#' @description Read and Add Polygons to a SpatialExperiment Object
+#'
+#' This function reads polygon boundary data based on the technology associated
+#' with the provided SpatialExperiment (SPE) object and adds the polygons to the
+#' SPE.
+#'
+#' @param spe A \code{SpatialExperiment} object. The object should contain
+#' metadata with the field \code{"technology"}, specifying the technology used
+#' (e.g., "Nanostring_CosMx", "Vizgen_MERFISH", or "10X_Xenium").
+#' @param keepMultiPol Logical. If \code{TRUE}, multi-polygon features will be
+#' kept when reading the boundary data. Defaults to \code{TRUE}.
+#' @param boundaries_type Character. Specifies the type of boundary file format
+#' to read. Options are \code{"HDF5"} or \code{"parquet"}. Defaults to
+#' \code{"HDF5"}.
+#'
+#' @return A \code{SpatialExperiment} object with the added polygon data.
+#'
+#' @export
+#'
+#' @examples
+#' TBD
+readAndAddPolygonsToSPE <- function(spe, keepMultiPol=TRUE,
+                    boundaries_type=c("HDF5", "parquet"))
 {
     boundaries_type<-match.arg(boundaries_type)
     stopifnot("technology" %in% names(metadata(spe)))
@@ -232,6 +252,7 @@ readAndAddPolygonsToSPE(spe, keepMultiPol=TRUE,
         )
     }
     spe <- addPolygonsToSPE(spe, polygons)
+    return(spe)
 }
 
 
