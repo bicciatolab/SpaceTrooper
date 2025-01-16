@@ -254,7 +254,7 @@ plotMetricHist <- function(spe, metric, fill_color="#69b3a2",
 #' @examples
 #' # Assuming `spe` is a SpatialExperiment object with polygon data:
 #' # plotPolygonsSPE(spe, colour_by="gene_expression")
-plotPolygons <- function(spe, colour_by=NULL,sample_id=unique(spe$sample_id),
+plotPolygons_tmap <- function(spe, colour_by=NULL,sample_id=unique(spe$sample_id),
                     fill_alpha=NA, palette=NULL, border_col=NA, border_alpha=NA,
                     border_line_width=0.1, bg_color="black")
 {
@@ -309,7 +309,8 @@ plotPolygons <- function(spe, colour_by=NULL,sample_id=unique(spe$sample_id),
 #' @description Plot polygons from a `SpatialExperiment` object using ggplot2.
 #'
 #' @param spe A `SpatialExperiment` object with polygon data as an `sf` object.
-#' @param colour_by A column in `colData(spe)` for coloring the polygons.
+#' @param colour_by A column in `colData(spe)` for coloring the polygons or a
+#' string color in colors(). (Default is "darkgrey")
 #' @param sample_id Sample ID for plot title. Default is the unique sample ID.
 #' @param fill_alpha Transparency level for polygon fill. Default is `1`.
 #' @param palette Colors to use if `colour_by` is a factor. Default is `NULL`.
@@ -329,7 +330,7 @@ plotPolygons <- function(spe, colour_by=NULL,sample_id=unique(spe$sample_id),
 #' @examples
 #' # Assuming `spe` is a SpatialExperiment object with polygon data:
 #' # plotPolygonsSPE_ggplot(spe, colour_by="gene_expression")
-plotPolygons_ggplot <- function(spe, colour_by=NULL,
+plotPolygons <- function(spe, colour_by="darkgrey",
                                    sample_id=unique(spe$sample_id),
                                    fill_alpha=1, palette=NULL,
                                    border_col=NA,
@@ -338,12 +339,21 @@ plotPolygons_ggplot <- function(spe, colour_by=NULL,
                                    draw_borders=TRUE) {
     stopifnot(is(spe, "SpatialExperiment"))
     stopifnot("polygons" %in% names(colData(spe)))
-    stopifnot(!is.null(colour_by))
+    # stopifnot(!is.null(colour_by))
     pols <- spe$polygons
-
+    polflag <- FALSE
     if(!is.null(colour_by)) {
-        stopifnot(colour_by %in% names(colData(spe)))
-        pols[[colour_by]] <- colData(spe)[[colour_by]]
+        if(colour_by %in% names(colData(spe))) {
+            pols[[colour_by]] <- colData(spe)[[colour_by]]
+            polflag <- TRUE
+        } else {
+            if(!(colour_by %in% colors())) {
+                warning("colour_by not in known colors nor in colData assigning a default colour")
+                colour_by="darkgrey"
+            }
+
+        }
+
     }
 
     border_params <- if(draw_borders) {
@@ -351,12 +361,19 @@ plotPolygons_ggplot <- function(spe, colour_by=NULL,
     } else {
         list(color=NA, size=0)
     }
-
-    p <- ggplot(pols) + geom_sf(aes(fill=.data[[colour_by]]),
-                     alpha=fill_alpha,
-                     color=border_params$color,
-                     size=border_params$size)
-
+    p <- ggplot(pols)
+    if(polflag)
+    {
+         p <- p + geom_sf(aes(fill=.data[[colour_by]]), #fill is for area
+                     alpha=fill_alpha, # alpha fill for area
+                     color=border_params$color, # border color
+                     size=border_params$size) # border size
+    } else {
+        p <- p + geom_sf(fill=colour_by, #fill is for area
+                                    alpha=fill_alpha, # alpha fill for area
+                                    color=border_params$color, # border color
+                                    size=border_params$size)
+    }
     if(!is.null(colour_by) && is.factor(pols[[colour_by]])) {
         if(!is.null(palette)) {
             p <- p + scale_fill_manual(values=palette)

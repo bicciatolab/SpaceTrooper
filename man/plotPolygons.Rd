@@ -2,55 +2,46 @@
 % Please edit documentation in R/spatialQCPlots.R
 \name{plotPolygons}
 \alias{plotPolygons}
-\title{plotPolygons}
+\title{plotPolygons_ggplot}
 \usage{
 plotPolygons(
   spe,
   colour_by = NULL,
   sample_id = unique(spe$sample_id),
-  fill_alpha = NA,
+  fill_alpha = 1,
   palette = NULL,
   border_col = NA,
-  border_alpha = NA,
+  border_alpha = 1,
   border_line_width = 0.1,
-  bg_color = "black"
+  draw_borders = TRUE
 )
 }
 \arguments{
-\item{spe}{A `SpatialExperiment` object containing spatial transcriptomics
-data, including polygon data as an `sf` object.}
+\item{spe}{A `SpatialExperiment` object with polygon data as an `sf` object.}
 
-\item{colour_by}{An optional character string specifying the column in
-`colData(spe)` to use for coloring the polygons. If `NULL`, all polygons
-will be colored the same. Default is `NULL`.}
+\item{colour_by}{A column in `colData(spe)` for coloring the polygons.}
 
-\item{sample_id}{A character string specifying the title of the plot.
-Default is the unique sample ID from `spe`.}
+\item{sample_id}{Sample ID for plot title. Default is the unique sample ID.}
 
-\item{fill_alpha}{A numeric value specifying the transparency level of the
-polygon fill. Default is `NA`.}
+\item{fill_alpha}{Transparency level for polygon fill. Default is `1`.}
 
-\item{palette}{A character vector specifying the colors to use for filling
-the polygons when `colour_by` is a factor. Default is `NULL`.}
+\item{palette}{Colors to use if `colour_by` is a factor. Default is `NULL`.}
 
-\item{border_col}{A character string specifying the color of the polygon
-borders. Default is `NA`.}
+\item{border_col}{Color of polygon borders. Default is `"black"`.}
 
-\item{border_alpha}{A numeric value specifying the transparency level of the
-polygon borders. Default is `NA`.}
+\item{border_alpha}{Transparency level for borders. Default is `1`.}
 
-\item{border_line_width}{A numeric value specifying the width of the polygon
-borders. Default is `0.1`.}
+\item{border_line_width}{Width of polygon borders. Default is `0.1`.}
+
+\item{draw_borders}{Logical; whether to draw borders. Default is `TRUE`.}
 }
 \value{
-A `tmap` plot object displaying the polygons.
+A `ggplot` object representing the polygon plot of the spatial data.
 }
 \description{
-Plot Polygons from a SpatialExperiment Object.
-This function generates a plot of polygons stored in a `SpatialExperiment`
-object.
+Plot polygons from a `SpatialExperiment` object using ggplot2.
 }
 \examples{
 # Assuming `spe` is a SpatialExperiment object with polygon data:
-# plotPolygonsSPE(spe, colour_by="gene_expression")
+# plotPolygonsSPE_ggplot(spe, colour_by="gene_expression")
 }
