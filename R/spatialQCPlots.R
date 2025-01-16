@@ -220,7 +220,7 @@ plotMetricHist <- function(spe, metric, fill_color="#69b3a2",
 }
 
 
-#' plotPolygons
+#' plotPolygons_tmap
 #'
 #' @description
 #' Plot Polygons from a SpatialExperiment Object.
@@ -304,7 +304,7 @@ plotPolygons_tmap <- function(spe, colour_by=NULL,sample_id=unique(spe$sample_id
 }
 
 
-#' plotPolygons_ggplot
+#' plotPolygons
 #'
 #' @description Plot polygons from a `SpatialExperiment` object using ggplot2.
 #'

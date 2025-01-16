@@ -2,7 +2,7 @@
 % Please edit documentation in R/spatialQCPlots.R
 \name{plotPolygons_tmap}
 \alias{plotPolygons_tmap}
-\title{plotPolygons}
+\title{plotPolygons_tmap}
 \usage{
 plotPolygons_tmap(
   spe,

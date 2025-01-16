@@ -2,11 +2,11 @@
 % Please edit documentation in R/spatialQCPlots.R
 \name{plotPolygons}
 \alias{plotPolygons}
-\title{plotPolygons_ggplot}
+\title{plotPolygons}
 \usage{
 plotPolygons(
   spe,
-  colour_by = NULL,
+  colour_by = "darkgrey",
   sample_id = unique(spe$sample_id),
   fill_alpha = 1,
   palette = NULL,
@@ -19,7 +19,8 @@ plotPolygons(
 \arguments{
 \item{spe}{A `SpatialExperiment` object with polygon data as an `sf` object.}
 
-\item{colour_by}{A column in `colData(spe)` for coloring the polygons.}
+\item{colour_by}{A column in `colData(spe)` for coloring the polygons or a
+string color in colors(). (Default is "darkgrey")}
 
 \item{sample_id}{Sample ID for plot title. Default is the unique sample ID.}
 
