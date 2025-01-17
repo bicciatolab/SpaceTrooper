@@ -335,7 +335,7 @@ plotPolygons_tmap <- function(spe, colour_by=NULL,sample_id=unique(spe$sample_id
 #' # Assuming `spe` is a SpatialExperiment object with polygon data:
 #' # plotPolygonsSPE_ggplot(spe, colour_by="gene_expression")
 plotPolygons <- function(spe, colour_by="darkgrey", colour_log=FALSE,
-                        poly_column = "polygons.global",
+                        poly_column = "polygons",
                         sample_id=unique(spe$sample_id),
                         bg_color="white",
                         fill_alpha=1, palette=NULL,
