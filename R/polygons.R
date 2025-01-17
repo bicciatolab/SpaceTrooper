@@ -470,30 +470,27 @@ readPolygonsMerfish <- function(polygonsFolder, type=c("HDF5", "parquet"),
 
 #' computeAreaFromPolygons
 #'
-#' @description This function computes the area from polygon data and adds it to the `colData`.
+#' @description This function computes the area from polygon data.
 #'
 #' @param polygons An `sf` object containing polygon data.
-#' @param coldata A `DataFrame` containing the `colData` to which area information will be added.
 #'
-#' @return A `DataFrame` with the added area information.
+#' @return A `numeric` vector with the area information.
 #' @export
 #'
 #' @examples
-#' # Assuming `polygons` is an sf object and `coldata` is a DataFrame:
+#' # Assuming `polygons` is an sf object:
 #' # coldata <- computeAreaFromPolygons(polygons, coldata)
-computeAreaFromPolygons <- function(polygons, coldata)
+computeAreaFromPolygons <- function(polygons)
 {
-    cd <- coldata
-    # cd$Area <- NA
+    stopifnot(is(polygons, "sf"))
     area <- sf::st_area(polygons)
-    # idx <- match(names(area), rownames(cd))
     um_area <- unlist(area)
     return(um_area)
 }
 
 #' computeAspectRatioFromPolygons
 #'
-#' @description This function computes the aspect ratio from polygon data and adds it to the `colData`.
+#' @description This function computes the aspect ratio from polygon data.
 #'
 #' @param polygons An `sf` object containing polygon data.
 #'
@@ -505,6 +502,7 @@ computeAreaFromPolygons <- function(polygons, coldata)
 #' # ar <- computeAspectRatioFromPolygons(polygons)
 computeAspectRatioFromPolygons <- function(polygons)
 {
+    stopifnot(all(is(polygons, "sf"), ("is_multi" %in% colnames(polygons))))
     aspRatL <- numeric(nrow(polygons))
     if(any(polygons$is_multi)) {
         aspRatL[which(polygons$is_multi)] <- NA
