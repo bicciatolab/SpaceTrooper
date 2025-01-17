@@ -429,8 +429,6 @@ plotPolygons <- function(spe, colour_by="darkgrey", colour_log=FALSE,
 #' data.
 #' @param fovs A character vector specifying the FOVs to be zoomed in and
 #' plotted. Must match values in the `fov` column of `colData(spe)`.
-#' @param colour_by An optional character string specifying the column in
-#' `colData(spe)` to use for coloring the polygons. Default is `NULL`.
 #' @param map_point_col A character string specifying the color of the points
 #' in the map. Default is `"darkmagenta"`.
 #' @param map_numbers_col A character string specifying the color of the
@@ -439,7 +437,7 @@ plotPolygons <- function(spe, colour_by="darkgrey", colour_log=FALSE,
 #' numbers on the map. Default is `0.8`.
 #' @param title An optional character string specifying the title of the final
 #' plot. If `NULL`, no title is added. Default is `NULL`.
-#' @param ... Additional arguments passed to `plotPolygonsSPE`.
+#' @param ... Additional arguments passed to `plotPolygons`.
 #'
 #' @return A combined plot showing a map of all FOVs with zoomed-in views of
 #' the specified FOVs and their associated polygons.
@@ -456,18 +454,16 @@ plotPolygons <- function(spe, colour_by="darkgrey", colour_log=FALSE,
 #'
 #' @examples
 #' # Assuming 'spe' is a SpatialExperiment object with FOVs and polygon data:
-#' # plotZoomFovsMap(spe, fovs = c("FOV1", "FOV2"), colour_by = "cell_type",
-#' #                title = "Zoomed FOVs with Polygons")
-plotZoomFovsMap <- function(spe, fovs=NULL, colour_by="darkgrey",
+#' # plotZoomFovsMap(spe, fovs = c(1, 2), title = "Zoomed FOVs with Polygons")
+plotZoomFovsMap <- function(spe, fovs=NULL,
                             map_point_col="darkmagenta",
                             map_numbers_col="black",
                             map_alpha_numbers=0.8,
-                            title=NULL, ..., useggplot=TRUE)
+                            title=NULL, ...)
 {
     stopifnot(is(spe, "SpatialExperiment"))
     stopifnot("fov" %in% names(colData(spe)))
     stopifnot(all(fovs %in% spe$fov))
-    # stopifnot(!is.null(colour_by))
 
     spefovs <- spe[, spe$fov %in% fovs]
 
@@ -476,15 +472,7 @@ plotZoomFovsMap <- function(spe, fovs=NULL, colour_by="darkgrey",
                          alpha_numbers=map_alpha_numbers,
                          sample_id=NULL)
 
-    if(useggplot)
-    {
-        g2 <- plotPolygons(spefovs, colour_by=colour_by,
-                                     sample_id=NULL, ...)
-    } else {
-        g2 <- plotPolygons(spefovs, colour_by=colour_by,
-                                     sample_id=NULL, ...)
-        g2 <- tmap_grob(g2)
-    }
+    g2 <- plotPolygons(spefovs, sample_id=NULL, ...)
 
     final_plot <- ggpubr::ggarrange(map, g2, ncol=2)
 

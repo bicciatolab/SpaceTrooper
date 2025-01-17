@@ -9,6 +9,7 @@ plotPolygons(
   colour_by = "darkgrey",
   colour_log = FALSE,
   sample_id = unique(spe$sample_id),
+  bg_color = "white",
   fill_alpha = 1,
   palette = NULL,
   border_col = NA,

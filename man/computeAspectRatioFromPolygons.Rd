@@ -4,7 +4,7 @@
 \alias{computeAspectRatioFromPolygons}
 \title{computeAspectRatioFromPolygons}
 \usage{
-computeAspectRatioFromPolygons(polygons, coldata)
+computeAspectRatioFromPolygons(polygons)
 }
 \arguments{
 \item{polygons}{An `sf` object containing polygon data.}
@@ -13,7 +13,7 @@ computeAspectRatioFromPolygons(polygons, coldata)
 A `numeric` vector with the aspect ratio information.
 }
 \description{
-This function computes the aspect ratio from polygon data and adds it to the `colData`.
+This function computes the aspect ratio from polygon data.
 }
 \examples{
 # Assuming `polygons` is an sf object:
