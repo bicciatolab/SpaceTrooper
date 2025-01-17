@@ -8,16 +8,14 @@ computeAspectRatioFromPolygons(polygons, coldata)
 }
 \arguments{
 \item{polygons}{An `sf` object containing polygon data.}
-
-\item{coldata}{A `DataFrame` containing the `colData` to which aspect ratio information will be added.}
 }
 \value{
-A `DataFrame` with the added aspect ratio information.
+A `numeric` vector with the aspect ratio information.
 }
 \description{
 This function computes the aspect ratio from polygon data and adds it to the `colData`.
 }
 \examples{
-# Assuming `polygons` is an sf object and `coldata` is a DataFrame:
-# coldata <- computeAspectRatioFromPolygons(polygons, coldata)
+# Assuming `polygons` is an sf object:
+# ar <- computeAspectRatioFromPolygons(polygons)
 }

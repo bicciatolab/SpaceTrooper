@@ -496,37 +496,26 @@ computeAreaFromPolygons <- function(polygons, coldata)
 #' @description This function computes the aspect ratio from polygon data and adds it to the `colData`.
 #'
 #' @param polygons An `sf` object containing polygon data.
-#' @param coldata A `DataFrame` containing the `colData` to which aspect ratio information will be added.
 #'
-#' @return A `DataFrame` with the added aspect ratio information.
+#' @return A `numeric` vector with the aspect ratio information.
 #' @export
 #'
 #' @examples
-#' # Assuming `polygons` is an sf object and `coldata` is a DataFrame:
-#' # coldata <- computeAspectRatioFromPolygons(polygons, coldata)
-computeAspectRatioFromPolygons <- function(polygons, coldata)
+#' # Assuming `polygons` is an sf object:
+#' # ar <- computeAspectRatioFromPolygons(polygons)
+computeAspectRatioFromPolygons <- function(polygons)
 {
-    cd <- coldata
-    stopifnot("cell_id" %in% colnames(cd))
-    # aspRatL <- list()
-    aspRatL <- lapply(polygons$global[!polygons$is_multi], function(x) ## get active name of geometry instead of global
-    {
-        # xx <- polygons$global[!polygons$is_multi]
-        # for(i in seq_along(xx))
-        # {
-            # print(i)
-            # x <- xx[[i]]
-            # aspRatL[[i]] <- (max(x[[1]][,2]) - min(x[[1]][,2]))/(max(x[[1]][,1]) - min(x[[1]][,1]))
-        # }
-        (max(x[[1]][,2]) - min(x[[1]][,2]))/(max(x[[1]][,1]) - min(x[[1]][,1]))
-    }) ## to parallelize with bplapply
-    names(aspRatL) <- polygons$cell_id[!polygons$is_multi]
-
-    # cd$AspectRatio <- NA
-    posz <- match(names(aspRatL), cd$cell_id)
+    aspRatL <- numeric(nrow(polygons))
+    if(any(polygons$is_multi)) {
+        aspRatL[which(polygons$is_multi)] <- NA
+        warning("Found ", sum(polygons$is_multi), " multi-poligons: returning NA aspect ratio for them.")
+    }
+    aspRatL[!polygons$is_multi] <- lapply(polygons$global[!polygons$is_multi], function(x) {
+        (max(x[[1]][, 2]) - min(x[[1]][, 2]))/(max(x[[1]][, 1]) -
+                                                   min(x[[1]][, 1]))
+    })
+    names(aspRatL) <- polygons$cell_id
     ar <- unlist(aspRatL)
-    ar <- ar[posz]
-    # cd$AspectRatio[posz] <- unlist(aspRatL)
     return(ar)
 }
 
