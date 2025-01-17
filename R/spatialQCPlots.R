@@ -335,12 +335,13 @@ plotPolygons_tmap <- function(spe, colour_by=NULL,sample_id=unique(spe$sample_id
 #' # Assuming `spe` is a SpatialExperiment object with polygon data:
 #' # plotPolygonsSPE_ggplot(spe, colour_by="gene_expression")
 plotPolygons <- function(spe, colour_by="darkgrey", colour_log=FALSE,
-                                   sample_id=unique(spe$sample_id),
-                                   fill_alpha=1, palette=NULL,
-                                   border_col=NA,
-                                   border_alpha=1,
-                                   border_line_width=0.1,
-                                   draw_borders=TRUE) {
+                        sample_id=unique(spe$sample_id),
+                        bg_color="white",
+                        fill_alpha=1, palette=NULL,
+                        border_col=NA,
+                        border_alpha=1,
+                        border_line_width=0.1,
+                        draw_borders=TRUE) {
     stopifnot(is(spe, "SpatialExperiment"))
     stopifnot("polygons" %in% names(colData(spe)))
     # stopifnot(!is.null(colour_by))
@@ -399,7 +400,15 @@ plotPolygons <- function(spe, colour_by="darkgrey", colour_log=FALSE,
             legend.position="right",
             plot.title.position="plot",
             plot.title=element_text(face="bold", size=14),
-            plot.margin=margin(0, 0, 0, 0)
+            plot.margin=margin(0, 0, 0, 0),
+            # Background for entire plot
+            # plot.background=element_rect(fill="lightblue",color="black",size=1),
+            # Background for the panel
+            panel.background=element_rect(fill=bg_color, color=bg_color, size=1),
+            # Customize grid lines
+            # panel.grid.major=element_line(color="gray"),
+            panel.grid.minor=element_blank()
+
         ) +
         labs(title=sample_id, fill=colour_by)
 
@@ -449,16 +458,16 @@ plotPolygons <- function(spe, colour_by="darkgrey", colour_log=FALSE,
 #' # Assuming 'spe' is a SpatialExperiment object with FOVs and polygon data:
 #' # plotZoomFovsMap(spe, fovs = c("FOV1", "FOV2"), colour_by = "cell_type",
 #' #                title = "Zoomed FOVs with Polygons")
-plotZoomFovsMap <- function(spe, fovs = NULL, colour_by = NULL,
-                            map_point_col = "darkmagenta",
-                            map_numbers_col = "black",
-                            map_alpha_numbers = 0.8,
-                            title = NULL, ..., useggplot=TRUE)
+plotZoomFovsMap <- function(spe, fovs=NULL, colour_by="darkgrey",
+                            map_point_col="darkmagenta",
+                            map_numbers_col="black",
+                            map_alpha_numbers=0.8,
+                            title=NULL, ..., useggplot=TRUE)
 {
     stopifnot(is(spe, "SpatialExperiment"))
     stopifnot("fov" %in% names(colData(spe)))
     stopifnot(all(fovs %in% spe$fov))
-    stopifnot(!is.null(colour_by))
+    # stopifnot(!is.null(colour_by))
 
     spefovs <- spe[, spe$fov %in% fovs]
 
@@ -469,10 +478,10 @@ plotZoomFovsMap <- function(spe, fovs = NULL, colour_by = NULL,
 
     if(useggplot)
     {
-        g2 <- plotPolygonsSPE_ggplot(spefovs, colour_by=colour_by,
+        g2 <- plotPolygons(spefovs, colour_by=colour_by,
                                      sample_id=NULL, ...)
     } else {
-        g2 <- plotPolygonsSPE(spefovs, colour_by=colour_by,
+        g2 <- plotPolygons(spefovs, colour_by=colour_by,
                                      sample_id=NULL, ...)
         g2 <- tmap_grob(g2)
     }
