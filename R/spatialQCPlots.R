@@ -345,17 +345,17 @@ plotPolygons <- function(spe, colour_by="darkgrey", colour_log=FALSE,
     stopifnot(is(spe, "SpatialExperiment"))
     stopifnot("polygons" %in% names(colData(spe)))
     # stopifnot(!is.null(colour_by))
-    pols <- spe$polygons
+    df <- data.frame(colData(spe))
     polflag <- FALSE
+
     if(!is.null(colour_by)) {
         if(colour_by %in% names(colData(spe))) {
             if(colour_log)
             {
                 colour_byo <- colour_by
                 colour_by <- paste0("log(", colour_byo, ")")
-                colData(spe)[[colour_by]] <- log1p(colData(spe)[[colour_byo]])
+                df[[colour_by]] <- log1p(df[[colour_byo]])
             }
-            pols[[colour_by]] <- colData(spe)[[colour_by]]
             polflag <- TRUE
         } else {
             if(!(colour_by %in% colors())) {
@@ -372,24 +372,25 @@ plotPolygons <- function(spe, colour_by="darkgrey", colour_log=FALSE,
     } else {
         list(color=NA, size=0)
     }
-    p <- ggplot(pols)
+
     if(polflag)
     {
-         p <- p + geom_sf(aes(fill=.data[[colour_by]]), #fill is for area
-                     alpha=fill_alpha, # alpha fill for area
-                     color=border_params$color, # border color
-                     size=border_params$size) # border size
+        p <- ggplot(df, aes(geometry = polygons, fill=.data[[colour_by]])) +
+            geom_sf(alpha=fill_alpha, # alpha fill for area
+                    color=border_params$color, # border color
+                    size=border_params$size) # border size
     } else {
-        p <- p + geom_sf(fill=colour_by, #fill is for area
-                                    alpha=fill_alpha, # alpha fill for area
-                                    color=border_params$color, # border color
-                                    size=border_params$size)
+        p <- ggplot(df, aes(geometry = polygons)) +
+            geom_sf(fill=colour_by, #fill is for area
+                    alpha=fill_alpha, # alpha fill for area
+                    color=border_params$color, # border color
+                    size=border_params$size)
     }
-    if(!is.null(colour_by) && is.factor(pols[[colour_by]])) {
+    if(!is.null(colour_by) && (is.factor(df[[colour_by]]) || is.logical(df[[colour_by]]))) {
         if(!is.null(palette)) {
             p <- p + scale_fill_manual(values=palette)
         }
-    } else if(!is.null(colour_by) && is.numeric(pols[[colour_by]])) {
+    } else if(!is.null(colour_by) && is.numeric(df[[colour_by]])) {
         p <- p + scale_fill_viridis_c(option="D")
     } else {
         p <- p + scale_fill_identity()
