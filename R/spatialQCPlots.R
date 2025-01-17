@@ -335,6 +335,7 @@ plotPolygons_tmap <- function(spe, colour_by=NULL,sample_id=unique(spe$sample_id
 #' # Assuming `spe` is a SpatialExperiment object with polygon data:
 #' # plotPolygonsSPE_ggplot(spe, colour_by="gene_expression")
 plotPolygons <- function(spe, colour_by="darkgrey", colour_log=FALSE,
+                        poly_column = "polygons.global",
                         sample_id=unique(spe$sample_id),
                         bg_color="white",
                         fill_alpha=1, palette=NULL,
@@ -375,12 +376,12 @@ plotPolygons <- function(spe, colour_by="darkgrey", colour_log=FALSE,
 
     if(polflag)
     {
-        p <- ggplot(df, aes(geometry = polygons, fill=.data[[colour_by]])) +
+        p <- ggplot(df, aes(geometry = .data[[poly_column]], fill=.data[[colour_by]])) +
             geom_sf(alpha=fill_alpha, # alpha fill for area
                     color=border_params$color, # border color
                     size=border_params$size) # border size
     } else {
-        p <- ggplot(df, aes(geometry = polygons)) +
+        p <- ggplot(df, aes(geometry = .data[[poly_column]])) +
             geom_sf(fill=colour_by, #fill is for area
                     alpha=fill_alpha, # alpha fill for area
                     color=border_params$color, # border color
