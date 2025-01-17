@@ -503,7 +503,7 @@ computeAreaFromPolygons <- function(polygons, coldata)
 #' @examples
 #' # Assuming `polygons` is an sf object:
 #' # ar <- computeAspectRatioFromPolygons(polygons)
-computeAspectRatioFromPolygons <- function(polygons, coldata)
+computeAspectRatioFromPolygons <- function(polygons)
 {
     aspRatL <- numeric(nrow(polygons))
     if(any(polygons$is_multi)) {
