@@ -110,7 +110,7 @@ plotCentroids <- function(spe, colour_by=NULL, colour_log=FALSE,
     stopifnot(is(spe, "SpatialExperiment"))
     if(is.null(colour_by))
     {
-        ggp <- ggplot(data=as.data.frame(spatialCoords(spe)),
+        ggp <- ggplot(data.frame(spatialCoords(spe)),
                       aes(x=.data[[spatialCoordsNames(spe)[1]]],
                           y=.data[[spatialCoordsNames(spe)[2]]])) +
             geom_point(colour=point_col,
@@ -334,7 +334,7 @@ plotPolygons_tmap <- function(spe, colour_by=NULL,sample_id=unique(spe$sample_id
 #' # Assuming `spe` is a SpatialExperiment object with polygon data:
 #' # plotPolygonsSPE_ggplot(spe, colour_by="gene_expression")
 plotPolygons <- function(spe, colour_by="darkgrey", colour_log=FALSE,
-                        poly_column = "polygons",
+                        poly_column = "polygons.global",
                         sample_id=unique(spe$sample_id),
                         bg_color="white",
                         fill_alpha=1, palette=NULL,
