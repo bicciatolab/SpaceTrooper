@@ -71,8 +71,6 @@ plotCellsFovs <- function(spe, sample_id=unique(spe$sample_id),
 #' @param colour_by An optional character string specifying the column in
 #' `colData(spe)` to use for coloring the points. If `NULL`, all points will be
 #' colored the same.
-#' @param order_by An optional character string specifying the column in
-#' `colData(spe)` to use for ordering the points.
 #' @param colour_log Logical to log-transform the data to enhance visualization
 #' (Default is FALSE).
 #' @param sample_id A character string specifying the sample identifier to be
@@ -102,7 +100,7 @@ plotCellsFovs <- function(spe, sample_id=unique(spe$sample_id),
 #'
 #' @examples
 #' #TBD
-plotCentroids <- function(spe, colour_by=NULL, order_by=NULL, colour_log=FALSE,
+plotCentroids <- function(spe, colour_by=NULL, colour_log=FALSE,
                         sample_id=unique(spe$sample_id),
                         isNegativeProbe=FALSE, palette=NULL,
                         point_col="darkmagenta", size=0.05, alpha=0.2,
@@ -112,11 +110,10 @@ plotCentroids <- function(spe, colour_by=NULL, order_by=NULL, colour_log=FALSE,
     stopifnot(is(spe, "SpatialExperiment"))
     if(is.null(colour_by))
     {
-        ggp <- ggplot() +
-            geom_point(data=as.data.frame(spatialCoords(spe)),
-                       mapping=aes_string(x=spatialCoordsNames(spe)[1],
-                                          y=spatialCoordsNames(spe)[2]),
-                       colour=point_col,
+        ggp <- ggplot(data=as.data.frame(spatialCoords(spe)),
+                      aes(x=.data[[spatialCoordsNames(spe)[1]]],
+                          y=.data[[spatialCoordsNames(spe)[2]]])) +
+            geom_point(colour=point_col,
                        fill=point_col,
                        size=size, alpha=alpha)
     } else {
@@ -128,10 +125,12 @@ plotCentroids <- function(spe, colour_by=NULL, order_by=NULL, colour_log=FALSE,
             colData(spe)[[colour_by]] <- log1p(colData(spe)[[colour_byo]])
         }
         ## check if column variable is logical to impose our colors
-        ggp <- scater::plotColData(spe, x=spatialCoordsNames(spe)[1],
-                    y=spatialCoordsNames(spe)[2],
-                    colour_by=colour_by, order_by=order_by,
-                    point_size=size, point_alpha=alpha)
+        ggp <- ggplot(data.frame(colData(spe), spatialCoords(spe)),
+                      aes(x=.data[[spatialCoordsNames(spe)[1]]],
+                          y=.data[[spatialCoordsNames(spe)[2]]],
+                          colour = .data[[colour_by]],
+                          fill = .data[[colour_by]]),) +
+            geom_point(size=size, alpha=alpha)
         if(isNegativeProbe)
         {
             ggp <- ggp + scale_color_gradient(low="white", high="red",
