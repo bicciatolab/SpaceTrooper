@@ -71,8 +71,6 @@ plotCellsFovs <- function(spe, sample_id=unique(spe$sample_id),
 #' @param colour_by An optional character string specifying the column in
 #' `colData(spe)` to use for coloring the points. If `NULL`, all points will be
 #' colored the same.
-#' @param order_by An optional character string specifying the column in
-#' `colData(spe)` to use for ordering the points.
 #' @param colour_log Logical to log-transform the data to enhance visualization
 #' (Default is FALSE).
 #' @param sample_id A character string specifying the sample identifier to be
@@ -102,7 +100,7 @@ plotCellsFovs <- function(spe, sample_id=unique(spe$sample_id),
 #'
 #' @examples
 #' #TBD
-plotCentroids <- function(spe, colour_by=NULL, order_by=NULL, colour_log=FALSE,
+plotCentroids <- function(spe, colour_by=NULL, colour_log=FALSE,
                         sample_id=unique(spe$sample_id),
                         isNegativeProbe=FALSE, palette=NULL,
                         point_col="darkmagenta", size=0.05, alpha=0.2,
@@ -112,11 +110,10 @@ plotCentroids <- function(spe, colour_by=NULL, order_by=NULL, colour_log=FALSE,
     stopifnot(is(spe, "SpatialExperiment"))
     if(is.null(colour_by))
     {
-        ggp <- ggplot() +
-            geom_point(data=as.data.frame(spatialCoords(spe)),
-                       mapping=aes_string(x=spatialCoordsNames(spe)[1],
-                                          y=spatialCoordsNames(spe)[2]),
-                       colour=point_col,
+        ggp <- ggplot(data.frame(spatialCoords(spe)),
+                      aes(x=.data[[spatialCoordsNames(spe)[1]]],
+                          y=.data[[spatialCoordsNames(spe)[2]]])) +
+            geom_point(colour=point_col,
                        fill=point_col,
                        size=size, alpha=alpha)
     } else {
@@ -128,10 +125,12 @@ plotCentroids <- function(spe, colour_by=NULL, order_by=NULL, colour_log=FALSE,
             colData(spe)[[colour_by]] <- log1p(colData(spe)[[colour_byo]])
         }
         ## check if column variable is logical to impose our colors
-        ggp <- scater::plotColData(spe, x=spatialCoordsNames(spe)[1],
-                    y=spatialCoordsNames(spe)[2],
-                    colour_by=colour_by, order_by=order_by,
-                    point_size=size, point_alpha=alpha)
+        ggp <- ggplot(data.frame(colData(spe), spatialCoords(spe)),
+                      aes(x=.data[[spatialCoordsNames(spe)[1]]],
+                          y=.data[[spatialCoordsNames(spe)[2]]],
+                          colour = .data[[colour_by]],
+                          fill = .data[[colour_by]]),) +
+            geom_point(size=size, alpha=alpha)
         if(isNegativeProbe)
         {
             ggp <- ggp + scale_color_gradient(low="white", high="red",
@@ -335,6 +334,7 @@ plotPolygons_tmap <- function(spe, colour_by=NULL,sample_id=unique(spe$sample_id
 #' # Assuming `spe` is a SpatialExperiment object with polygon data:
 #' # plotPolygonsSPE_ggplot(spe, colour_by="gene_expression")
 plotPolygons <- function(spe, colour_by="darkgrey", colour_log=FALSE,
+                        poly_column = "polygons.global",
                         sample_id=unique(spe$sample_id),
                         bg_color="white",
                         fill_alpha=1, palette=NULL,
@@ -345,17 +345,17 @@ plotPolygons <- function(spe, colour_by="darkgrey", colour_log=FALSE,
     stopifnot(is(spe, "SpatialExperiment"))
     stopifnot("polygons" %in% names(colData(spe)))
     # stopifnot(!is.null(colour_by))
-    pols <- spe$polygons
+    df <- data.frame(colData(spe))
     polflag <- FALSE
+
     if(!is.null(colour_by)) {
         if(colour_by %in% names(colData(spe))) {
             if(colour_log)
             {
                 colour_byo <- colour_by
                 colour_by <- paste0("log(", colour_byo, ")")
-                colData(spe)[[colour_by]] <- log1p(colData(spe)[[colour_byo]])
+                df[[colour_by]] <- log1p(df[[colour_byo]])
             }
-            pols[[colour_by]] <- colData(spe)[[colour_by]]
             polflag <- TRUE
         } else {
             if(!(colour_by %in% colors())) {
@@ -372,24 +372,25 @@ plotPolygons <- function(spe, colour_by="darkgrey", colour_log=FALSE,
     } else {
         list(color=NA, size=0)
     }
-    p <- ggplot(pols)
+
     if(polflag)
     {
-         p <- p + geom_sf(aes(fill=.data[[colour_by]]), #fill is for area
-                     alpha=fill_alpha, # alpha fill for area
-                     color=border_params$color, # border color
-                     size=border_params$size) # border size
+        p <- ggplot(df, aes(geometry = .data[[poly_column]], fill=.data[[colour_by]])) +
+            geom_sf(alpha=fill_alpha, # alpha fill for area
+                    color=border_params$color, # border color
+                    size=border_params$size) # border size
     } else {
-        p <- p + geom_sf(fill=colour_by, #fill is for area
-                                    alpha=fill_alpha, # alpha fill for area
-                                    color=border_params$color, # border color
-                                    size=border_params$size)
+        p <- ggplot(df, aes(geometry = .data[[poly_column]])) +
+            geom_sf(fill=colour_by, #fill is for area
+                    alpha=fill_alpha, # alpha fill for area
+                    color=border_params$color, # border color
+                    size=border_params$size)
     }
-    if(!is.null(colour_by) && is.factor(pols[[colour_by]])) {
+    if(!is.null(colour_by) && (is.factor(df[[colour_by]]) || is.logical(df[[colour_by]]))) {
         if(!is.null(palette)) {
             p <- p + scale_fill_manual(values=palette)
         }
-    } else if(!is.null(colour_by) && is.numeric(pols[[colour_by]])) {
+    } else if(!is.null(colour_by) && is.numeric(df[[colour_by]])) {
         p <- p + scale_fill_viridis_c(option="D")
     } else {
         p <- p + scale_fill_identity()
