@@ -86,7 +86,6 @@ spatialPerCellQC <- function(spe, micronConvFact=0.12,
                    "NB: This could lead to additional warnings or errors.\n",
                    "Missing AspectRatio can be computed by loading polygons."))
     }
-
     spe$ctrl_total_ratio <- spe$control_sum/spe$total
     spe$ctrl_total_ratio[which(is.na(spe$ctrl_total_ratio))] <- 0
     spe$log2CountArea <- log2(spe$sum/spe$Area_um)
