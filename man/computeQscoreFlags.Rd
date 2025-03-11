@@ -4,12 +4,7 @@
 \alias{computeQscoreFlags}
 \title{computeQscoreFlags}
 \usage{
-computeQscoreFlags(
-  spe,
-  qs_threshold = 0.5,
-  use_qs_quantiles = FALSE,
-  opt = FALSE
-)
+computeQscoreFlags(spe, qs_threshold = 0.5, use_qs_quantiles = FALSE)
 }
 \arguments{
 \item{spe}{A `SpatialExperiment` object with spatial transcriptomics data.}

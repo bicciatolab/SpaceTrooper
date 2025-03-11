@@ -484,7 +484,6 @@ plotZoomFovsMap <- function(spe, fovs = NULL, colour_by = NULL,
 #'
 #' @importFrom scater plotColData
 #' @importFrom ggplot2 ggtitle coord_fixed
-#' cowplot
 #' @export
 #'
 #' @examples
