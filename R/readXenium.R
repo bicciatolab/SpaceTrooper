@@ -102,8 +102,8 @@ readXeniumSPE <- function(dirname,
 
     metadata_file <- file.path(dirname, paste0(metadatafpattern, ".csv.gz"))
     pex <- paste0(polygonsfpattern, switch(boundaries_type,
-                                            parquet=".parquet",
-                                            csv=".csv.gz"))
+                                           parquet=".parquet",
+                                           csv=".csv.gz"))
     pol_file <- list.files(dirname, pex, full.names=TRUE)
     stopifnot(all(file.exists(c(metadata_file, pol_file))))
 
@@ -170,7 +170,7 @@ readXeniumSPE <- function(dirname,
 #' #                                          keep_polygons = TRUE)
 computeMissingMetricsXenium <- function(pol_file, coldata, keep_polygons=FALSE)
 {
-    stopifnot(dir.exists(pol_file))
+    stopifnot(file.exists(pol_file))# it's not a dir in this case, it's a file
     polygons <- readPolygonsXenium(pol_file, keepMultiPol=TRUE)
     cd <- computeAspectRatioFromPolygons(polygons, coldata)
     if(keep_polygons) cd <- cbind.DataFrame(cd, polygons)

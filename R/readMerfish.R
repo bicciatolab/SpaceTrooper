@@ -36,7 +36,7 @@ readMerfishSPE <- function(dirname,
 {
     countmat_file <- list.files(dirname, countmatfpattern, full.names=TRUE)
     metadata_file <- list.files(dirname, metadatafpattern, full.names=TRUE)
-    # pol_file <- list.files(dirname, polygonsfpattern, full.names=TRUE) #check if parquet
+    pol_file <- list.files(dirname, polygonsfpattern, full.names=TRUE) #check if parquet
 
     # stopifnot(all(file.exists(countmat_file), file.exists(metadata_file),
     #               file.exists(fovpos_file), file.exists(pol_file)))
@@ -66,19 +66,20 @@ readMerfishSPE <- function(dirname,
     # colData
     colData <- left_join(metadata, countmat[, "cell_id"], by = "cell_id")
     rownames(colData) <- colData$cell_id
-    colData <- subset(colData, select = c(2,1,3:dim(colData)[2]))
+    cd <- subset(colData, select = c(2,1,3:dim(colData)[2]))
     if (compute_missing_metrics)
     {
         message("Computing missing metrics, this could take a while...")
-        cd <- computeMissingMetricsMerfish(dirname, colData, boundaries_type,
-                                            keep_polygons)
+        cd <- computeMissingMetricsMerfish(pol_file, colData,
+                                           keep_polygons)
     }
 
     spe <- SpatialExperiment::SpatialExperiment(
         sample_id=sample_name,
         assays = list(counts = counts),
         # rowData = rowData,
-        colData = colData,
+        colData = cd, # this must be cd, not colData, otherwise it will not store the computed
+        # missing metrics
         spatialCoordsNames = coord_names,
         metadata=list(polygons=pol_file, technology="Vizgen_MERFISH")
     )
@@ -87,12 +88,15 @@ readMerfishSPE <- function(dirname,
 
 }
 
-computeMissingMetricsMerfish <- function(polygonsFolder, coldata,
-                                    boundaries_type, keep_polygons=FALSE)
+computeMissingMetricsMerfish <- function(pol_file, coldata,
+                                         boundaries_type, keep_polygons=FALSE)
 {
-    stopifnot(dir.exists(polygonsFolder))
-    polygons <- readPolygonsMerfish(polygonsFolder, keepMultiPol=TRUE,
+    stopifnot(dir.exists(pol_file)) # I don't know if it was called polygonsFolder
+    # not to mix variables between functions, readMerfishSPE and computeMissingMetricsMerfish
+    polygons <- readPolygonsMerfish(pol_file, keepMultiPol=TRUE,
                                     type=boundaries_type)
+    cd <- computeCenterFromPolygons(polygons, coldata) # center coordinates are not provided by default in
+    # cell metadata
     cd <- computeAreaFromPolygons(polygons, coldata)
     cd <- computeAspectRatioFromPolygons(polygons, cd)
     if (keep_polygons) cd <- cbind.DataFrame(cd, polygons)

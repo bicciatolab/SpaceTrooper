@@ -32,7 +32,6 @@
 #' # TBD
 spatialPerCellQC <- function(spe, micronConvFact=0.12,
                              negProbList=c("NegPrb", "Negative", "SystemControl", # CosMx
-                                           "Ms IgG1", "Rb IgG", # CosMx Protein
                                            "NegControlProbe", "NegControlCodeWord", "UnassignedCodeWord", # Xenium
                                            "Blank" # MERFISH
                              ))
@@ -48,13 +47,14 @@ spatialPerCellQC <- function(spe, micronConvFact=0.12,
     spe <- addPerCellQC(spe, subsets=idxlist)
     idx <- grep("^subsets_.*_sum$", colnames(colData(spe)))
     npc = npd = 0
-
     if ( length(idx) !=0 )
     {
         ## TO TEST -> BENEDETTA
-        npc <- rowSums(as.matrix(colData(spe)[ , idx, drop=FALSE])) # meglio dataframe, perché rowsums non funziona
+        # meglio dataframe, perché rowsums non funziona -> ?
+        npc <- rowSums(as.matrix(colData(spe)[ , idx, drop=FALSE])) #sum
         ## getting detected probes as the column suddenly after the sum column
-        npd <- rowSums(as.matrix(colData(spe)[ , idx+1, drop=FALSE])) # not robust at all!
+        ## # not robust at all! the +1 is not a really good choice
+        npd <- rowSums(as.matrix(colData(spe)[ , idx+1, drop=FALSE])) #detected
     }
 
     spe$control_sum <- npc
@@ -62,15 +62,11 @@ spatialPerCellQC <- function(spe, micronConvFact=0.12,
     spe$target_sum <- spe$sum - npc
     spe$target_detected <- spe$detected - npd
 
-    if(!all(spatialCoordsNames(spe) %in% names(colData(spe)))) # controllare,
-        #forse l'ho tolto perché dava problemi
+    if(!all(spatialCoordsNames(spe) %in% names(colData(spe))))
     {
         #### CHANGE SPE constructor WITH COORDINATES IN COLDATA #########
         colData(spe) <- cbind.DataFrame(colData(spe), spatialCoords(spe))
     }
-
-    #### CHANGE SPE constructor WITH COORDINATES IN COLDATA #########
-    colData(spe) <- cbind.DataFrame(colData(spe), spatialCoords(spe))
 
     if(metadata(spe)$technology == "Nanostring_CosMx")
     {
@@ -78,12 +74,13 @@ spatialPerCellQC <- function(spe, micronConvFact=0.12,
         colnames(spnc) <- gsub("px", "um", spatialCoordsNames(spe))
         colData(spe) <- cbind.DataFrame(colData(spe), spnc)
         spe$Area_um <- spe$Area * (micronConvFact^2)
-        ###spe <- computeBorderDistanceCosMx(spe) controllare perché mi dava
-        # un output scorretto che fa sbagliare il calcolo del quality score,
-        # si vede nel plot dei termini del quality score, perché nel plot
-        # della distanza dà un gradiente globale da sinistra a destra che invece
-        # dovrebbe essere un gradiente interno a ciascun fov che parte da
-        # ciascun bordo del fov
+        spe <- computeBorderDistanceCosMx(spe)
+    }
+
+    # adding this line so that Area in Xenium has the same name as the others
+    # already in um
+    if (metadata(spe)$technology == "10X_Xenium"){
+        spe$Area_um <- spe$cell_area
     }
 
     #### compute AspectRatio for other technologies ####
@@ -98,7 +95,9 @@ spatialPerCellQC <- function(spe, micronConvFact=0.12,
 
     spe$ctrl_total_ratio <- spe$control_sum/spe$total
     spe$ctrl_total_ratio[which(is.na(spe$ctrl_total_ratio))] <- 0
-    spe$log2CountArea <- log2(spe$sum/spe$Area_um)
+    # changed to Area um, now it's the same for every technology
+    spe$CountArea <- spe$sum/spe$Area_um
+    spe$log2CountArea <- log2(spe$CountArea)
 
     message("Removing ", dim(spe[,spe$sum==0])[2], " cells, they have 0 counts")
     spe <- spe[,!spe$sum==0]
@@ -151,67 +150,6 @@ computeBorderDistanceCosMx <- function(spe,
     return(spe)
 }
 
-#' computeQCScore
-#' @description
-#' Compute for each cell a quality score based on the target counts, area in micron
-#' and log2 of the aspect ratio.
-#'
-#' @param spe a SpatialExperiment object with target_counts, area in micron
-#' and log2 of the aspect ratio in the `colData`, tipically computed with
-#' \link{spatialPerCellQC}
-#' @param custom a boolean to set if you are using custom polygons
-#'
-#' @return a `SpatialExperiment` object with a `flag_score` stored in
-#' the `colData`.
-#' @export
-#'
-#' @examples
-#' # TBD
-computeQCScore <- function(spe, a=1, b=1, custom = FALSE)#0.3, b=0.8)
-{
-    stopifnot(is(spe, "SpatialExperiment"))
-    cd <- colData(spe)
-
-    if(!all(c("target_sum", "log2CountArea", "log2AspectRatio") %in% colnames(cd)))
-    {
-        stop("One of target_sum, Area_um, log2AspectRatio is missing, ",
-             "did you run spatialPerCellQC?")
-    }
-    # spe$log2CountArea <- log2(spe$target_sum/spe$Area_um)
-    if (metadata(spe)$technology=="Nanostring_CosMx")
-    {
-        spe <- computeBorderDistanceCosMx(spe)
-
-        if(custom == TRUE)
-        {
-            if(!all(c("target_sum", "cust_log2CountArea",
-                      "cust_log2AspectRatio") %in% colnames(cd)))
-            {
-                stop("One of target_sum, cust_log2CountArea, cust_log2AspectRatio
-                is missing, did you run custom customPolyMetrics?")
-            }
-            qs <- 1 / (1 + exp(-a * spe$cust_log2CountArea +
-                                   b * abs(spe$cust_log2AspectRatio) *
-                                   as.numeric(spe$dist_border < 50)))
-        } else {
-
-            qs <- 1 / (1 + exp(-a * spe$log2CountArea +
-                                   b * abs(spe$log2AspectRatio) *
-                                   as.numeric(spe$dist_border < 50)))
-        }
-    } else {
-        qs <- 1 / (1 + exp(-a * spe$log2CountArea +
-                               b * abs(spe$log2AspectRatio)))
-    }
-
-    spe$quality_score <- qs
-    # spe$quality_score <- 1/(1 + exp(-a*spe$target_sum/spe$Area_um +
-    #b*abs(spe$log2AspectRatio)))
-    return(spe)
-}
-
-
-
 #' computeSpatialOutlier
 #' @description
 #' Computes outliers based on the Area (in micron) of the experiment.
@@ -252,9 +190,9 @@ computeQCScore <- function(spe, a=1, b=1, custom = FALSE)#0.3, b=0.8)
 #' @examples
 #' # TBD
 computeSpatialOutlier <- function(spe, compute_by=NULL,
-                                method=c("mc", "scuttle", "both"),
-                                mcDoScale=FALSE,
-                                scuttleType=c("both", "lower", "higher"))
+                                  method=c("mc", "scuttle", "both"),
+                                  mcDoScale=FALSE,
+                                  scuttleType=c("both", "lower", "higher"))
 {
     stopifnot(is(spe, "SpatialExperiment"))
     stopifnot(!is.null(compute_by))
@@ -276,20 +214,27 @@ computeSpatialOutlier <- function(spe, compute_by=NULL,
 
     if (mcfl)
     {
-        skw <- e1071::skewness(cdcol)
-        if (skw<=0) warning("The distribution is symmetric. ",
-                    "The medcouple is not suited for symmetric distributions. ",
-                    "In your case we suggest to use the scater method instead.")
+        skw <- e1071::skewness(cdcol, na.rm = TRUE) # NAs impede the following steps
 
-        mcval <- robustbase::mc(cdcol, doScale=mcDoScale)
+        # this was changed because I realized I didn't know well how to interpret
+        # skewness, if skw is >-1 and <1 the distribution is symmetric
+        if (skw>-1 &
+            skw<1) warning("The distribution is symmetric. ",
+                           "The medcouple is not suited for symmetric distributions. ",
+                           "In your case we suggest to use the scater method instead.")
+
+        mcval <- robustbase::mc(cdcol, doScale=mcDoScale, na.rm=TRUE) # NAs impede the following steps
         if ( any( (mcval <= -0.6), (mcval >= 0.6) ) )
             stop("Obtained medcouple value is: ", round(mcval, digits=4),
                  "\nIt doesn't meet the needed requirements for outlier",
                  " identification with this method.")
         names(cdcol) <- colnames(spe)
         outl <- robustbase::adjbox(cdcol, plot=FALSE)
-        outsmc <- rep(FALSE, dim(cd)[1])
-        outsmc[rownames(cd) %in% names(outl$out)] <- TRUE
+        # now outliers are defined as NO, HIGH or LOW, no more TRUE or FALSE,
+        # distinction whether they have values < lower thr. or > than higher thr.
+        outsmc <- rep("NO", dim(cd)[1])
+        outsmc[rownames(cd) %in% names(outl$out)] <- ifelse(outl$out<=
+                                                                outl$fence[1], "LOW", "HIGH")
         ## using scuttle outlier.filter class to store fences for each filtering
         ## in the attributes of the class
         outlier_mc <- scuttle::outlier.filter(outsmc)
@@ -307,7 +252,14 @@ computeSpatialOutlier <- function(spe, compute_by=NULL,
     if (scuttlefl)
     {
         outssc <- scuttle::isOutlier(cdcol, type=scuttleType)
-        cd$outlier_sc <- scuttle::outlier.filter(outssc)
+        # outliers are defined as NO, LOW or HIGH even here for scuttle method
+        sctri <- rep("NO", dim(cd)[1])
+        sctri <- ifelse(outssc==TRUE&cdcol<=attr(outssc, "thresholds")[1],"LOW", sctri)
+        outlier_sc <- ifelse(outssc==TRUE&cdcol>=attr(outssc, "thresholds")[2],"HIGH", sctri)
+        outlier_sc <- scuttle::outlier.filter(outlier_sc) # this is to keep the attributes even when filtering
+        # otherwise they disappear
+        attr(outlier_sc, "thresholds") <- attr(outssc, "thresholds")# adding thresholds also for scuttle
+        cd$outlier_sc <- outlier_sc
         names(cd)[names(cd)=="outlier_sc"] <- paste0(compute_by, "_outlier_sc")
     }
 
@@ -356,148 +308,189 @@ computeFixedFlags <- function(spe,
     return(spe)
 }
 
-#' qscoreOpt
+#' computeQScore
 #' @description
-#' Compute automatically weights for quality score through glm training
+#' Compute quality score and automatically define weights for quality score
+#' through glm training
 #'
-#' This function optimizes quality score by computing a glm to determine weights
-#' for the quality score formula after selecting a training set from the
+#' This function computes quality score with a formula that depends on the technology.
+#' To automatically define the formula coefficient weights, model training is performed
+#' through ridge regression.
+#'
 #' `SpatialExperiment` object.
 #'
 #' @param spe A `SpatialExperiment` object with spatial transcriptomics data.
-#' @param plot a boolean to set to TRUE if you want to see the glm plot
-#' @param custom a boolean value to set to TRUE if you are using custom polygons
 #'
-#' @return The `SpatialExperiment` object with added filter flags in `colData`.
+#' @return The `SpatialExperiment` object with added quality score in `colData`.
 #'
 #' @details
 #'
 #' @importFrom SummarizedExperiment colData
-#' @importFrom dplyr filter mutate sample_n full_join
-#' @importFrom ggplot2 ggplot aes geom_point stat_smooth geom_hline theme_bw
-#' @importFrom ggplot2 xlab ylab
+#' @importFrom dplyr filter mutate full_join distinct case_when
+#' @importFrom glmnet glmnet cv.glmnet predict
 #' @export
 #' @examples
 #' # TBD
 
-qscoreOpt <- function(spe = spe, plot = FALSE, custom = FALSE){
+computeQScore <- function(spe = spe) {
 
-    if(custom==TRUE){
-        train_df1 <- data.frame(colData(spe)) |> dplyr::filter (is_ctrl_tot_outlier |
-                     cust_Area_um_outlier_mc | Mean.DAPI_outlier_mc) |>
-            dplyr::mutate(qscore_train = 0)
+    # this is necessary because I found Xenium and Merfish datasets with 0 counts cells having log2CountArea as -Inf
+    # something our functions such as medcouple and skewness don't deal with, thus I exclude cells
+    # with 0 counts and don't use them for training
 
-        message(paste0("Chosen low quality examples: ", dim(train_df1)[1]))
-
-        train_df2 <- data.frame(colData(spe)) |> dplyr::filter(
-            (cust_log2AspectRatio > summary(cust_log2AspectRatio)[2] &
-                 cust_log2AspectRatio < summary(cust_log2AspectRatio)[5]) |
-                (cust_log2CountArea > summary(cust_log2CountArea)[2] &
-                 cust_log2CountArea >summary(cust_log2CountArea)[5]) |
-                dist_border > 50) |>
-            dplyr::mutate(qscore_train = 1) |> dplyr::sample_n(dim(train_df1)[1])
-
-        train_df <- train_df1 |>
-            dplyr::mutate(rn = data.table::rowid(cell_id)) |>
-            dplyr::full_join(train_df2 |>
-                          dplyr::mutate(rn = data.table::rowid(cell_id))) |>
-            dplyr::select(-rn)
-
-        model <- glm(qscore_train ~ cust_log2CountArea +
-                         I(abs(cust_log2AspectRatio) * as.numeric(dist_border<50)),
-                     family = binomial(link = "logit"), data = train_df)
-
-        quality_score_opt <- 1 / (1 + exp(-model$coef[1] - model$coef[2] *
-                                              spe$cust_log2CountArea - model$coef[3] *
-                                              abs(spe$cust_log2AspectRatio) *
-                                              as.numeric(spe$dist_border<50)))
-
-        message(paste0("Computing optimized quality score with coefficients: ",
-                       round(model$coef[1],2), ", ", round(model$coef[2],2),
-                       ", ", round(model$coef[3],2)))
-
-        if(any(is.na(quality_score_opt))){
-            message(paste0(
-                table(
-                    is.na(quality_score_opt))[["TRUE"]]," NA quality scores found.
-      Subsetting spe to keep only cells not NA for quality score"))
-            spe$quality_score_opt <- quality_score_opt
-            spe <- spe[,!is.na(spe$quality_score_opt)]
-        }else{
-            spe$quality_score_opt <- quality_score_opt
-        }
-
-        if(plot == TRUE){
-            print(ggplot2::ggplot(train_df, ggplot2::aes(x = cust_log2CountArea +
-                                           abs(cust_log2AspectRatio) *
-                                           as.numeric(dist_border<50),
-                                       y = qscore_train)) +
-                      ggplot2::geom_point(col = "blue4") +
-                      ggplot2::stat_smooth(method = "glm", se = FALSE, method.args =
-                                      list(family=binomial), color = "pink2") +
-                      ggplot2::geom_hline(yintercept = c(0, 1), color = "lightblue") +
-                      ggplot2::theme_bw() + ggplot2::ylab("Training quality score") +
-                      ggplot2::xlab("log2(count/area) + |aspectRatio| * distance from border index"))
-            return(spe)
-        }
-    }else{
-        train_df1 <- data.frame(colData(spe)) |> dplyr::filter (is_ctrl_tot_outlier |
-                     Area_um_outlier_mc | Mean.DAPI_outlier_mc) |>
-            dplyr::mutate(qscore_train = 0)
-
-        message(paste0("Chosen low quality examples: ", dim(train_df1)[1]))
-
-        train_df2 <- data.frame(colData(spe)) |> dplyr::filter(
-            (log2AspectRatio > summary(log2AspectRatio)[2] & log2AspectRatio <
-                 summary(log2AspectRatio)[5]) |
-                (log2CountArea > summary(log2CountArea)[2] & log2CountArea >
-                     summary(log2CountArea)[5]) |
-                dist_border > 50) |>
-            dplyr::mutate(qscore_train = 1) |> dplyr::sample_n(dim(train_df1)[1])
-
-        train_df <- train_df1 |>
-            dplyr::mutate(rn = data.table::rowid(cell_id)) |>
-            dplyr::full_join(train_df2 |>
-                          dplyr::mutate(rn = data.table::rowid(cell_id))) |>
-            dplyr::select(-rn)
-
-        model <- glm(qscore_train ~ log2CountArea + I(abs(log2AspectRatio) *
-                     as.numeric(dist_border<50)),
-                     family = binomial(link = "logit"), data = train_df)
-
-        quality_score_opt <- 1 / (1 + exp(-model$coef[1] - model$coef[2] *
-                                              spe$log2CountArea - model$coef[3] *
-                                              abs(spe$log2AspectRatio) *
-                                              as.numeric(spe$dist_border<50)))
-
-        message(paste0("Computing optimized quality score with coefficients: ",
-                       round(model$coef[1],2), ", ", round(model$coef[2],2),
-                       ", ", round(model$coef[3],2)))
-
-        if(any(is.na(quality_score_opt))){
-            message(paste0(
-                table(
-                    is.na(quality_score_opt))[["TRUE"]]," NA quality scores found.
-      Subsetting spe to keep only cells not NA for quality score"))
-            spe$quality_score_opt <- quality_score_opt
-            spe <- spe[,!is.na(spe$quality_score_opt)]
-        }else{
-            spe$quality_score_opt <- quality_score_opt
-        }
-
-        if(plot == TRUE){
-            print(ggplot2::ggplot(train_df, ggplot2::aes(x = log2CountArea + abs(log2AspectRatio) *
-                  as.numeric(dist_border<50), y = qscore_train)) +
-                      ggplot2::geom_point(col = "blue4") +
-                      ggplot2::stat_smooth(method = "glm", se = FALSE,
-                                  method.args = list(family=binomial),
-                                  color = "pink2") +
-                      ggplot2::geom_hline(yintercept = c(0, 1), color = "lightblue") +
-                      ggplot2::theme_bw() + ggplot2::ylab("Training quality score") +
-                      ggplot2::xlab("log2(count/area) + |aspectRatio| * distance from border index"))
-            return(spe)
-        }
+    spe_temp <- computeSpatialOutlier(spe[,spe$total>0], compute_by="log2CountArea", method="both")
+    if(attr(spe_temp$log2CountArea_outlier_mc, "thresholds")[1]<min(spe_temp$log2CountArea)){
+        low_thr <- quantile(spe$log2CountArea, probs = 0.01)
+    } else{
+        low_thr <- attr(spe_temp$log2CountArea_outlier_mc, "thresholds")[1]
     }
+    high_thr <- attr(spe_temp$log2CountArea_outlier_mc, "thresholds")[2]
+
+    spe$log2CountArea_outlier_train <- case_when(spe$total==0 ~ "NO",
+                                                 spe$log2CountArea<low_thr ~ "LOW",
+                                                 spe$log2CountArea>high_thr ~ "HIGH",
+                                                 TRUE ~ "NO")
+
+    attr(spe$log2CountArea_outlier_train, "thresholds") <- attr(spe_temp$log2CountArea_outlier_mc, "thresholds")
+    attr(spe$log2CountArea_outlier_train, "thresholds")[1] <- low_thr
+
+    print("How many LOW outliers cells will be used for training?")
+    print(table(spe$log2CountArea_outlier_train))
+
+    if(metadata(spe)$technology == "Nanostring_CosMx")
+    {
+        # I selected scuttle because otherwise it would return a warning, since
+        # aspect ratio is always normal in every technology, I would turn to scuttle
+        # instead
+        spe <- computeSpatialOutlier(spe, compute_by="log2AspectRatio", method="scuttle")
+        print("How many outliers were found for log2AspectRatio")
+        print(table(spe$log2AspectRatio_outlier_sc))
+
+        train_bad <- data.frame(colData(spe)) |> filter((log2AspectRatio_outlier_sc ==
+                                                             "HIGH" & dist_border < 50) |
+                                                            (log2AspectRatio_outlier_sc ==
+                                                                 "LOW" & dist_border < 50) |
+                                                            log2CountArea_outlier_train == "LOW") |>
+            mutate(qscore_train = 0)
+
+        train_good <- data.frame(colData(spe)) |> filter((log2AspectRatio > quantile(log2AspectRatio, probs = 0.25) &
+                                                              log2AspectRatio < quantile(log2AspectRatio, probs = 0.75) & dist_border > 50) |
+                                                             (log2CountArea > quantile(log2CountArea, probs = 0.90) &
+                                                                  log2CountArea < quantile(log2CountArea, probs = 0.99))) |>
+            mutate(qscore_train=1,
+                   is_a_bad_boy=cell_id%in%train_bad$cell_id)
+
+        # model formula definition for glmnet training for CosMx technology
+
+        model_formula <- "~ log2CountArea + I(abs(log2AspectRatio) *
+      as.numeric(dist_border<50)) + log2CountArea:I(abs(log2AspectRatio) *
+      as.numeric(dist_border<50))"
+    }
+
+    if(metadata(spe)$technology == "10X_Xenium" |
+       metadata(spe)$technology =="Vizgen_MERFISH") {
+
+        train_bad <- data.frame(colData(spe)) |> filter(log2CountArea_outlier_train == "LOW") |>
+            mutate(qscore_train = 0)
+
+        train_good <- data.frame(colData(spe)) |> filter((log2CountArea > quantile(log2CountArea, probs = 0.90) &
+                                                              log2CountArea < quantile(log2CountArea, probs = 0.99))) |>
+            mutate(qscore_train=1,
+                   is_a_bad_boy=cell_id%in%train_bad$cell_id)
+
+        # model formula definition for glmnet training for Xenium and Merfish technology
+
+        model_formula <- "~log2CountArea"
+
+    }
+
+    # check of duplicates
+
+    # bad example duplicates removal without any warning to the user
+
+    train_bad <- train_bad |> distinct(cell_id, .keep_all = TRUE)
+
+    message(paste0("Chosen low quality examples: ", dim(train_bad)[1]))
+
+    # good example duplicates removal without any warning to the user
+
+    train_good <- train_good |> distinct(cell_id, .keep_all = TRUE)
+
+    train_good <- train_good[!train_good$is_a_bad_boy,]
+    train_good <- train_good[sample(rownames(train_good), dim(train_bad)[1], replace = FALSE),]
+
+    message(paste0("Chosen good quality examples, (should be the same number
+              of bad quality examples): ", dim(train_good)[1]))
+
+    # merge into same training dataset
+
+    # I would prefer this first way to merge the two datasets together without creating any duplicate
+    # column, however this didn't work with merfish tech, having cell ids as only numbers, that is
+    # probably why this is not well handled inside the following functions, I opted for an
+    # rbind instead
+
+    #train_df <- train_bad %>%
+    #mutate(rn = data.table::rowid(cell_id)) %>%
+    #full_join(train_good %>%
+    #mutate(rn = data.table::rowid(cell_id))) %>%
+    #select(-rn)
+
+    train_good$is_a_bad_boy <- NULL
+    train_df <- rbind(train_bad, train_good)
+
+    train_df <- train_df |> distinct(cell_id, .keep_all = TRUE)
+
+    # glmnet training
+
+    model_matrix <- model.matrix(as.formula(model_formula), data = train_df)
+
+    set.seed(1998)
+    model <- glmnet(x = model_matrix, y = train_df$qscore_train,
+                            family = "binomial", lambda = NULL, alpha=0)
+
+    set.seed(1998)
+    #https://stackoverflow.com/questions/34677526/set-seed-with-cv-glmnet-paralleled-gives-different-results-in-r
+    # it says that if cv.glmnet is run in different days, results will differ and that you need to define
+    # nFolds manually in the function call if you want reproducible results, because they are randomly
+    # chosen.
+    ridge_cv <- cv.glmnet(model_matrix, train_df$qscore_train,
+                                  family = "binomial", alpha = 0, lambda=NULL)
+
+    best_lambda <- ridge_cv$lambda.min
+
+    print("Model coefficients for every term used in the formula:")
+    print(round(predict(model, s = best_lambda, type="coefficients"),2))
+
+    train_df$doom <- case_when(train_df$qscore_train==0 ~ "BAD",
+                               train_df$qscore_train==1 ~ "GOOD")
+
+    cd <- data.frame(colData(spe))
+
+    full_matrix <- model.matrix(as.formula(model_formula), data = cd)
+
+    cd$quality_score <- as.vector(predict(model, s = best_lambda,
+                                          newx = full_matrix,
+                                          type = "response"))
+    spe$quality_score <- cd$quality_score
+
+    # column with information about which cells were used in the training
+    # loaded in spe
+
+    # again, preferred code but Merfish cellids giving problems
+
+    #cd <- left_join(cd, train_df, by = "cell_id")
+    #cd$doom <- tidyr::replace_na(cd$doom, "TEST")
+    #spe$doom <- cd$doom
+
+    # error output: Error in attributes(lst) <- a :
+    #'names' attribute [395215] must be the same length as the vector [5242]
+
+    train_identity <- rep("TEST", dim(spe)[2])
+    spe$doom <- dplyr::case_when(
+        spe$cell_id%in%train_bad$cell_id ~ "BAD",
+        spe$cell_id%in%train_good$cell_id ~ "GOOD",
+        TRUE ~ train_identity)
+
     return(spe)
 }
 
@@ -524,37 +517,22 @@ qscoreOpt <- function(spe = spe, plot = FALSE, custom = FALSE){
 #' # TBD
 #'
 computeQscoreFlags <- function(spe, qs_threshold=0.5,
-                               use_qs_quantiles=FALSE,
-                               opt = FALSE)
+                               use_qs_quantiles=FALSE)
 {
     stopifnot(is(spe, "SpatialExperiment"))
     stopifnot("quality_score" %in% names(colData(spe)))
 
     if(use_qs_quantiles)
     {
-        if(opt==TRUE){
-            spe$is_qscore_opt_outlier <- ifelse(spe$quality_score_opt <
-                                                    quantile(spe$quality_score_opt,
+            spe$is_qscore_opt_outlier <- ifelse(spe$quality_score <
+                                                    quantile(spe$quality_score,
                                                              probs=qs_threshold),
                                                 TRUE, FALSE)
-        }else{
-            spe$is_qscore_outlier <- ifelse(spe$quality_score <
-                                                quantile(spe$quality_score,
-                                                         probs=qs_threshold),
-                                            TRUE, FALSE)
-        }
-
     } else {
-        if(opt==TRUE){
-            spe$is_qscore_opt_outlier <- spe$quality_score_opt < qs_threshold
-        } else {
             spe$is_qscore_outlier <- spe$quality_score < qs_threshold
-        }
+
     }
-    if(opt==TRUE){
-        spe$fixed_qscore_opt_out <- (spe$is_qscore_opt_outlier & spe$fixed_filter_out)
-    } else {
         spe$fixed_qscore_out <- (spe$is_qscore_outlier & spe$fixed_filter_out)
-    }
+
     return(spe)
 }

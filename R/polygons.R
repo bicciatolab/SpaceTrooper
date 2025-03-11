@@ -409,6 +409,38 @@ readPolygonsMerfish <- function(polygonsFolder, type=c("HDF5", "parquet"),
     polygons <- polygons[,c(mandatory, cnames)]
     return(polygons)
 }
+#' computeCenterFromPolygons
+#'
+#' @description This function computes the center coordinates on x and y axis
+#' from polygon data and adds it to the `colData`. It is necessary only for Merfish.
+#'
+#' @param polygons An `sf` object containing polygon data.
+#' @param coldata A `DataFrame` containing the `colData` to which center coordinates information will be added.
+#'
+#' @return A `DataFrame` with the added area information.
+#' @export
+#'
+#' @examples
+#' # Assuming `polygons` is an sf object and `coldata` is a DataFrame:
+#' # coldata <- computeCenterFromPolygons(polygons, coldata)
+computeCenterFromPolygons <- function(polygons, coldata)
+{
+    cd <- coldata
+    # cd$Area <- NA
+    centroid <- sf::st_centroid(polygons)
+    center_x <- lapply(centroid$geometry, function(x) ## get active name of geometry instead of global
+    {
+        x[1]
+    })
+    center_y <- lapply(centroid$geometry, function(x) ## get active name of geometry instead of global
+    {
+        x[2]
+    })
+    cd$center_x <- unlist(center_x)
+    cd$center_y <- unlist(center_y)
+    return(cd)
+}
+
 
 #' computeAreaFromPolygons
 #'
@@ -429,9 +461,13 @@ computeAreaFromPolygons <- function(polygons, coldata)
     # cd$Area <- NA
     area <- sf::st_area(polygons)
     # idx <- match(names(area), rownames(cd))
-    cd$um_area <- unlist(area)
+
+    # changed from um_area, so that it's the same name for every technology
+    # already in micron for both merfish and xenium
+    cd$Area_um <- unlist(area)
     return(cd)
 }
+
 
 #' computeAspectRatioFromPolygons
 #'
@@ -456,11 +492,11 @@ computeAspectRatioFromPolygons <- function(polygons, coldata)
         # xx <- polygons$global[!polygons$is_multi]
         # for(i in seq_along(xx))
         # {
-            # print(i)
-            # x <- xx[[i]]
-            # aspRatL[[i]] <- (max(x[[1]][,2]) - min(x[[1]][,2]))/(max(x[[1]][,1]) - min(x[[1]][,1]))
+        # print(i)
+        # x <- xx[[i]]
+        # aspRatL[[i]] <- (max(x[[1]][,2]) - min(x[[1]][,2]))/(max(x[[1]][,1]) - min(x[[1]][,1]))
         # }
-        (max(x[[1]][,1]) - min(x[[1]][,1]))/(max(x[[1]][,2]) - min(x[[1]][,2]))
+        (max(x[[1]][,1]) - min(x[[1]][,1]))/(max(x[[1]][,2]) - min(x[[1]][,2])) # so that projection along x is       #divided by projection along y
     }) ## to parallelize with bplapply
     names(aspRatL) <- polygons$cell_id[!polygons$is_multi]
 
