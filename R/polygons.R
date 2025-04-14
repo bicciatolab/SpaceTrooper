@@ -220,7 +220,7 @@ readPolygons <- function(polygonsFile, type=c("csv", "parquet", "h5"),
 #' @export
 #'
 #' @examples
-#' TBD
+#' # TBD
 readAndAddPolygonsToSPE <- function(spe, keepMultiPol=TRUE,
                     boundaries_type=c("HDF5", "parquet"))
 {
@@ -587,7 +587,7 @@ readh5polygons <- function(pol_file)
 #' @export
 #'
 #' @examples
-#'
+#' #TBD
 customPolyMetrics <- function(spe = spe){
     st_geometry(spe$polygons) <- "global"
     centroid_sf <- st_centroid(spe$polygons)
