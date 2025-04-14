@@ -36,6 +36,8 @@ Imports:
     sfheaders,
     terra,
     tmap,
-    tools
+    tools,
+    cowplot,
+    glmnet
 Suggests:
 RoxygenNote: 7.3.2
