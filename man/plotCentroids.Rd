@@ -7,7 +7,6 @@
 plotCentroids(
   spe,
   colour_by = NULL,
-  order_by = NULL,
   colour_log = FALSE,
   sample_id = unique(spe$sample_id),
   isNegativeProbe = FALSE,
@@ -25,9 +24,6 @@ transcriptomics data.}
 \item{colour_by}{An optional character string specifying the column in
 `colData(spe)` to use for coloring the points. If `NULL`, all points will be
 colored the same.}
-
-\item{order_by}{An optional character string specifying the column in
-`colData(spe)` to use for ordering the points.}
 
 \item{colour_log}{Logical to log-transform the data to enhance visualization
 (Default is FALSE).}

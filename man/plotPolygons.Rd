@@ -8,6 +8,7 @@ plotPolygons(
   spe,
   colour_by = "darkgrey",
   colour_log = FALSE,
+  poly_column = "polygons.global",
   sample_id = unique(spe$sample_id),
   bg_color = "white",
   fill_alpha = 1,

@@ -467,6 +467,38 @@ readPolygonsMerfish <- function(polygonsFolder, type=c("HDF5", "parquet"),
     polygons <- polygons[,c(mandatory, cnames)]
     return(polygons)
 }
+#' computeCenterFromPolygons
+#'
+#' @description This function computes the center coordinates on x and y axis
+#' from polygon data and adds it to the `colData`. It is necessary only for Merfish.
+#'
+#' @param polygons An `sf` object containing polygon data.
+#' @param coldata A `DataFrame` containing the `colData` to which center coordinates information will be added.
+#'
+#' @return A `DataFrame` with the added area information.
+#' @export
+#'
+#' @examples
+#' # Assuming `polygons` is an sf object and `coldata` is a DataFrame:
+#' # coldata <- computeCenterFromPolygons(polygons, coldata)
+computeCenterFromPolygons <- function(polygons, coldata)
+{
+    cd <- coldata
+    # cd$Area <- NA
+    centroid <- sf::st_centroid(polygons)
+    center_x <- lapply(centroid$geometry, function(x) ## get active name of geometry instead of global
+    {
+        x[1]
+    })
+    center_y <- lapply(centroid$geometry, function(x) ## get active name of geometry instead of global
+    {
+        x[2]
+    })
+    cd$center_x <- unlist(center_x)
+    cd$center_y <- unlist(center_y)
+    return(cd)
+}
+
 
 #' computeAreaFromPolygons
 #'
@@ -487,6 +519,7 @@ computeAreaFromPolygons <- function(polygons)
     um_area <- unlist(area)
     return(um_area)
 }
+
 
 #' computeAspectRatioFromPolygons
 #'
@@ -540,3 +573,48 @@ readh5polygons <- function(pol_file)
     return(list(g=geometries, ids=cell_ids))
 }
 
+#' customPolyMetrics
+#'
+#' @description This function computes centroids, area, area in um, aspect ratio
+#' and logged target counts on area ratio for custom polygons. New variables have
+#' a prefix cust_ to distinguish them from the previous variables.
+#'
+#' @param spe A `SpatialExperiment` object with custom polygons stored inside after
+#' running addPolygonsToSpe.
+#'
+#' @return A `SpatialExperiment` with new metrics
+#' @author
+#' @export
+#'
+#' @examples
+#'
+customPolyMetrics <- function(spe = spe){
+    st_geometry(spe$polygons) <- "global"
+    centroid_sf <- st_centroid(spe$polygons)
+    spe$cust_CenterX_global_px <- unlist(
+        lapply(centroid_sf$global, function(x)x[1]))
+    spe$cust_CenterY_global_px <- unlist(
+        lapply(centroid_sf$global, function(x)x[2]))
+
+    spatialCoordsNames(spe)[1] <- "cust_CenterX_global_px"
+    spatialCoordsNames(spe)[2] <- "cust_CenterY_global_px"
+
+    spe$cust_Area <- st_area(spe$polygons)
+    spe$cust_Area_um <- st_area(spe$polygons)*(0.12^2)
+
+    custom_Aspect_ratio <- lapply(spe$polygons$global[!spe$polygons$is_multi],
+                                  function(x){
+        (max(x[[1]][,1]) - min(x[[1]][,1]))/(max(x[[1]][,2]) - min(x[[1]][,2]))
+    })
+
+    names(custom_Aspect_ratio) <- spe$polygons$cell_id[!spe$polygons$is_multi]
+
+    spe$cust_AspectRatio <- NA
+    posz <- match(names(custom_Aspect_ratio), spe$cell_id)
+    spe$cust_AspectRatio[posz] <- unlist(custom_Aspect_ratio)
+
+    spe$cust_log2AspectRatio <- log2(spe$cust_AspectRatio)
+
+    spe$cust_log2CountArea <- log2(spe$target_sum/spe$cust_Area_um)
+    return(spe)
+}
