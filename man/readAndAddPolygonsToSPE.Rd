@@ -33,5 +33,5 @@ with the provided SpatialExperiment (SPE) object and adds the polygons to the
 SPE.
 }
 \examples{
-TBD
+# TBD
 }

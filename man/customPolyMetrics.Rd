@@ -18,3 +18,6 @@ This function computes centroids, area, area in um, aspect ratio
 and logged target counts on area ratio for custom polygons. New variables have
 a prefix cust_ to distinguish them from the previous variables.
 }
+\examples{
+#TBD
+}
