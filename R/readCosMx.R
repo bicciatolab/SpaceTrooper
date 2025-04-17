@@ -38,9 +38,9 @@
 #'
 #' @examples
 #' # Assuming the data files are located in "path/to/cosmx_data":
-#' cospath <- system.file(file.path("extdata", "CosMx_small"),
+#' cospath <- system.file(file.path("extdata", "CosMx_DBKero_Tiny"),
 #'    package="SpaceTrooper")
-#' sce <- readCosmxSPE(cospath)
+#' spe <- readCosmxSPE(cospath, sample_name="DBKero_Tiny")
 ## for old fovs consider dimensions 5472 x 3648 pixels.
 readCosmxSPE <- function(dirname,
                          sample_name="sample01",

@@ -63,16 +63,17 @@ library(SpaceTrooper)
 # Load Xenium data into a Spatial Experiment object (SPE)
 xeniumFolder <- "~/Downloads/Xenium_data/pancreas/"
 spe <- readXeniumSPE(xeniumFolder, compute_missing_metrics=TRUE,
-                     keep_polygons=TRUE)
+                        keep_polygons=TRUE)
 
 # Load Merfish data into an SPE with parquet boundaries
 merscopeFolder <- "~/Downloads/Merfish_data/human_uterine_cancer_patient2/"
 spe <- readMerfishSPE(merscopeFolder, boundaries_type="parquet",
-                      compute_missing_metrics=TRUE, keep_polygons=TRUE)
+                        compute_missing_metrics=TRUE, keep_polygons=TRUE)
 
 # Load CosMx data into an SPE without polygons
-cosmxFolder <- "~/Downloads/CosMx_data/DBKero/CosMx_Breast/CosMx_data_Case2/"
-spe <- readCosmxSPE(cosmxFolder)
+cospath <- system.file(file.path("extdata", "CosMx_DBKero_Tiny"), 
+                        package="SpaceTrooper")
+spe <- readCosmxSPE(cospath)
 ```
 
 # Data Analysis based on CosMx
@@ -92,8 +93,7 @@ library(SpaceTrooper)
 
 # Reload CosMx data with sample name and without polygons
 cosmxFolder <- "~/Downloads/CosMx_data/DBKero/CosMx_Breast/CosMx_data_Case2/"
-spe <- readCosmxSPE(cosmxFolder, sample_name="DBKero_CosMx",
-                    keep_polygons=FALSE)
+spe <- readCosmxSPE(cosmxFolder, sample_name="DBKero_CosMx")
 ## a custom function for the workshop
 source(system.file("scripts/labelsfunct.R", package="SpaceTrooper"))
 spe <- addLabelsDBKero(spe)
@@ -257,6 +257,8 @@ spe1112 <- spe[,spe$fov %in% c(11:12)]
 
 # Plot the polygons of the selected cells
 plotPolygons(spe1112, bg_color="white")
+
+
 
 # Plot polygons colored by cell area
 plotPolygons(spe1112, colour_by="log2AspectRatio")
