@@ -32,7 +32,8 @@
 #' # TBD
 spatialPerCellQC <- function(spe, micronConvFact=0.12,
     negProbList=c("NegPrb", "Negative", "SystemControl", # CosMx
-        "NegControlProbe", "NegControlCodeWord", "UnassignedCodeWord", # Xenium
+        "Ms IgG1", "Rb IgG", # CosMx Protein
+        "NegControlProbe", "NegControlCodeword", "UnassignedCodeword", # Xenium
         "Blank" # MERFISH
     ))
 {
