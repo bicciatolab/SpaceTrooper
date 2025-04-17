@@ -199,10 +199,30 @@ readPolygons <- function(polygonsFile, type=c("csv", "parquet", "h5"),
 
     return(sf)
 }
-
-readAndAddPolygonsToSPE(spe, keepMultiPol=TRUE,
-                    boundaries_type=c("HDF5", "parquet")
-                    )
+#' readAndAddPolygonsToSPE
+#' @description Read and Add Polygons to a SpatialExperiment Object
+#'
+#' This function reads polygon boundary data based on the technology associated
+#' with the provided SpatialExperiment (SPE) object and adds the polygons to the
+#' SPE.
+#'
+#' @param spe A \code{SpatialExperiment} object. The object should contain
+#' metadata with the field \code{"technology"}, specifying the technology used
+#' (e.g., "Nanostring_CosMx", "Vizgen_MERFISH", or "10X_Xenium").
+#' @param keepMultiPol Logical. If \code{TRUE}, multi-polygon features will be
+#' kept when reading the boundary data. Defaults to \code{TRUE}.
+#' @param boundaries_type Character. Specifies the type of boundary file format
+#' to read. Options are \code{"HDF5"} or \code{"parquet"}. Defaults to
+#' \code{"HDF5"}.
+#'
+#' @return A \code{SpatialExperiment} object with the added polygon data.
+#'
+#' @export
+#'
+#' @examples
+#' # TBD
+readAndAddPolygonsToSPE <- function(spe, keepMultiPol=TRUE,
+                    boundaries_type=c("HDF5", "parquet"))
 {
     boundaries_type<-match.arg(boundaries_type)
     stopifnot("technology" %in% names(metadata(spe)))
@@ -232,6 +252,7 @@ readAndAddPolygonsToSPE(spe, keepMultiPol=TRUE,
         )
     }
     spe <- addPolygonsToSPE(spe, polygons)
+    return(spe)
 }
 
 
@@ -446,65 +467,87 @@ readPolygonsMerfish <- function(polygonsFolder, type=c("HDF5", "parquet"),
     polygons <- polygons[,c(mandatory, cnames)]
     return(polygons)
 }
-
-#' computeAreaFromPolygons
+#' computeCenterFromPolygons
 #'
-#' @description This function computes the area from polygon data and adds it to the `colData`.
+#' @description This function computes the center coordinates on x and y axis
+#' from polygon data and adds it to the `colData`. It is necessary only for Merfish.
 #'
 #' @param polygons An `sf` object containing polygon data.
-#' @param coldata A `DataFrame` containing the `colData` to which area information will be added.
+#' @param coldata A `DataFrame` containing the `colData` to which center coordinates information will be added.
 #'
 #' @return A `DataFrame` with the added area information.
 #' @export
 #'
 #' @examples
 #' # Assuming `polygons` is an sf object and `coldata` is a DataFrame:
-#' # coldata <- computeAreaFromPolygons(polygons, coldata)
-computeAreaFromPolygons <- function(polygons, coldata)
+#' # coldata <- computeCenterFromPolygons(polygons, coldata)
+computeCenterFromPolygons <- function(polygons, coldata)
 {
     cd <- coldata
     # cd$Area <- NA
-    area <- sf::st_area(polygons)
-    # idx <- match(names(area), rownames(cd))
-    cd$um_area <- unlist(area)
+    centroid <- sf::st_centroid(polygons)
+    center_x <- lapply(centroid$geometry, function(x) ## get active name of geometry instead of global
+    {
+        x[1]
+    })
+    center_y <- lapply(centroid$geometry, function(x) ## get active name of geometry instead of global
+    {
+        x[2]
+    })
+    cd$center_x <- unlist(center_x)
+    cd$center_y <- unlist(center_y)
     return(cd)
 }
 
-#' computeAspectRatioFromPolygons
+
+#' computeAreaFromPolygons
 #'
-#' @description This function computes the aspect ratio from polygon data and adds it to the `colData`.
+#' @description This function computes the area from polygon data.
 #'
 #' @param polygons An `sf` object containing polygon data.
-#' @param coldata A `DataFrame` containing the `colData` to which aspect ratio information will be added.
 #'
-#' @return A `DataFrame` with the added aspect ratio information.
+#' @return A `numeric` vector with the area information.
 #' @export
 #'
 #' @examples
-#' # Assuming `polygons` is an sf object and `coldata` is a DataFrame:
-#' # coldata <- computeAspectRatioFromPolygons(polygons, coldata)
-computeAspectRatioFromPolygons <- function(polygons, coldata)
+#' # Assuming `polygons` is an sf object:
+#' # coldata <- computeAreaFromPolygons(polygons, coldata)
+computeAreaFromPolygons <- function(polygons)
 {
-    cd <- coldata
-    stopifnot("cell_id" %in% colnames(cd))
-    # aspRatL <- list()
-    aspRatL <- lapply(polygons$global[!polygons$is_multi], function(x) ## get active name of geometry instead of global
-    {
-        # xx <- polygons$global[!polygons$is_multi]
-        # for(i in seq_along(xx))
-        # {
-            # print(i)
-            # x <- xx[[i]]
-            # aspRatL[[i]] <- (max(x[[1]][,2]) - min(x[[1]][,2]))/(max(x[[1]][,1]) - min(x[[1]][,1]))
-        # }
-        (max(x[[1]][,2]) - min(x[[1]][,2]))/(max(x[[1]][,1]) - min(x[[1]][,1]))
-    }) ## to parallelize with bplapply
-    names(aspRatL) <- polygons$cell_id[!polygons$is_multi]
+    stopifnot(is(polygons, "sf"))
+    area <- sf::st_area(polygons)
+    um_area <- unlist(area)
+    return(um_area)
+}
 
-    cd$AspectRatio <- NA
-    posz <- match(names(aspRatL), cd$cell_id)
-    cd$AspectRatio[posz] <- unlist(aspRatL)
-    return(cd)
+
+#' computeAspectRatioFromPolygons
+#'
+#' @description This function computes the aspect ratio from polygon data.
+#'
+#' @param polygons An `sf` object containing polygon data.
+#'
+#' @return A `numeric` vector with the aspect ratio information.
+#' @export
+#'
+#' @examples
+#' # Assuming `polygons` is an sf object:
+#' # ar <- computeAspectRatioFromPolygons(polygons)
+computeAspectRatioFromPolygons <- function(polygons)
+{
+    stopifnot(all(is(polygons, "sf"), ("is_multi" %in% colnames(polygons))))
+    aspRatL <- numeric(nrow(polygons))
+    if(any(polygons$is_multi)) {
+        aspRatL[which(polygons$is_multi)] <- NA
+        warning("Found ", sum(polygons$is_multi), " multi-poligons: returning NA aspect ratio for them.")
+    }
+    aspRatL[!polygons$is_multi] <- lapply(polygons$global[!polygons$is_multi], function(x) {
+        (max(x[[1]][, 2]) - min(x[[1]][, 2]))/(max(x[[1]][, 1]) -
+                                                   min(x[[1]][, 1]))
+    })
+    names(aspRatL) <- polygons$cell_id
+    ar <- unlist(aspRatL)
+    return(ar)
 }
 
 #' readh5polygons
@@ -530,3 +573,48 @@ readh5polygons <- function(pol_file)
     return(list(g=geometries, ids=cell_ids))
 }
 
+#' customPolyMetrics
+#'
+#' @description This function computes centroids, area, area in um, aspect ratio
+#' and logged target counts on area ratio for custom polygons. New variables have
+#' a prefix cust_ to distinguish them from the previous variables.
+#'
+#' @param spe A `SpatialExperiment` object with custom polygons stored inside after
+#' running addPolygonsToSpe.
+#'
+#' @return A `SpatialExperiment` with new metrics
+#' @author
+#' @export
+#'
+#' @examples
+#' #TBD
+customPolyMetrics <- function(spe = spe){
+    st_geometry(spe$polygons) <- "global"
+    centroid_sf <- st_centroid(spe$polygons)
+    spe$cust_CenterX_global_px <- unlist(
+        lapply(centroid_sf$global, function(x)x[1]))
+    spe$cust_CenterY_global_px <- unlist(
+        lapply(centroid_sf$global, function(x)x[2]))
+
+    spatialCoordsNames(spe)[1] <- "cust_CenterX_global_px"
+    spatialCoordsNames(spe)[2] <- "cust_CenterY_global_px"
+
+    spe$cust_Area <- st_area(spe$polygons)
+    spe$cust_Area_um <- st_area(spe$polygons)*(0.12^2)
+
+    custom_Aspect_ratio <- lapply(spe$polygons$global[!spe$polygons$is_multi],
+                                  function(x){
+        (max(x[[1]][,1]) - min(x[[1]][,1]))/(max(x[[1]][,2]) - min(x[[1]][,2]))
+    })
+
+    names(custom_Aspect_ratio) <- spe$polygons$cell_id[!spe$polygons$is_multi]
+
+    spe$cust_AspectRatio <- NA
+    posz <- match(names(custom_Aspect_ratio), spe$cell_id)
+    spe$cust_AspectRatio[posz] <- unlist(custom_Aspect_ratio)
+
+    spe$cust_log2AspectRatio <- log2(spe$cust_AspectRatio)
+
+    spe$cust_log2CountArea <- log2(spe$target_sum/spe$cust_Area_um)
+    return(spe)
+}
