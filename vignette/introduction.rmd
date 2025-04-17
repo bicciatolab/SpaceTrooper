@@ -204,7 +204,7 @@ otherwise).
 
 ```{r cosmx-analysis-score}
 # Calculate quality scores for each cell
-spe <- computeQCScore(spe)
+spe <- computeQScore(spe)
 names(colData(spe))
 ```
 
@@ -226,7 +226,7 @@ thresholds for various metrics. Currently, the function considers:
 
 ```{r cosmx-analysis-score2}
 # Compute flags to identify cells for filtering
-spe <- computeFilterFlags(spe, fs_threshold=0.7)
+spe <- computeQscoreFlags(spe, qs_threshold=0.5)
 names(colData(spe))
 ```
 
