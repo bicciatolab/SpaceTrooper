@@ -18,8 +18,6 @@
 #' the metadata file. Default is `"metadata_file.csv"`.
 #' @param polygonsfpattern A character string specifying the pattern to match
 #' the polygons file. Default is `"polygons.csv"`.
-#' @param keep_polygons A logical value indicating whether to include polygon
-#' data in the resulting `SpatialExperiment` object. Default is `FALSE`.
 #' @param fovposfpattern A character string specifying the pattern to match the
 #' FOV positions file. Default is `"fov_positions_file.csv"`.
 #' @param fov_dims A named numeric vector specifying the dimensions of the FOV
@@ -40,7 +38,9 @@
 #'
 #' @examples
 #' # Assuming the data files are located in "path/to/cosmx_data":
-#' #spe <- readCosmxSPE(dirname = "path/to/cosmx_data")
+#' cospath <- system.file(file.path("extdata", "CosMx_small"),
+#'    package="SpaceTrooper")
+#' sce <- readCosmxSPE(cospath)
 ## for old fovs consider dimensions 5472 x 3648 pixels.
 readCosmxSPE <- function(dirname,
                          sample_name="sample01",
@@ -48,7 +48,6 @@ readCosmxSPE <- function(dirname,
                          countmatfpattern="exprMat_file.csv",
                          metadatafpattern="metadata_file.csv",
                          polygonsfpattern="polygons.csv",
-                         ## polygons=FALSE/in memory/parquet
                          fovposfpattern="fov_positions_file.csv",
                          fov_dims=c(xdim=4256, ydim=4256))
 {
@@ -56,14 +55,17 @@ readCosmxSPE <- function(dirname,
     countmat_file <- list.files(dirname, countmatfpattern, full.names=TRUE)
     metadata_file <- list.files(dirname, metadatafpattern, full.names=TRUE)
     fovpos_file <- list.files(dirname, fovposfpattern, full.names=TRUE)
-    pol_file <- list.files(dirname, polygonsfpattern, full.names=TRUE) #check if parquet
+    #check if parquet
+    pol_file <- list.files(dirname, polygonsfpattern, full.names=TRUE)
 
     # stopifnot(all(file.exists(countmat_file), file.exists(metadata_file),
     #               file.exists(fovpos_file), file.exists(pol_file)))
 
     # Read in
-    countmat <- data.table::fread(countmat_file, showProgress=FALSE) # cell count matrix
-    metadata <- data.table::fread(metadata_file, showProgress=FALSE) # cell metadata
+    # cell count matrix
+    countmat <- data.table::fread(countmat_file, showProgress=FALSE)
+    # cell metadata
+    metadata <- data.table::fread(metadata_file, showProgress=FALSE)
 
     # Count matrix
     counts <- merge(countmat, metadata[, c("fov", "cell_ID")], sort = FALSE)
@@ -82,7 +84,8 @@ readCosmxSPE <- function(dirname,
     # use readSparseCSV sparseArray from harve pege
 
     # colData
-    colData <- DataFrame(merge(metadata, countmat[, c("fov", "cell_ID")], , sort = FALSE))
+    colData <- DataFrame(merge(metadata, countmat[, c("fov", "cell_ID")], ,
+                            sort = FALSE))
     rn <- paste0("f", colData$fov, "_c", colData$cell_ID)
     rownames(colData) <- rn
 
@@ -101,16 +104,19 @@ readCosmxSPE <- function(dirname,
     fovcidx <- grep("FOV", colnames(fov_positions))
     if(length(fovcidx)!=0) colnames(fov_positions)[fovcidx] <- "fov"
     fovcrdx <- grep("[X|Y|Z]", colnames(fov_positions))
-    if(length(fovcrdx)!=0) colnames(fov_positions)[fovcrdx] <- tolower(colnames(fov_positions)[fovcrdx])
+    if(length(fovcrdx)!=0)
+        colnames(fov_positions)[fovcrdx] <-
+            tolower(colnames(fov_positions)[fovcrdx])
     fovccdx <- grep("[x|y]_px", colnames(fov_positions))
     if(length(fovccdx)!=0)
     {
         colnames(fov_positions)[fovccdx] <- gsub("_px", "_global_px",
-                                                 colnames(fov_positions)[fovccdx])
+                                            colnames(fov_positions)[fovccdx])
     }
     if(length(grep("x_mm", colnames(fov_positions))!=0)){
-        fov_positions <- fov_positions |> dplyr::mutate(x_global_px = x_mm/0.12028*10^3, y_global_px =
-                                                     (y_mm/0.12028*10^3) - 4256)
+        fov_positions <- fov_positions |>
+            dplyr::mutate(x_global_px = x_mm/0.12028*10^3,
+                          y_global_px = (y_mm/0.12028*10^3) - 4256)
     }
 
     ## tracking if one of more fov is not present in the metadata file ##
