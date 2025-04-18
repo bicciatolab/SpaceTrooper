@@ -300,10 +300,13 @@ readAndAddPolygonsToSPE <- function(spe, keepMultiPol=TRUE,
 #'
 #' @param cd A DataFrame containing at least `fov` and `cellID` columns.
 #' @param polygons An sf object with matching `fov` and `cellID` columns.
+#' @param polygonsCol character indicating the name of the polygons column to
+#' add into the colData (default is `polygons`).
 #' @return A DataFrame identical to `cd`, but row‑subset to cells present in `polygons` and with a new `polygons` list‑column of sf geometries.
+#' @keywords internal
 #' @examples
 #' # cd2 <- addPolygonsToCD(cd, polygons_sf)
-.addPolygonsToCD <- function(cd, polygons) {
+.addPolygonsToCD <- function(cd, polygons, polygonsCol="polygons") {
     stopifnot(inherits(cd, "DataFrame"), inherits(polygons, "sf"))
 
     if("fov"%in%colnames(cd))
@@ -333,7 +336,7 @@ readAndAddPolygonsToSPE <- function(spe, keepMultiPol=TRUE,
     # Subset and attach
     cd <- cd[common_ids, , drop = FALSE]
     polygons <- polygons[common_ids, , drop = FALSE]
-    cd$polygons <- polygons
+    cd[[polygonsCol]] <- polygons
 
     return(cd)
 }
@@ -345,7 +348,8 @@ readAndAddPolygonsToSPE <- function(spe, keepMultiPol=TRUE,
 #'
 #' @param spe A `SpatialExperiment` object to which polygons will be added.
 #' @param polygons An `sf` object containing the polygon data.
-#'
+#' @param polygonsCol character indicating the name of the polygons column to
+#' add into the colData (default is `polygons`).
 #' @return The `SpatialExperiment` object with polygons added to the `colData`.
 #'
 #' @importFrom dplyr left_join
@@ -353,12 +357,12 @@ readAndAddPolygonsToSPE <- function(spe, keepMultiPol=TRUE,
 #'
 #' @examples
 #' # spe <- addPolygonsToSPE(spe, polygons)
-addPolygonsToSPE <- function(spe, polygons) {
+addPolygonsToSPE <- function(spe, polygons, polygonsCol="polygons") {
     stopifnot(inherits(spe, "SpatialExperiment"), inherits(polygons, "sf"))
 
     # Extract and enrich colData via DataFrame
     cd <- S4Vectors::DataFrame(colData(spe))
-    cd <- .addPolygonsToCD(cd, polygons)
+    cd <- .addPolygonsToCD(cd, polygons, polygonsCol)
 
     # Subset and reorder the SpatialExperiment
     spe <- spe[, cd$cell_id, drop = FALSE]

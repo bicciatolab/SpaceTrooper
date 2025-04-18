@@ -59,25 +59,14 @@ Xenium_unzipped \cr
 # Coronal_Subset_CTX_HP/Xenium_V1_FF_Mouse_Brain_Coronal_Subset_CTX_HP_outs.zip
 
 xepath <- system.file(
-  file.path("extdata", "10xXenium"),
-  package = "SpatialExperiment")
+  file.path("extdata", "Xenium_small"),
+  package = "SpaceTrooper")
 
 list.files(xepath)
 
 # read the count matrix .h5 file
-xe_spe <- readXeniumSPE(dirname = xepath,
-                        countfname = "cell_feature_matrix.h5",
-                        coordfpattern = "cells.csv.gz",
-                        coord_names = c("x_centroid", "y_centroid"))
+xe_spe <- readXeniumSPE(dirname = xepath, keep_polygons=TRUE)
 
-# or read the count matrix folder
-xe_spe <- readXeniumSPE(dirname = xepath,
-                        countfname = "cell_feature_matrix",
-                        coordfpattern = "cells.csv.gz",
-                        coord_names = c("x_centroid", "y_centroid"))
-
-# Subset to no control genes
-xe_spe <- xe_spe[rowData(xe_spe)$Type == "Gene Expression"]
 }
 }
 \author{

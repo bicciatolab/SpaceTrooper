@@ -40,9 +40,6 @@ FOV positions file. Default is `"fov_positions_file.csv"`.}
 
 \item{fov_dims}{A named numeric vector specifying the dimensions of the FOV
 in pixels. Default is `c(xdim=4256, ydim=4256)`.}
-
-\item{keep_polygons}{A logical value indicating whether to include polygon
-data in the resulting `SpatialExperiment` object. Default is `FALSE`.}
 }
 \value{
 A `SpatialExperiment` object containing the read CosMx data,
@@ -61,5 +58,7 @@ Optionally, polygon data can be read and added to the object.
 }
 \examples{
 # Assuming the data files are located in "path/to/cosmx_data":
-#spe <- readCosmxSPE(dirname = "path/to/cosmx_data")
+cospath <- system.file(file.path("extdata", "CosMx_DBKero_Tiny"),
+   package="SpaceTrooper")
+spe <- readCosmxSPE(cospath, sample_name="DBKero_Tiny")
 }
