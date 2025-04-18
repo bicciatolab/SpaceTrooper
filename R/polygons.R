@@ -256,6 +256,88 @@ readAndAddPolygonsToSPE <- function(spe, keepMultiPol=TRUE,
 }
 
 
+#
+# addPolygonsToSPE <- function(spe, polygons=NULL)
+# {
+#     stopifnot(all(is(spe, "SpatialExperiment"), is(polygons, "sf")))
+#
+#     if (sum(rownames(polygons) == colnames(spe)) != dim(spe)[2])
+#     {
+#         cd <- data.frame(colData(spe))
+#         # polygons <- left_join(polygons, cd[, c("fov", "cellID")],
+#         #                       by=c("fov", "cellID"))
+#         # cd <- left_join(cd, polygons[ , c("fov", "cellID")],
+#         #                 by=c("fov","cellID"))
+#         # polygons$cell_id <- paste0("f", polygons$fov, "_c", polygons$cellID)
+#         # rownames(cd) <- cd$cell_id
+#         # rownames(polygons) <- polygons$cell_id
+#         # polygons <- polygons[polygons$cell_id %in% rownames(cd),]
+#         cd <- .addPolygonsToCD(cd, polygons)
+#         spe <- spe[, spe$cell_id %in% rownames(cd$polygons)]
+#     }
+#     spe <- spe[, rownames(polygons)]
+#     colData(spe)$polygons <- polygons
+#     return(spe)
+# }
+
+# .addPolygonsToCD <- function(cd, polygons)
+# {
+#     stopifnot(all(is(cd, "DataFrame"), is(polygons, "sf")))
+#     polygons <- left_join(polygons, cd[, c("fov", "cellID")],
+#                           by=c("fov", "cellID"))
+#     cd <- left_join(cd, polygons[ , c("fov", "cellID")],
+#                     by=c("fov","cellID"))
+#     polygons$cell_id <- paste0("f", polygons$fov, "_c", polygons$cellID)
+#     rownames(cd) <- cd$cell_id
+#     rownames(polygons) <- polygons$cell_id
+#     cd$polygons <- polygons
+#     return(cd)
+# }
+
+#' Attach sf polygons to a DataFrame of cell metadata
+#'
+#' This function enriches a DataFrame (e.g., from colData) with matching polygon geometries.
+#'
+#' @param cd A DataFrame containing at least `fov` and `cellID` columns.
+#' @param polygons An sf object with matching `fov` and `cellID` columns.
+#' @return A DataFrame identical to `cd`, but row‑subset to cells present in `polygons` and with a new `polygons` list‑column of sf geometries.
+#' @examples
+#' # cd2 <- addPolygonsToCD(cd, polygons_sf)
+.addPolygonsToCD <- function(cd, polygons) {
+    stopifnot(inherits(cd, "DataFrame"), inherits(polygons, "sf"))
+
+    if("fov"%in%colnames(cd))
+    {
+        # Build consistent cell IDs
+        cd$cell_id <- paste0("f", cd$fov, "_c", cd$cellID)
+        polygons$cell_id <- paste0("f", polygons$fov, "_c", polygons$cellID)
+        rownames(cd) <- cd$cell_id
+        rownames(polygons) <- polygons$cell_id
+    } else {
+        rownames(cd) <- cd$cell_id
+        rownames(polygons) <- polygons$cell_id
+    }
+
+    # Identify matching cells
+    common_ids <- intersect(rownames(cd), rownames(polygons))
+    if (length(common_ids) == 0) {
+        stop("No matching cell IDs between 'cd' and 'polygons'.")
+    }
+    if (length(common_ids) < nrow(cd)) {
+        warning(sprintf(
+            "%d/%d cells have polygon data; subsetting to matches.",
+            length(common_ids), nrow(cd)
+        ))
+    }
+
+    # Subset and attach
+    cd <- cd[common_ids, , drop = FALSE]
+    polygons <- polygons[common_ids, , drop = FALSE]
+    cd$polygons <- polygons
+
+    return(cd)
+}
+
 
 #' addPolygonsToSPE
 #'
@@ -270,29 +352,24 @@ readAndAddPolygonsToSPE <- function(spe, keepMultiPol=TRUE,
 #' @export
 #'
 #' @examples
-#' # Assuming `spe` is a SpatialExperiment object and `polygons` is an sf object:
 #' # spe <- addPolygonsToSPE(spe, polygons)
-addPolygonsToSPE <- function(spe, polygons=NULL)
-{
-    stopifnot(all(is(spe, "SpatialExperiment"), is(polygons, "sf")))
+addPolygonsToSPE <- function(spe, polygons) {
+    stopifnot(inherits(spe, "SpatialExperiment"), inherits(polygons, "sf"))
 
-    if (sum(rownames(polygons) == colnames(spe)) != dim(spe)[2])
-    {
-        cd <- data.frame(colData(spe))
-        polygons <- left_join(polygons, cd[, c("fov", "cellID")],
-                              by=c("fov", "cellID"))
-        cd <- left_join(cd, polygons[ , c("fov", "cellID")],
-                        by=c("fov","cellID"))
-        polygons$cell_id <- paste0("f", polygons$fov, "_c", polygons$cellID)
-        rownames(cd) <- cd$cell_id
-        rownames(polygons) <- polygons$cell_id
-        spe <- spe[, spe$cell_id %in% rownames(polygons)]
-        polygons <- polygons[polygons$cell_id %in% rownames(cd),]
-    }
-    spe <- spe[, rownames(polygons)]
-    colData(spe)$polygons <- polygons
+    # Extract and enrich colData via DataFrame
+    cd <- S4Vectors::DataFrame(colData(spe))
+    cd <- .addPolygonsToCD(cd, polygons)
+
+    # Subset and reorder the SpatialExperiment
+    spe <- spe[, cd$cell_id, drop = FALSE]
+
+    # Replace colData with enriched DataFrame
+    colData(spe) <- cd
+
     return(spe)
 }
+
+
 #' .createPolygons
 #'
 #' @description This internal function creates polygons from a spatial data object.
@@ -367,6 +444,7 @@ readPolygonsCosmx <- function(polygonsFile, type=c("csv", "parquet"),
     mandatory <- c("cell_id", "global", "is_multi", "multi_n")
     cnames <- colnames(polygons)[!colnames(polygons) %in% mandatory]
     polygons <- polygons[,c(mandatory, cnames)]
+    polygons <- st_cast(polygons, "GEOMETRY")
     return(polygons)
 }
 

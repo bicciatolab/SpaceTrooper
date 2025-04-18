@@ -159,12 +159,11 @@ readXeniumSPE <- function(dirname,
 #' #                                          keep_polygons = TRUE)
 computeMissingMetricsXenium <- function(pol_file, coldata, keep_polygons=FALSE)
 {
-
     stopifnot(file.exists(pol_file))
     polygons <- readPolygonsXenium(pol_file, keepMultiPol=TRUE)
     cd <- coldata
     cd$AspectRatio <- computeAspectRatioFromPolygons(polygons)
-    if(keep_polygons) cd <- cbind.DataFrame(cd, polygons)
+    if(keep_polygons) cd <- addPolygonsToSPE(cd, polygons)
     return(cd)
 }
 
