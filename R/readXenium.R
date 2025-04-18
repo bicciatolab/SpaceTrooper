@@ -21,6 +21,8 @@
 #' need to change.
 #' @param polygonsfpattern a vector of two strings specify the spatial coord names.
 #' Default value is \code{c("x_centroid", "y_centroid")}, and there is no need to change.
+#' @param polygonsCol character indicating the name of the polygons column to
+#' add into the colData (default is `polygons`).
 #'
 #' @details
 #' # WHAT ABOUT THE OTHER PARAMETERS/FILES? WHAT ABOUT THE OUTS FOLDER(added)?
@@ -67,7 +69,8 @@ readXeniumSPE <- function(dirname,
                           compute_missing_metrics=TRUE, keep_polygons=FALSE,
                           countsfilepattern="cell_feature_matrix",
                           metadatafpattern="cells",
-                          polygonsfpattern="cell_boundaries")
+                          polygonsfpattern="cell_boundaries",
+                          polygonsCol="polygons")
 {
     stopifnot(file.exists(dirname))
     type <- match.arg(type)
@@ -111,7 +114,8 @@ readXeniumSPE <- function(dirname,
     if (compute_missing_metrics)
     {
         message("Computing missing metrics, this could take some time...")
-        cd <- computeMissingMetricsXenium(pol_file, cd, keep_polygons)
+        cd <- computeMissingMetricsXenium(pol_file, cd, keep_polygons,
+                                            polygonsCol)
     }
     # construct 'SpatialExperiment'
     spe <- SpatialExperiment::SpatialExperiment(
@@ -139,6 +143,8 @@ readXeniumSPE <- function(dirname,
 #' @param coldata A `DataFrame` containing the `colData` for the Xenium dataset.
 #' @param keep_polygons A logical value indicating whether to keep the polygon
 #' data in the resulting `colData`. Default is `FALSE`.
+#' @param polygonsCol character indicating the name of the polygons column to
+#' add into the colData (default is `polygons`).
 #'
 #' @return A `DataFrame` containing the updated `colData` with computed metrics.
 #' If `keep_polygons` is `TRUE`, the polygon data is also included.
@@ -157,13 +163,14 @@ readXeniumSPE <- function(dirname,
 #' #updated_cd <- computeMissingMetricsXenium(pol_file = "path/to/polygons",
 #' #                                          coldata = coldata,
 #' #                                          keep_polygons = TRUE)
-computeMissingMetricsXenium <- function(pol_file, coldata, keep_polygons=FALSE)
+computeMissingMetricsXenium <- function(pol_file, coldata, keep_polygons=FALSE,
+                                polygonsCol="polygons")
 {
     stopifnot(file.exists(pol_file))
     polygons <- readPolygonsXenium(pol_file, keepMultiPol=TRUE)
     cd <- coldata
     cd$AspectRatio <- computeAspectRatioFromPolygons(polygons)
-    if(keep_polygons) cd <- addPolygonsToSPE(cd, polygons)
+    if(keep_polygons) cd <- addPolygonsToSPE(cd, polygons, polygonsCol)
     return(cd)
 }
 
