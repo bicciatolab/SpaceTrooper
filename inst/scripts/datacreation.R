@@ -33,6 +33,6 @@ load_all()
 folder <- "/Users/inzirio/Downloaspeds/Merfish_data/human_uterine_cancer_patient2"
 spe <- readMerfishSPE(folder, compute_missing_metrics=FALSE, keep_polygons=FALSE)
 pols <- readPolygonsMerfish(metadata(spe)$polygons, type="parquet")
-spe <- addPolygonsToSPE(spe, pols)
+spe <- addPolygonsToSPE(spe, pols) # fov not present in polygons!!!!
 
 
