@@ -25,4 +25,14 @@ s1 <- spat_obj[spat_obj$fov==f, ]
 s1 <- s1[s1$cellID%in%c,]
 write.csv(x=s1, file="/Users/inzirio/Library/CloudStorage/GoogleDrive-drighelli@gmail.com/My\ Drive/works/coding/SpaceTrooper/inst/extdata/CosMx_DBKero_Tiny/DBKero-polygons.csv", row.names=FALSE)
 
-##
+## data creation for merscope
+
+library(devtools)
+load_all()
+# folder <- "/Users/inzirio/Downloads/MERSCOPE_data/Human_brain"
+folder <- "/Users/inzirio/Downloaspeds/Merfish_data/human_uterine_cancer_patient2"
+spe <- readMerfishSPE(folder, compute_missing_metrics=FALSE, keep_polygons=FALSE)
+pols <- readPolygonsMerfish(metadata(spe)$polygons, type="parquet")
+spe <- addPolygonsToSPE(spe, pols)
+
+
