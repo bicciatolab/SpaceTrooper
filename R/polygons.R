@@ -488,9 +488,9 @@ readPolygonsXenium <- function(polygonsFile, type=c("parquet", "csv"),
 #'
 #' @description This function reads polygon data specific to MERFISH technology.
 #'
-#' @param polygonsFolder A character string specifying the folder containing the
-#' polygon data files.
-#' @param type A character string specifying the file type ("HDF5" or "parquet").
+#' @param polygons A character string specifying the folder containing the
+#' polygon data files in case of HDF5, or a path to a parquet file (see `type`).
+#' @param type A character string specifying the file type("HDF5" or "parquet").
 #' @param hdf5pattern A character string specifying the pattern to match HDF5
 #' files.
 #' @param keepMultiPol A logical value indicating whether to keep multipolygons.
@@ -509,7 +509,7 @@ readPolygonsXenium <- function(polygonsFile, type=c("parquet", "csv"),
 #' @examples
 #' # Read MERFISH polygon data from a Parquet file:
 #' # polygons <- readPolygonsMerfish("path/to/polygon_folder", type="parquet")
-readPolygonsMerfish <- function(polygonsFolder, type=c("HDF5", "parquet"),
+readPolygonsMerfish <- function(polygons, type=c("HDF5", "parquet"),
                                 keepMultiPol=TRUE, hdf5pattern="hdf5",
                                 z_lev=3L, zcolumn="ZIndex",
                                 geometry="Geometry",
@@ -518,7 +518,7 @@ readPolygonsMerfish <- function(polygonsFolder, type=c("HDF5", "parquet"),
     type <- match.arg(type)
     if (type=="HDF5")
     {
-        polfiles <- list.files(polygonsFolder, pattern=hdf5pattern,
+        polfiles <- list.files(polygons, pattern=hdf5pattern,
                                 full.names=TRUE)
         dfsfl <- lapply(seq_along(polfiles), function(i)
         {
@@ -533,8 +533,9 @@ readPolygonsMerfish <- function(polygonsFolder, type=c("HDF5", "parquet"),
         polygons <- .checkPolygonsValidity(polygons, keepMultiPol=keepMultiPol)
         return(polygons)
     } else { ## case parquet
-        polfile <- list.files(polygonsFolder, pattern=type,
-                              full.names=TRUE)
+        # polfile <- list.files(polygonsFolder, pattern=type,
+                              # full.names=TRUE)
+        polfile <- polygons
         polygons <- arrow::read_parquet(polfile, as_data_frame=TRUE)
         polygons <- polygons[polygons[[zcolumn]]==z_lev,]
         polygons$cell_id <- polygons$EntityID
