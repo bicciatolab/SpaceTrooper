@@ -328,9 +328,6 @@ computeQScore <- function(spe) {
     # thus I exclude cells with 0 counts and don't use them for training.
     spe_temp <- computeSpatialOutlier(spe[,spe$total>0],
                         compute_by="log2CountArea", method="both")
-#     stopifnot(all(c("log2CountArea", "log2AspectRatio_outlier_sc")
-#                     %in% colnames(colData(spe))
-#     ))
 
     if(attr(spe_temp$log2CountArea_outlier_mc, "thresholds")[1] <
         min(spe_temp$log2CountArea)){
