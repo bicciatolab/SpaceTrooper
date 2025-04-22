@@ -2,7 +2,7 @@
 % Please edit documentation in R/spatialQCPlots.R
 \name{plotQCscoreTerms}
 \alias{plotQCscoreTerms}
-\title{plotQCScoreTerms}
+\title{Plot QC score terms for SpatialExperiment}
 \usage{
 plotQCscoreTerms(
   spe,
@@ -15,27 +15,35 @@ plotQCscoreTerms(
 )
 }
 \arguments{
-\item{spe}{A `SpatialExperiment` object containing spatial transcriptomics
-data.}
+\item{spe}{A `SpatialExperiment` object with `quality_score` and term
+columns in `colData`.}
 
-\item{sample_id}{Must match values in the `fov` column of `colData(spe)`.}
+\item{sample_id}{Character string for plot title. Must match values in the
+`fov` column of `colData(spe)`. Default: `unique(spe$sample_id)`.}
 
-\item{custom}{A boolean value. If TRUE, custom polygons derived metrics will
-be used.}
+\item{palette}{Optional color palette for continuous terms. Default: `NULL`.}
+
+\item{size}{Numeric point size for the scatter plots. Default: `0.05`.}
+
+\item{alpha}{Numeric transparency for the scatter plots. Default: `0.2`.}
+
+\item{aspect_ratio}{Numeric aspect ratio of the plots. Default: `1`.}
+
+\item{custom}{Logical; if `TRUE`, use custom polygon‐derived metrics.}
 }
 \value{
-A panel with multiple plots showing quality score terms
+A combined plot (via `cowplot::plot_grid`) showing spatial maps
+  of each QC term.
 }
 \description{
-Plots the terms combined together in the quality score formula to allow viewing
-which term impacts most on the quality score.
-
-This function Plots the terms combined together in the quality score formula
-to allow viewing which term impacts most on the quality score within a
-`SpatialExperiment` object.
+Plots the individual terms that combine into the quality score formula,
+allowing assessment of each term’s impact on the final score.
+}
+\details{
+Plot quality‐score term contributions
 }
 \examples{
-# Assuming 'spe' is a SpatialExperiment object with FOVs and polygon data:
-# plotZoomFovsMap(spe, fovs = c("FOV1", "FOV2"), colour_by = "cell_type",
-#                title = "Zoomed FOVs with Polygons")
+example(computeQScore)
+p <- plotQCscoreTerms(spe)
+print(p)
 }

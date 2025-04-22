@@ -54,6 +54,6 @@ these into a single side-by-side visualization. If `title` is not `NULL`, it
 adds a title to the combined plot.
 }
 \examples{
-# Assuming 'spe' is a SpatialExperiment object with FOVs and polygon data:
-# plotZoomFovsMap(spe, fovs = c(1, 2), title = "Zoomed FOVs with Polygons")
+example(readAndAddPolygonsToSPE)
+plotZoomFovsMap(spe, fovs = c(11), title = "FOV 11")
 }

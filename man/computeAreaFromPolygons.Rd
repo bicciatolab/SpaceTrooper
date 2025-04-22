@@ -16,6 +16,6 @@ A `numeric` vector with the area information.
 This function computes the area from polygon data.
 }
 \examples{
-# Assuming `polygons` is an sf object:
-# coldata <- computeAreaFromPolygons(polygons, coldata)
+example(readPolygonsCosmx)
+area <- computeAreaFromPolygons(polygons)
 }

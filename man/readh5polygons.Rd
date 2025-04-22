@@ -16,6 +16,7 @@ A list containing the polygon geometries and their associated cell IDs.
 This function reads polygon data from an HDF5 file.
 }
 \examples{
+TBD
 # Read polygons from an HDF5 file:
 # polygons <- readh5polygons("path/to/polygons.h5")
 }

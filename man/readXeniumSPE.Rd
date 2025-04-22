@@ -73,7 +73,7 @@ Expects the unzipped bundle to contain an `outs/` folder with:
 xepath <- system.file(
   "extdata", "Xenium_small", package = "SpaceTrooper"
 )
-(xe_spe <- readXeniumSPE(
+(spe <- readXeniumSPE(
   dirname = xepath,
   keep_polygons = TRUE
 ))

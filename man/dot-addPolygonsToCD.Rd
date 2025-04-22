@@ -15,12 +15,11 @@
 add into the colData (default is `polygons`).}
 }
 \value{
-A DataFrame identical to `cd`, but row‑subset to cells present in `polygons` and with a new `polygons` list‑column of sf geometries.
+A DataFrame identical to `cd`, but row‑subset to cells present in
+`polygons` and with a new `polygons` list‑column of sf geometries.
 }
 \description{
-This function enriches a DataFrame (e.g., from colData) with matching polygon geometries.
-}
-\examples{
-# cd2 <- addPolygonsToCD(cd, polygons_sf)
+This function enriches a DataFrame (e.g., from colData) with matching polygon
+geometries.
 }
 \keyword{internal}

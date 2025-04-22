@@ -36,12 +36,8 @@
 #' @export
 #'
 #' @examples
-#' # Reading polygon data from a CSV file:
-#' # polygons <- readPolygons("~/Downloads/CosMx_data/polygons.csv")
-#'
-#' # Reading polygon data from a Parquet file with verbose output:
-#' # polygons <- readPolygons("~/Downloads/CosMx_data/polygons.parquet",
-#' #                         type = "parquet", verbose = TRUE)
+#' example(readCosmxSPE)
+#' polygons <- readPolygons(metadata(spe)$polygons)
 readPolygons <- function(polygonsFile, type=c("csv", "parquet", "h5"),
                             x=c("x_global_px", "vertex_x"),
                             y=c("y_global_px", "vertex_y"),
@@ -201,6 +197,7 @@ readPolygons <- function(polygonsFile, type=c("csv", "parquet", "h5"),
 
     return(sf)
 }
+
 #' readAndAddPolygonsToSPE
 #' @description Read and Add Polygons to a SpatialExperiment Object
 #'
@@ -216,44 +213,44 @@ readPolygons <- function(polygonsFile, type=c("csv", "parquet", "h5"),
 #' @param boundaries_type Character. Specifies the type of boundary file format
 #' to read. Options are \code{"HDF5"} or \code{"parquet"}. Defaults to
 #' \code{"HDF5"}.
+#' @param polygonsCol character indicating the name of the polygons column to
+#' add into the colData (default is `polygons`).
 #'
 #' @return A \code{SpatialExperiment} object with the added polygon data.
 #'
 #' @export
 #'
 #' @examples
-#' # TBD
-readAndAddPolygonsToSPE <- function(spe, keepMultiPol=TRUE,
-                    boundaries_type=c("HDF5", "parquet"))
+#' example(readCosmxSPE)
+#' spe <- readAndAddPolygonsToSPE(spe)
+#' colData(spe)
+readAndAddPolygonsToSPE <- function(spe, polygonsCol="polygons",
+                    keepMultiPol=TRUE, boundaries_type=c("HDF5", "parquet"))
 {
-    boundaries_type<-match.arg(boundaries_type)
+    boundaries_type <- match.arg(boundaries_type)
     stopifnot("technology" %in% names(metadata(spe)))
     tech <- metadata(spe)$technology
-    if(is.null(polygons))
-    {
-        switch(tech,
-               "Nanostring_CosMx"=
-                   {
-                       polygons <- readPolygonsCosmx(metadata(spe)$polygons)
-                   },
-               "Vizgen_MERFISH"=
-                   {
-                       ##### NEED TO HANDLE THE DIFFERENCES BETWEEN HDF5 FILES
-                       ##### AND PARQUET, TO PROPAGATE TO READING FUNCTION
-                       # ifelse(boundaries_type=="HDF5", merpol=)
-                       polygons <- readPolygonsMerfish(polygonsFolder,
-                                        keepMultiPol=TRUE, type=boundaries_type)
-
-                   },
-               "10X_Xenium"=
-                   {
-                       polygons <- readPolygonsXenium(pol_file, keepMultiPol=TRUE)
-                   },
-               stop("Unrecognized technology, please use an SPE from one of ",
-                    "Nanostring_CosMx, Vizgen_MERFISH and 10x_Xenium")
-        )
-    }
-    spe <- addPolygonsToSPE(spe, polygons)
+    switch(tech,
+            "Nanostring_CosMx"=
+            {
+                polygons <- readPolygonsCosmx(metadata(spe)$polygons)
+            },
+            "Vizgen_MERFISH"=
+            {
+                ##### NEED TO HANDLE THE DIFFERENCES BETWEEN HDF5 FILES
+                ##### AND PARQUET, TO PROPAGATE TO READING FUNCTION
+                # ifelse(boundaries_type=="HDF5", merpol=)
+                polygons <- readPolygonsMerfish(polygonsFolder,
+                                keepMultiPol=TRUE, type=boundaries_type)
+            },
+            "10X_Xenium"=
+            {
+                polygons <- readPolygonsXenium(pol_file, keepMultiPol=TRUE)
+            },
+            stop("Unrecognized technology, please use an SPE from one of ",
+                "Nanostring_CosMx, Vizgen_MERFISH and 10x_Xenium")
+    )
+    spe <- addPolygonsToSPE(spe, polygons, polygonsCol=polygonsCol)
     return(spe)
 }
 
@@ -261,16 +258,16 @@ readAndAddPolygonsToSPE <- function(spe, keepMultiPol=TRUE,
 
 #' Attach sf polygons to a DataFrame of cell metadata
 #'
-#' This function enriches a DataFrame (e.g., from colData) with matching polygon geometries.
+#' This function enriches a DataFrame (e.g., from colData) with matching polygon
+#' geometries.
 #'
 #' @param cd A DataFrame containing at least `fov` and `cellID` columns.
 #' @param polygons An sf object with matching `fov` and `cellID` columns.
 #' @param polygonsCol character indicating the name of the polygons column to
 #' add into the colData (default is `polygons`).
-#' @return A DataFrame identical to `cd`, but row‑subset to cells present in `polygons` and with a new `polygons` list‑column of sf geometries.
+#' @return A DataFrame identical to `cd`, but row‑subset to cells present in
+#' `polygons` and with a new `polygons` list‑column of sf geometries.
 #' @keywords internal
-#' @examples
-#' # cd2 <- addPolygonsToCD(cd, polygons_sf)
 .addPolygonsToCD <- function(cd, polygons, polygonsCol="polygons") {
     stopifnot(inherits(cd, "DataFrame"), inherits(polygons, "sf"))
 
@@ -321,7 +318,10 @@ readAndAddPolygonsToSPE <- function(spe, keepMultiPol=TRUE,
 #' @export
 #'
 #' @examples
-#' # spe <- addPolygonsToSPE(spe, polygons)
+#' example(readCosmxSPE)
+#' polygons <- readPolygonsCosmx(metadata(spe)$polygons)
+#' spe <- addPolygonsToSPE(spe, polygons)
+#' spe$polygons
 addPolygonsToSPE <- function(spe, polygons, polygonsCol="polygons") {
     stopifnot(inherits(spe, "SpatialExperiment"), inherits(polygons, "sf"))
 
@@ -352,9 +352,6 @@ addPolygonsToSPE <- function(spe, polygons, polygonsCol="polygons") {
 #' @keywords internal
 #' @importFrom sfheaders sf_polygon
 #' @importFrom sf st_as_sf
-#'
-#' @examples
-#' #TBD
 .createPolygons <- function(spat_obj, x=NULL, y=NULL, polygon_id=NULL, geometry="Geometry")
 {
     if(all(!is.null(x), !is.null(y)))
@@ -377,6 +374,7 @@ addPolygonsToSPE <- function(spe, polygons, polygonsCol="polygons") {
     # polygons <- polygons[order(polygons$cell_id),]
     return(polygons)
 }
+
 #' readPolygonsCosmx
 #'
 #' @description This function reads polygon data specific to CosMx technology.
@@ -396,8 +394,8 @@ addPolygonsToSPE <- function(spe, polygons, polygonsCol="polygons") {
 #' @export
 #'
 #' @examples
-#' # Read CosMx polygon data from a CSV file:
-#' # polygons <- readPolygonsCosmx("path/to/polygons.csv", type="csv")
+#' example(readCosmxSPE)
+#' polygons <- readPolygonsCosmx(metadata(spe)$polygons)
 readPolygonsCosmx <- function(polygonsFile, type=c("csv", "parquet"),
                               x="x_global_px",
                               y="y_global_px",
@@ -424,6 +422,7 @@ readPolygonsCosmx <- function(polygonsFile, type=c("csv", "parquet"),
 #' @param polygonsFile A character string specifying the file path to the
 #' polygon data.
 #' @param type A character string specifying the file type ("parquet" or "csv").
+#' Default is parquet.
 #' @param x A character string specifying the x-coordinate column.
 #' @param y A character string specifying the y-coordinate column.
 #' @param keepMultiPol A logical value indicating whether to keep multipolygons.
@@ -434,8 +433,8 @@ readPolygonsCosmx <- function(polygonsFile, type=c("csv", "parquet"),
 #' @export
 #'
 #' @examples
-#' # Read Xenium polygon data from a Parquet file:
-#' # polygons <- readPolygonsXenium("path/to/polygons.parquet", type="parquet")
+#' example(readXeniumSPE)
+#' polygons <- readPolygonsXenium(metadata(spe)$polygons, type="parquet")
 readPolygonsXenium <- function(polygonsFile, type=c("parquet", "csv"),
                    x="vertex_x", y="vertex_y", keepMultiPol=TRUE,
                    verbose=FALSE)
@@ -456,6 +455,7 @@ readPolygonsXenium <- function(polygonsFile, type=c("parquet", "csv"),
 #' @param polygons A character string specifying the folder containing the
 #' polygon data files in case of HDF5, or a path to a parquet file (see `type`).
 #' @param type A character string specifying the file type("HDF5" or "parquet").
+#' Default is parquet.
 #' @param hdf5pattern A character string specifying the pattern to match HDF5
 #' files.
 #' @param keepMultiPol A logical value indicating whether to keep multipolygons.
@@ -472,9 +472,9 @@ readPolygonsXenium <- function(polygonsFile, type=c("parquet", "csv"),
 #' @importFrom arrow read_parquet
 #'
 #' @examples
-#' # Read MERFISH polygon data from a Parquet file:
-#' # polygons <- readPolygonsMerfish("path/to/polygon_folder", type="parquet")
-readPolygonsMerfish <- function(polygons, type=c("HDF5", "parquet"),
+#' example(readMerfishSPE)
+#' polygons <- readPolygonsXenium(metadata(spe)$polygons, type="parquet")
+readPolygonsMerfish <- function(polygons, type=c("parquet", "HDF5"),
                                 keepMultiPol=TRUE, hdf5pattern="hdf5",
                                 z_lev=3L, zcolumn="ZIndex",
                                 geometry="Geometry",
@@ -523,12 +523,12 @@ readPolygonsMerfish <- function(polygons, type=c("HDF5", "parquet"),
 #' @param polygons An `sf` object containing polygon data.
 #' @param coldata A `DataFrame` containing the `colData` to which center coordinates information will be added.
 #'
-#' @return A `DataFrame` with the added area information.
+#' @return A `DataFrame` with the added center information.
 #' @export
 #'
 #' @examples
-#' # Assuming `polygons` is an sf object and `coldata` is a DataFrame:
-#' # coldata <- computeCenterFromPolygons(polygons, coldata)
+#' example(readPolygonsCosmx)
+#' coldata <- computeCenterFromPolygons(polygons, coldata)
 computeCenterFromPolygons <- function(polygons, coldata)
 {
     cd <- coldata
@@ -558,8 +558,8 @@ computeCenterFromPolygons <- function(polygons, coldata)
 #' @export
 #'
 #' @examples
-#' # Assuming `polygons` is an sf object:
-#' # coldata <- computeAreaFromPolygons(polygons, coldata)
+#' example(readPolygonsCosmx)
+#' area <- computeAreaFromPolygons(polygons)
 computeAreaFromPolygons <- function(polygons)
 {
     stopifnot(is(polygons, "sf"))
@@ -579,8 +579,8 @@ computeAreaFromPolygons <- function(polygons)
 #' @export
 #'
 #' @examples
-#' # Assuming `polygons` is an sf object:
-#' # ar <- computeAspectRatioFromPolygons(polygons)
+#' example(readPolygonsCosmx)
+#' ar <- computeAspectRatioFromPolygons(polygons)
 computeAspectRatioFromPolygons <- function(polygons)
 {
     stopifnot(all(is(polygons, "sf"), ("is_multi" %in% colnames(polygons))))
@@ -609,6 +609,7 @@ computeAspectRatioFromPolygons <- function(polygons)
 #' @export
 #'
 #' @examples
+#' TBD
 #' # Read polygons from an HDF5 file:
 #' # polygons <- readh5polygons("path/to/polygons.h5")
 readh5polygons <- function(pol_file)
@@ -621,48 +622,51 @@ readh5polygons <- function(pol_file)
     return(list(g=geometries, ids=cell_ids))
 }
 
-#' customPolyMetrics
-#'
-#' @description This function computes centroids, area, area in um, aspect ratio
-#' and logged target counts on area ratio for custom polygons. New variables have
-#' a prefix cust_ to distinguish them from the previous variables.
-#'
-#' @param spe A `SpatialExperiment` object with custom polygons stored inside after
-#' running addPolygonsToSpe.
-#'
-#' @return A `SpatialExperiment` with new metrics
-#' @author
-#' @export
-#'
-#' @examples
-#' #TBD
-customPolyMetrics <- function(spe = spe){
-    st_geometry(spe$polygons) <- "global"
-    centroid_sf <- st_centroid(spe$polygons)
-    spe$cust_CenterX_global_px <- unlist(
-        lapply(centroid_sf$global, function(x)x[1]))
-    spe$cust_CenterY_global_px <- unlist(
-        lapply(centroid_sf$global, function(x)x[2]))
+# customPolyMetrics
+#
+# @description This function computes centroids, area, area in um, aspect ratio
+# and logged target counts on area ratio for custom polygons.
+# New variables have a prefix cust_ to distinguish them from the previous
+# variables.
+#
+# @param spe A `SpatialExperiment` object with custom polygons stored inside after
+# running addPolygonsToSpe.
+#
+# @return A `SpatialExperiment` with new metrics
+# @author Benedetta Banzi
+# @export
+#
+# @examples
+#
+# customPolyMetrics <- function(spe) {
+#     st_geometry(spe$polygons) <- "global"
+#     centroid_sf <- st_centroid(spe$polygons)
+#     spe$cust_CenterX_global_px <- unlist(
+#         lapply(centroid_sf$global, function(x)x[1]))
+#     spe$cust_CenterY_global_px <- unlist(
+#         lapply(centroid_sf$global, function(x)x[2]))
+#
+#     spatialCoordsNames(spe)[1] <- "cust_CenterX_global_px"
+#     spatialCoordsNames(spe)[2] <- "cust_CenterY_global_px"
+#
+#     spe$cust_Area <- st_area(spe$polygons)
+#     spe$cust_Area_um <- st_area(spe$polygons)*(0.12^2)
+#
+#     custom_Aspect_ratio <- lapply(spe$polygons$global[!spe$polygons$is_multi],
+#                                   function(x){
+#         (max(x[[1]][,1]) - min(x[[1]][,1]))/(max(x[[1]][,2]) - min(x[[1]][,2]))
+#     })
+#
+#     names(custom_Aspect_ratio) <- spe$polygons$cell_id[!spe$polygons$is_multi]
+#
+#     spe$cust_AspectRatio <- NA
+#     posz <- match(names(custom_Aspect_ratio), spe$cell_id)
+#     spe$cust_AspectRatio[posz] <- unlist(custom_Aspect_ratio)
+#
+#     spe$cust_log2AspectRatio <- log2(spe$cust_AspectRatio)
+#
+#     spe$cust_log2CountArea <- log2(spe$target_sum/spe$cust_Area_um)
+#     return(spe)
+# }
 
-    spatialCoordsNames(spe)[1] <- "cust_CenterX_global_px"
-    spatialCoordsNames(spe)[2] <- "cust_CenterY_global_px"
 
-    spe$cust_Area <- st_area(spe$polygons)
-    spe$cust_Area_um <- st_area(spe$polygons)*(0.12^2)
-
-    custom_Aspect_ratio <- lapply(spe$polygons$global[!spe$polygons$is_multi],
-                                  function(x){
-        (max(x[[1]][,1]) - min(x[[1]][,1]))/(max(x[[1]][,2]) - min(x[[1]][,2]))
-    })
-
-    names(custom_Aspect_ratio) <- spe$polygons$cell_id[!spe$polygons$is_multi]
-
-    spe$cust_AspectRatio <- NA
-    posz <- match(names(custom_Aspect_ratio), spe$cell_id)
-    spe$cust_AspectRatio[posz] <- unlist(custom_Aspect_ratio)
-
-    spe$cust_log2AspectRatio <- log2(spe$cust_AspectRatio)
-
-    spe$cust_log2CountArea <- log2(spe$target_sum/spe$cust_Area_um)
-    return(spe)
-}

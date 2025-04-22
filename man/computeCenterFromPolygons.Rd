@@ -12,13 +12,13 @@ computeCenterFromPolygons(polygons, coldata)
 \item{coldata}{A `DataFrame` containing the `colData` to which center coordinates information will be added.}
 }
 \value{
-A `DataFrame` with the added area information.
+A `DataFrame` with the added center information.
 }
 \description{
 This function computes the center coordinates on x and y axis
 from polygon data and adds it to the `colData`. It is necessary only for Merfish.
 }
 \examples{
-# Assuming `polygons` is an sf object and `coldata` is a DataFrame:
-# coldata <- computeCenterFromPolygons(polygons, coldata)
+example(readPolygonsCosmx)
+coldata <- computeCenterFromPolygons(polygons, coldata)
 }

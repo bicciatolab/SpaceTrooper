@@ -21,5 +21,8 @@ The `SpatialExperiment` object with polygons added to the `colData`.
 This function adds polygon data to a `SpatialExperiment` object.
 }
 \examples{
-# spe <- addPolygonsToSPE(spe, polygons)
+example(readCosmxSPE)
+polygons <- readPolygonsCosmx(metadata(spe)$polygons)
+spe <- addPolygonsToSPE(spe, polygons)
+spe$polygons
 }

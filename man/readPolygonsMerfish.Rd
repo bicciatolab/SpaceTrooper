@@ -6,7 +6,7 @@
 \usage{
 readPolygonsMerfish(
   polygons,
-  type = c("HDF5", "parquet"),
+  type = c("parquet", "HDF5"),
   keepMultiPol = TRUE,
   hdf5pattern = "hdf5",
   z_lev = 3L,
@@ -19,7 +19,8 @@ readPolygonsMerfish(
 \item{polygons}{A character string specifying the folder containing the
 polygon data files in case of HDF5, or a path to a parquet file (see `type`).}
 
-\item{type}{A character string specifying the file type("HDF5" or "parquet").}
+\item{type}{A character string specifying the file type("HDF5" or "parquet").
+Default is parquet.}
 
 \item{keepMultiPol}{A logical value indicating whether to keep multipolygons.}
 
@@ -43,6 +44,6 @@ An `sf` object containing the MERFISH polygon data.
 This function reads polygon data specific to MERFISH technology.
 }
 \examples{
-# Read MERFISH polygon data from a Parquet file:
-# polygons <- readPolygonsMerfish("path/to/polygon_folder", type="parquet")
+example(readMerfishSPE)
+polygons <- readPolygonsXenium(metadata(spe)$polygons, type="parquet")
 }

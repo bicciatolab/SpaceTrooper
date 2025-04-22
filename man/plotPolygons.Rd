@@ -49,6 +49,6 @@ A `ggplot` object representing the polygon plot of the spatial data.
 Plot polygons from a `SpatialExperiment` object using ggplot2.
 }
 \examples{
-# Assuming `spe` is a SpatialExperiment object with polygon data:
-# plotPolygonsSPE_ggplot(spe, colour_by="gene_expression")
+example(readAndAddPolygonsToSPE)
+plotPolygons(spe, colour_by="Mean.DAPI")
 }

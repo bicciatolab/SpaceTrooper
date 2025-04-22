@@ -2,7 +2,7 @@
 % Please edit documentation in R/spatialQCPlots.R
 \name{plotCellsFovs}
 \alias{plotCellsFovs}
-\title{plotCellsFovs}
+\title{Plot cell centroids in FoVs}
 \usage{
 plotCellsFovs(
   spe,
@@ -13,21 +13,29 @@ plotCellsFovs(
 )
 }
 \arguments{
-\item{spe}{A SpatialExperiment object}
+\item{spe}{A `SpatialExperiment` object with `fov` in `colData`.}
 
-\item{sample_id}{string indicating the sample to plot (default is NULL,
-implying a single sample in the spe)}
+\item{sample_id}{Character string identifying which sample to plot.
+Default: `unique(spe$sample_id)`.}
 
-\item{point_col}{the color to use for the dots in the plot
-(default is "darkmagenta")}
+\item{point_col}{Color for the cell centroids. Default: `"firebrick"`.}
+
+\item{numbers_col}{Color for the FoV labels. Default: `"black"`.}
+
+\item{alpha_numbers}{Numeric transparency for FoV labels. Default: `0.8`.}
 }
 \value{
-a ggplot2 object
+A `ggplot` object showing cell centroids and FoV boundaries.
 }
 \description{
-Creates a scatter plot with all the centroids of the cells distributed inside
-their own FoVs as an overlapping grid.
+Creates a scatter plot with cell centroids arranged in their FoVs as an
+overlapping grid.
+}
+\details{
+Plot cell centroids in their FoVs
 }
 \examples{
-# TBD
+example(readCosMx)
+g <- plotCellsFovs(spe)
+print(g)
 }

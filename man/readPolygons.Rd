@@ -57,10 +57,6 @@ provided. If the file type is `"h5"`, the function currently does not handle
 the data, as this part of the code is not implemented.
 }
 \examples{
-# Reading polygon data from a CSV file:
-# polygons <- readPolygons("~/Downloads/CosMx_data/polygons.csv")
-
-# Reading polygon data from a Parquet file with verbose output:
-# polygons <- readPolygons("~/Downloads/CosMx_data/polygons.parquet",
-#                         type = "parquet", verbose = TRUE)
+example(readCosmxSPE)
+polygons <- readPolygons(metadata(spe)$polygons)
 }

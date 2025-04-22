@@ -6,6 +6,7 @@
 \usage{
 readAndAddPolygonsToSPE(
   spe,
+  polygonsCol = "polygons",
   keepMultiPol = TRUE,
   boundaries_type = c("HDF5", "parquet")
 )
@@ -14,6 +15,9 @@ readAndAddPolygonsToSPE(
 \item{spe}{A \code{SpatialExperiment} object. The object should contain
 metadata with the field \code{"technology"}, specifying the technology used
 (e.g., "Nanostring_CosMx", "Vizgen_MERFISH", or "10X_Xenium").}
+
+\item{polygonsCol}{character indicating the name of the polygons column to
+add into the colData (default is `polygons`).}
 
 \item{keepMultiPol}{Logical. If \code{TRUE}, multi-polygon features will be
 kept when reading the boundary data. Defaults to \code{TRUE}.}
@@ -33,5 +37,7 @@ with the provided SpatialExperiment (SPE) object and adds the polygons to the
 SPE.
 }
 \examples{
-# TBD
+example(readCosmxSPE)
+spe <- readAndAddPolygonsToSPE(spe)
+colData(spe)
 }

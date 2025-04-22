@@ -16,6 +16,6 @@ A `numeric` vector with the aspect ratio information.
 This function computes the aspect ratio from polygon data.
 }
 \examples{
-# Assuming `polygons` is an sf object:
-# ar <- computeAspectRatioFromPolygons(polygons)
+example(readPolygonsCosmx)
+ar <- computeAspectRatioFromPolygons(polygons)
 }

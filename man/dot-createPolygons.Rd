@@ -27,7 +27,4 @@ An `sf` object containing the created polygons.
 \description{
 This internal function creates polygons from a spatial data object.
 }
-\examples{
-#TBD
-}
 \keyword{internal}

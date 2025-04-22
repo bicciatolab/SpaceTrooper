@@ -1,27 +1,31 @@
-
-#' plotCellsFovs
+#' Plot cell centroids in their FoVs
+#'
+#' @title Plot cell centroids in FoVs
 #'
 #' @description
-#' Creates a scatter plot with all the centroids of the cells distributed inside
-#' their own FoVs as an overlapping grid.
+#' Creates a scatter plot with cell centroids arranged in their FoVs as an
+#' overlapping grid.
 #'
-#' @param spe A SpatialExperiment object
-#' @param point_col the color to use for the dots in the plot
-#' (default is "darkmagenta")
-#' @param sample_id string indicating the sample to plot (default is NULL,
-#' implying a single sample in the spe)
+#' @param spe A `SpatialExperiment` object with `fov` in `colData`.
+#' @param sample_id Character string identifying which sample to plot.
+#'   Default: `unique(spe$sample_id)`.
+#' @param point_col Color for the cell centroids. Default: `"firebrick"`.
+#' @param numbers_col Color for the FoV labels. Default: `"black"`.
+#' @param alpha_numbers Numeric transparency for FoV labels. Default: `0.8`.
 #'
-#' @return a ggplot2 object
-#' @importFrom ggplot2 ggplot aes aes_string annotate geom_point geom_text
-#' ggtitle
-#' @import SpatialExperiment
-#' @importFrom ggplot2 coord_fixed
+#' @return A `ggplot` object showing cell centroids and FoV boundaries.
+#'
+#' @importFrom ggplot2 ggplot aes annotate geom_point geom_text ggtitle
+#' coord_fixed
 #' @export
 #'
 #' @examples
-#' # TBD
+#' example(readCosMx)
+#' g <- plotCellsFovs(spe)
+#' print(g)
 plotCellsFovs <- function(spe, sample_id=unique(spe$sample_id),
-                          point_col="firebrick", numbers_col="black", alpha_numbers=0.8)
+                        point_col="firebrick", numbers_col="black",
+                        alpha_numbers=0.8)
 {
     stopifnot(is(spe, "SpatialExperiment"))
     stopifnot("fov" %in% names(colData(spe)))
@@ -34,25 +38,26 @@ plotCellsFovs <- function(spe, sample_id=unique(spe$sample_id),
     ggp <- ggplot() +
         geom_point(data=spd,
                    mapping=aes(x=.data[[x_coord]],
-                               y=.data[[y_coord]]),
-                   colour=point_col,
-                   fill=point_col,
-                   size=0.05, alpha=0.2) +
+                                y=.data[[y_coord]]),
+                    colour=point_col,
+                    fill=point_col,
+                    size=0.05, alpha=0.2) +
         annotate("rect",
-                 xmin=metadata(spe)$fov_positions["x_global_px"][ , , drop=TRUE],
-                 xmax=metadata(spe)$fov_positions["x_global_px"][ , , drop=TRUE] +
-                     metadata(spe)$fov_dim[["xdim"]],
-                 ymin=metadata(spe)$fov_positions["y_global_px"][ , , drop=TRUE],
-                 ymax=metadata(spe)$fov_positions["y_global_px"][ , , drop=TRUE] +
-                     metadata(spe)$fov_dim[["ydim"]],
-                 alpha=.2, color="black", linewidth=0.2) +
-        geom_text(aes(x=metadata(spe)$fov_positions["x_global_px"][ , , drop=TRUE] +
-                          metadata(spe)$fov_dim[["xdim"]]/2,
-                      y=metadata(spe)$fov_positions["y_global_px"][ , , drop=TRUE] +
-                          metadata(spe)$fov_dim[["ydim"]]/2,
-                      label=metadata(spe)$fov_positions["fov"][ , , drop=TRUE]),
-                  color=numbers_col, fontface="bold",
-                  alpha=alpha_numbers) +
+            xmin=metadata(spe)$fov_positions["x_global_px"][ , , drop=TRUE],
+            xmax=metadata(spe)$fov_positions["x_global_px"][ , , drop=TRUE] +
+                metadata(spe)$fov_dim[["xdim"]],
+            ymin=metadata(spe)$fov_positions["y_global_px"][ , , drop=TRUE],
+            ymax=metadata(spe)$fov_positions["y_global_px"][ , , drop=TRUE] +
+                metadata(spe)$fov_dim[["ydim"]],
+            alpha=.2, color="black", linewidth=0.2) +
+        geom_text(aes(x=metadata(spe)$fov_positions["x_global_px"][ , ,
+                                                                    drop=TRUE] +
+                    metadata(spe)$fov_dim[["xdim"]]/2,
+                y=metadata(spe)$fov_positions["y_global_px"][ , , drop=TRUE] +
+                    metadata(spe)$fov_dim[["ydim"]]/2,
+                    label=metadata(spe)$fov_positions["fov"][ , , drop=TRUE]),
+              color=numbers_col, fontface="bold",
+              alpha=alpha_numbers) +
         ggtitle(sample_id) +
         .fov_image_theme(back.color="white", back.border="white",
                          title.col="black") + ggplot2::coord_fixed()
@@ -102,7 +107,9 @@ plotCellsFovs <- function(spe, sample_id=unique(spe$sample_id),
 #' @export
 #'
 #' @examples
-#' #TBD
+#' example(readCosMx)
+#' g <- plotCentroids(spe, colour_by="Mean.DAPI")
+#' print(g)
 plotCentroids <- function(spe, colour_by=NULL, colour_log=FALSE,
                         sample_id=unique(spe$sample_id),
                         isNegativeProbe=FALSE, palette=NULL,
@@ -195,8 +202,10 @@ plotCentroids <- function(spe, colour_by=NULL, colour_log=FALSE,
 #' labs scale_colour_manual
 #' @importFrom SummarizedExperiment colData
 #' @export
-#' @example
-#' #TBD
+#' @examples
+#' example(readCosMx)
+#' g <- plotMetricHist(spe, metric="Mean.DAPI")
+#' print(g)
 plotMetricHist <- function(spe, metric, fill_color="#69b3a2",
         use_fences=NULL, fences_colors=c("lower"="purple4", "higher"="tomato"),
         bins=30, bin_width=NULL)
@@ -225,88 +234,87 @@ plotMetricHist <- function(spe, metric, fill_color="#69b3a2",
 }
 
 
-#' plotPolygons_tmap
-#'
-#' @description
-#' Plot Polygons from a SpatialExperiment Object.
-#' This function generates a plot of polygons stored in a `SpatialExperiment`
-#' object.
-#'
-#' @param spe A `SpatialExperiment` object containing spatial transcriptomics
-#' data, including polygon data as an `sf` object.
-#' @param colour_by An optional character string specifying the column in
-#' `colData(spe)` to use for coloring the polygons. If `NULL`, all polygons
-#' will be colored the same. Default is `NULL`.
-#' @param sample_id A character string specifying the title of the plot.
-#' Default is the unique sample ID from `spe`.
-#' @param fill_alpha A numeric value specifying the transparency level of the
-#' polygon fill. Default is `NA`.
-#' @param palette A character vector specifying the colors to use for filling
-#' the polygons when `colour_by` is a factor. Default is `NULL`.
-#' @param border_col A character string specifying the color of the polygon
-#' borders. Default is `NA`.
-#' @param border_alpha A numeric value specifying the transparency level of the
-#' polygon borders. Default is `NA`.
-#' @param border_line_width A numeric value specifying the width of the polygon
-#' borders. Default is `0.1`.
-#'
-#' @return A `tmap` plot object displaying the polygons.
-#'
-#' @importFrom tmap tm_shape tm_borders tm_layout tm_fill tm_polygons
-#' @importFrom SummarizedExperiment colData
-#' @export
-#'
-#' @examples
-#' # Assuming `spe` is a SpatialExperiment object with polygon data:
-#' # plotPolygonsSPE(spe, colour_by="gene_expression")
-plotPolygons_tmap <- function(spe, colour_by=NULL,sample_id=unique(spe$sample_id),
-                    fill_alpha=NA, palette=NULL, border_col=NA, border_alpha=NA,
-                    border_line_width=0.1, bg_color="black")
-{
-    stopifnot(is(spe, "SpatialExperiment"))
-    stopifnot("polygons" %in% names(colData(spe)))
-
-    pols <- spe$polygons
-    if (!is.null(colour_by))
-    {
-        stopifnot(colour_by %in% names(colData(spe)))
-        if (is(spe[[colour_by]], "logical"))
-        {
-            sums <- sum(colData(spe)[[colour_by]])
-            pols[[colour_by]] <- ifelse(colData(spe)[[colour_by]]==TRUE,
-                                paste0("TRUE (", sums,")"),
-                                paste0("FALSE (", dim(pols)[1]-sums,")"))
-        } else {
-            pols[[colour_by]] <- colData(spe)[[colour_by]]
-        }
-    }
-    tmm <- tm_shape(pols)
-
-    if (is.null(colour_by))
-    {
-        colour_by="grey50"
-        border_line_width=0.1
-    }
-    if(!is.null(palette)) if (palette %in% names(colData(spe)))
-    {
-        palette <- createPaletteFromColData(spe, palette_names=colour_by,
-                                            palette_colors=palette)
-        palette <- setNames(palette, NULL)
-    }
-    tmm <- tmm + tm_polygons(col=colour_by, alpha=fill_alpha, palette=palette,
-                             border.col=border_col, border.alpha=border_alpha,
-                             lwd=border_line_width)
-
-    tmm <- tmm + tm_layout(legend.outside=TRUE,
-                            main.title.position=c("left", "top"),
-                            main.title=sample_id,
-                            main.title.fontface=2,
-                            main.title.size=1,
-                            inner.margins=c(0, 0, 0, 0),
-                            outer.margins=c(0, 0, 0, 0),
-                            bg.color=bg_color)
-    return(tmm)
-}
+# plotPolygons_tmap
+#
+# @description
+# Plot Polygons from a SpatialExperiment Object.
+# This function generates a plot of polygons stored in a `SpatialExperiment`
+# object.
+#
+# @param spe A `SpatialExperiment` object containing spatial transcriptomics
+# data, including polygon data as an `sf` object.
+# @param colour_by An optional character string specifying the column in
+# `colData(spe)` to use for coloring the polygons. If `NULL`, all polygons
+# will be colored the same. Default is `NULL`.
+# @param sample_id A character string specifying the title of the plot.
+# Default is the unique sample ID from `spe`.
+# @param fill_alpha A numeric value specifying the transparency level of the
+# polygon fill. Default is `NA`.
+# @param palette A character vector specifying the colors to use for filling
+# the polygons when `colour_by` is a factor. Default is `NULL`.
+# @param border_col A character string specifying the color of the polygon
+# borders. Default is `NA`.
+# @param border_alpha A numeric value specifying the transparency level of the
+# polygon borders. Default is `NA`.
+# @param border_line_width A numeric value specifying the width of the polygon
+# borders. Default is `0.1`.
+#
+# @return A `tmap` plot object displaying the polygons.
+#
+# @importFrom tmap tm_shape tm_borders tm_layout tm_fill tm_polygons
+# @importFrom SummarizedExperiment colData
+# @export
+#
+# @examples
+#
+# plotPolygons_tmap <- function(spe, colour_by=NULL,sample_id=unique(spe$sample_id),
+#                     fill_alpha=NA, palette=NULL, border_col=NA, border_alpha=NA,
+#                     border_line_width=0.1, bg_color="black")
+# {
+#     stopifnot(is(spe, "SpatialExperiment"))
+#     stopifnot("polygons" %in% names(colData(spe)))
+#
+#     pols <- spe$polygons
+#     if (!is.null(colour_by))
+#     {
+#         stopifnot(colour_by %in% names(colData(spe)))
+#         if (is(spe[[colour_by]], "logical"))
+#         {
+#             sums <- sum(colData(spe)[[colour_by]])
+#             pols[[colour_by]] <- ifelse(colData(spe)[[colour_by]]==TRUE,
+#                                 paste0("TRUE (", sums,")"),
+#                                 paste0("FALSE (", dim(pols)[1]-sums,")"))
+#         } else {
+#             pols[[colour_by]] <- colData(spe)[[colour_by]]
+#         }
+#     }
+#     tmm <- tm_shape(pols)
+#
+#     if (is.null(colour_by))
+#     {
+#         colour_by="grey50"
+#         border_line_width=0.1
+#     }
+#     if(!is.null(palette)) if (palette %in% names(colData(spe)))
+#     {
+#         palette <- createPaletteFromColData(spe, palette_names=colour_by,
+#                                             palette_colors=palette)
+#         palette <- setNames(palette, NULL)
+#     }
+#     tmm <- tmm + tm_polygons(col=colour_by, alpha=fill_alpha, palette=palette,
+#                              border.col=border_col, border.alpha=border_alpha,
+#                              lwd=border_line_width)
+#
+#     tmm <- tmm + tm_layout(legend.outside=TRUE,
+#                             main.title.position=c("left", "top"),
+#                             main.title=sample_id,
+#                             main.title.fontface=2,
+#                             main.title.size=1,
+#                             inner.margins=c(0, 0, 0, 0),
+#                             outer.margins=c(0, 0, 0, 0),
+#                             bg.color=bg_color)
+#     return(tmm)
+# }
 
 
 #' plotPolygons
@@ -335,8 +343,8 @@ plotPolygons_tmap <- function(spe, colour_by=NULL,sample_id=unique(spe$sample_id
 #' @importFrom SummarizedExperiment colData
 #'
 #' @examples
-#' # Assuming `spe` is a SpatialExperiment object with polygon data:
-#' # plotPolygonsSPE_ggplot(spe, colour_by="gene_expression")
+#' example(readAndAddPolygonsToSPE)
+#' plotPolygons(spe, colour_by="Mean.DAPI")
 plotPolygons <- function(spe, colour_by="darkgrey", colour_log=FALSE,
                         poly_column = "polygons.global",
                         sample_id=unique(spe$sample_id),
@@ -458,8 +466,8 @@ plotPolygons <- function(spe, colour_by="darkgrey", colour_log=FALSE,
 #' @export
 #'
 #' @examples
-#' # Assuming 'spe' is a SpatialExperiment object with FOVs and polygon data:
-#' # plotZoomFovsMap(spe, fovs = c(1, 2), title = "Zoomed FOVs with Polygons")
+#' example(readAndAddPolygonsToSPE)
+#' plotZoomFovsMap(spe, fovs = c(11), title = "FOV 11")
 plotZoomFovsMap <- function(spe, fovs=NULL,
                             map_point_col="darkmagenta",
                             map_numbers_col="black",
@@ -489,38 +497,36 @@ plotZoomFovsMap <- function(spe, fovs=NULL,
 
     return(final_plot)
 }
-
-#' plotQCScoreTerms
+#' Plot quality‐score term contributions
+#'
+#' @title Plot QC score terms for SpatialExperiment
+#'
 #' @description
+#' Plots the individual terms that combine into the quality score formula,
+#' allowing assessment of each term’s impact on the final score.
 #'
-#' Plots the terms combined together in the quality score formula to allow viewing
-#' which term impacts most on the quality score.
+#' @param spe A `SpatialExperiment` object with `quality_score` and term
+#'   columns in `colData`.
+#' @param sample_id Character string for plot title. Must match values in the
+#'   `fov` column of `colData(spe)`. Default: `unique(spe$sample_id)`.
+#' @param palette Optional color palette for continuous terms. Default: `NULL`.
+#' @param size Numeric point size for the scatter plots. Default: `0.05`.
+#' @param alpha Numeric transparency for the scatter plots. Default: `0.2`.
+#' @param aspect_ratio Numeric aspect ratio of the plots. Default: `1`.
+#' @param custom Logical; if `TRUE`, use custom polygon‐derived metrics.
 #'
-#' This function Plots the terms combined together in the quality score formula
-#' to allow viewing which term impacts most on the quality score within a
-#' `SpatialExperiment` object.
-#'
-#' @param spe A `SpatialExperiment` object containing spatial transcriptomics
-#' data.
-#' @param sample_id
-#' Must match values in the `fov` column of `colData(spe)`.
-#' @param palette
-#' @param size
-#' @param alph
-#' @param aspect_ratio
-#' @param custom A boolean value. If TRUE, custom polygons derived metrics will
-#' be used.
-#'
-#' @return A panel with multiple plots showing quality score terms
+#' @return A combined plot (via `cowplot::plot_grid`) showing spatial maps
+#'   of each QC term.
 #'
 #' @importFrom scater plotColData
 #' @importFrom ggplot2 ggtitle coord_fixed
+#' @importFrom cowplot plot_grid
 #' @export
 #'
 #' @examples
-#' # Assuming 'spe' is a SpatialExperiment object with FOVs and polygon data:
-#' # plotZoomFovsMap(spe, fovs = c("FOV1", "FOV2"), colour_by = "cell_type",
-#' #                title = "Zoomed FOVs with Polygons")
+#' example(computeQScore)
+#' p <- plotQCscoreTerms(spe)
+#' print(p)
 plotQCscoreTerms <- function(spe,
                              sample_id=unique(spe$sample_id),
                              palette=NULL,
@@ -613,148 +619,208 @@ plotQCscoreTerms <- function(spe,
 #' # Assuming 'spe' is a SpatialExperiment object with FOVs and polygon data:
 #' # plotZoomFovsMap(spe, fovs = c("FOV1", "FOV2"), colour_by = "cell_type",
 #' #                title = "Zoomed FOVs with Polygons")
-
-FirstFilterPlot <- function(spe, fov = unique(spe$fov), theme = c("light", "dark"), custom = FALSE){
-
-    if(!"is_zero_counts" %in% names(colData(spe)) |
-       !"is_ctrl_tot_outlier" %in% names(colData(spe))){
-        message("Fixed thresholds flag cells were not found.
-            Did you run computeFixedFlags?")
+FirstFilterPlot <- function(
+        spe,
+        fov    = unique(spe$fov),
+        theme  = c("light", "dark"),
+        custom = FALSE
+) {
+    # Check for required flags
+    if (
+        !"is_zero_counts" %in% names(colData(spe)) ||
+        !"is_ctrl_tot_outlier" %in% names(colData(spe))
+    ) {
+        message(
+            "Fixed thresholds flag cells not found.\n",
+            "Did you run computeFixedFlags()?"
+        )
     }
 
-    spe$polygons$fixed_flags_color <- case_when(spe$is_zero_counts == TRUE ~ "0 counts",
-                                                spe$is_ctrl_tot_outlier == TRUE ~
-                                                    "ctrl/total ratio > 0.1",
-                                                TRUE ~ "unflagged")
+    # Assign fixed flags colors
+    spe$polygons$fixed_flags_color <- case_when(
+        spe$is_zero_counts == TRUE             ~ "0 counts",
+        spe$is_ctrl_tot_outlier == TRUE        ~
+            "ctrl/total ratio > 0.1",
+        TRUE                                    ~ "unflagged"
+    )
 
-    spe$polygons$dapi_outlier_color <- dplyr::case_when(spe$Mean.DAPI > round(attr(
-        spe$Mean.DAPI_outlier_mc, "thresholds")[2],2)
-        ~ "> DAPI higher thr.",
-        spe$Mean.DAPI < round(attr(
-            spe$Mean.DAPI_outlier_mc, "thresholds")[1],2)
-        ~ "< DAPI lower thr.",TRUE ~ "unflagged")
+    # Assign DAPI outlier colors
+    spe$polygons$dapi_outlier_color <- dplyr::case_when(
+        spe$Mean.DAPI > round(
+            attr(spe$Mean.DAPI_outlier_mc, "thresholds")[2], 2
+        )                                     ~ "> DAPI higher thr.",
+        spe$Mean.DAPI < round(
+            attr(spe$Mean.DAPI_outlier_mc, "thresholds")[1], 2
+        )                                     ~ "< DAPI lower thr.",
+        TRUE                                   ~ "unflagged"
+    )
 
-    outlier_palette = c("unflagged" = "grey20",
-                        "ctrl/total ratio > 0.1" = "magenta",
-                        "< area um lower thr."  = "darkturquoise",
-                        "> area um higher thr."  = "red",
-                        "< DAPI lower thr."  = "purple",
-                        "> DAPI higher thr."  = "greenyellow")
+    # Define palette
+    outlier_palette <- c(
+        "unflagged"                  = "grey20",
+        "ctrl/total ratio > 0.1"    = "magenta",
+        "< area um lower thr."       = "darkturquoise",
+        "> area um higher thr."      = "red",
+        "< DAPI lower thr."          = "purple",
+        "> DAPI higher thr."         = "greenyellow"
+    )
 
-    if(custom == TRUE){
-        stopifnot("cust_Area_um_outlier_mc" %in% names(colData(spe)))
+    # Custom vs default area flags
+    if (custom) {
+        stopifnot(
+            "cust_Area_um_outlier_mc" %in% names(colData(spe))
+        )
 
-        spe$polygons$area_outlier_color <- dplyr::case_when(spe$cust_Area_um > round(attr(
-            spe$cust_Area_um_outlier_mc, "thresholds")[2], 2)
-            ~ "> area um higher thr.",
-            spe$cust_Area_um < round(attr(
-                spe$cust_Area_um_outlier_mc, "thresholds")[1], 2)
-            ~ "< area um lower thr.", TRUE ~ "unflagged")
+        spe$polygons$area_outlier_color <- dplyr::case_when(
+            spe$cust_Area_um > round(
+                attr(
+                    spe$cust_Area_um_outlier_mc,
+                    "thresholds"
+                )[2], 2
+            )                                 ~ "> area um higher thr.",
+            spe$cust_Area_um < round(
+                attr(
+                    spe$cust_Area_um_outlier_mc,
+                    "thresholds"
+                )[1], 2
+            )                                 ~ "< area um lower thr.",
+            TRUE                               ~ "unflagged"
+        )
 
-        spe$polygons$collapsed_color <- dplyr::case_when(spe$is_ctrl_tot_outlier == TRUE ~
-                                                      "ctrl/total ratio > 0.1",
-                                                  spe$cust_Area_um > round(attr(
-                                                      spe$cust_Area_um_outlier_mc,
-                                                      "thresholds")[2], 2)
-                                                  ~ "> area um higher thr.",
-                                                  spe$cust_Area_um < round(attr(
-                                                      spe$cust_Area_um_outlier_mc,
-                                                      "thresholds")[1], 2)
-                                                  ~ "< area um lower thr.",
-                                                  spe$Mean.DAPI > round(attr(
-                                                      spe$Mean.DAPI_outlier_mc,
-                                                      "thresholds")[2],2)
-                                                  ~ "> DAPI higher thr.",
-                                                  spe$Mean.DAPI < round(attr(
-                                                      spe$Mean.DAPI_outlier_mc,
-                                                      "thresholds")[1],2)
-                                                  ~ "< DAPI lower thr.",
-                                                  TRUE ~ "unflagged")
+        spe$polygons$collapsed_color <- dplyr::case_when(
+            spe$is_ctrl_tot_outlier == TRUE         ~
+                "ctrl/total ratio > 0.1",
+            spe$cust_Area_um > round(
+                attr(
+                    spe$cust_Area_um_outlier_mc,
+                    "thresholds"
+                )[2], 2
+            )                                        ~ "> area um higher thr.",
+            spe$cust_Area_um < round(
+                attr(
+                    spe$cust_Area_um_outlier_mc,
+                    "thresholds"
+                )[1], 2
+            )                                        ~ "< area um lower thr.",
+            spe$Mean.DAPI > round(
+                attr(spe$Mean.DAPI_outlier_mc, "thresholds")[2], 2
+            )                                        ~ "> DAPI higher thr.",
+            spe$Mean.DAPI < round(
+                attr(spe$Mean.DAPI_outlier_mc, "thresholds")[1], 2
+            )                                        ~ "< DAPI lower thr.",
+            TRUE                                      ~ "unflagged"
+        )
+    } else {
+        spe$polygons$area_outlier_color <- dplyr::case_when(
+            spe$Area_um > round(
+                attr(spe$Area_um_outlier_mc, "thresholds")[2], 2
+            )                                 ~ "> area um higher thr.",
+            spe$Area_um < round(
+                attr(spe$Area_um_outlier_mc, "thresholds")[1], 2
+            )                                 ~ "< area um lower thr.",
+            TRUE                               ~ "unflagged"
+        )
 
-    }else{
-
-        spe$polygons$area_outlier_color <- dplyr::case_when(spe$Area_um > round(attr(
-            spe$Area_um_outlier_mc, "thresholds")[2], 2)
-            ~ "> area um higher thr.",
-            spe$Area_um < round(attr(
-                spe$Area_um_outlier_mc, "thresholds")[1], 2)
-            ~ "< area um lower thr.", TRUE ~ "unflagged")
-
-        spe$polygons$collapsed_color <- case_when(spe$is_ctrl_tot_outlier == TRUE ~
-                                                      "ctrl/total ratio > 0.1",
-                                                  spe$Area_um > round(attr(
-                                                      spe$Area_um_outlier_mc,
-                                                      "thresholds")[2], 2)
-                                                  ~ "> area um higher thr.",
-                                                  spe$Area_um < round(attr(
-                                                      spe$Area_um_outlier_mc,
-                                                      "thresholds")[1], 2)
-                                                  ~ "< area um lower thr.",
-                                                  spe$Mean.DAPI > round(attr(
-                                                      spe$Mean.DAPI_outlier_mc,
-                                                      "thresholds")[2],2)
-                                                  ~ "> DAPI higher thr.",
-                                                  spe$Mean.DAPI < round(attr(
-                                                      spe$Mean.DAPI_outlier_mc,
-                                                      "thresholds")[1],2)
-                                                  ~ "< DAPI lower thr.",
-                                                  TRUE ~ "unflagged")
-
+        spe$polygons$collapsed_color <- case_when(
+            spe$is_ctrl_tot_outlier == TRUE         ~
+                "ctrl/total ratio > 0.1",
+            spe$Area_um > round(
+                attr(spe$Area_um_outlier_mc, "thresholds")[2], 2
+            )                                        ~ "> area um higher thr.",
+            spe$Area_um < round(
+                attr(spe$Area_um_outlier_mc, "thresholds")[1], 2
+            )                                        ~ "< area um lower thr.",
+            spe$Mean.DAPI > round(
+                attr(spe$Mean.DAPI_outlier_mc, "thresholds")[2], 2
+            )                                        ~ "> DAPI higher thr.",
+            spe$Mean.DAPI < round(
+                attr(spe$Mean.DAPI_outlier_mc, "thresholds")[1], 2
+            )                                        ~ "< DAPI lower thr.",
+            TRUE                                      ~ "unflagged"
+        )
     }
 
-
+    # Plot first filter flags
     ggp1 <- ggplot2::ggplot() +
-        ggplot2::geom_sf(data=spe$polygons[spe$polygons$fov%in%fov,],
-                ggplot2::aes(fill=fixed_flags_color, color = fixed_flags_color),
-                lwd = 0, show.legend = "polygon") +
-        ggplot2::scale_fill_manual(values = outlier_palette)+
+        ggplot2::geom_sf(
+            data       = spe$polygons[spe$polygons$fov %in% fov, ],
+            mapping    = ggplot2::aes(
+                fill  = fixed_flags_color,
+                color = fixed_flags_color
+            ),
+            lwd        = 0,
+            show.legend = "polygon"
+        ) +
+        ggplot2::scale_fill_manual(values = outlier_palette) +
         ggplot2::scale_color_manual(values = outlier_palette)
 
+    # Plot area flags
     ggp2 <- ggplot2::ggplot() +
-        ggplot2::geom_sf(data=spe$polygons[spe$polygons$fov%in%fov,],
-                ggplot2::aes(fill=area_outlier_color, color = area_outlier_color),lwd = 0,
-                show.legend = "polygon") +
-        ggplot2::scale_fill_manual(values = outlier_palette)+
+        ggplot2::geom_sf(
+            data       = spe$polygons[spe$polygons$fov %in% fov, ],
+            mapping    = ggplot2::aes(
+                fill  = area_outlier_color,
+                color = area_outlier_color
+            ),
+            lwd        = 0,
+            show.legend = "polygon"
+        ) +
+        ggplot2::scale_fill_manual(values = outlier_palette) +
         ggplot2::scale_color_manual(values = outlier_palette)
 
+    # Plot DAPI flags
     ggp3 <- ggplot2::ggplot() +
-        ggplot2::geom_sf(data=spe$polygons[spe$polygons$fov%in%fov,],
-                ggplot2::aes(fill=dapi_outlier_color, color = dapi_outlier_color),lwd = 0,
-                show.legend = "polygon") +
-        ggplot2::scale_fill_manual(values = outlier_palette)+
+        ggplot2::geom_sf(
+            data       = spe$polygons[spe$polygons$fov %in% fov, ],
+            mapping    = ggplot2::aes(
+                fill  = dapi_outlier_color,
+                color = dapi_outlier_color
+            ),
+            lwd        = 0,
+            show.legend = "polygon"
+        ) +
+        ggplot2::scale_fill_manual(values = outlier_palette) +
         ggplot2::scale_color_manual(values = outlier_palette)
 
+    # Legend panel
     legp <- ggplot2::ggplot() +
-        ggplot2::geom_sf(data=spe$polygons[spe$polygons$fov%in%fov,],
-                ggplot2::aes(fill = collapsed_color, color = collapsed_color), lwd = 0,
-                show.legend = "polygon") +
-        ggplot2::scale_fill_manual(values = outlier_palette)+
-        ggplot2::scale_color_manual(values = outlier_palette)+theme(legend.title = element_blank())
+        ggplot2::geom_sf(
+            data       = spe$polygons[spe$polygons$fov %in% fov, ],
+            mapping    = ggplot2::aes(
+                fill  = collapsed_color,
+                color = collapsed_color
+            ),
+            lwd        = 0,
+            show.legend = "polygon"
+        ) +
+        ggplot2::scale_fill_manual(values = outlier_palette) +
+        ggplot2::scale_color_manual(values = outlier_palette) +
+        ggplot2::theme(legend.title = element_blank())
 
-    if(theme=="light"){
-        ggp1 <- ggp1 + .light_theme() + ggplot2::ggtitle("Control counts ratio") +
-            ggplot2::theme(legend.position="none")
-        ggp2 <- ggp2 + .light_theme() + ggplot2::ggtitle("Area in um") +
-            ggplot2::theme(legend.position="none")
-        ggp3 <- ggp3 + .light_theme() + ggplot2::ggtitle("Mean DAPI") +
-            ggplot2::theme(legend.position="none")
-        legp <- legp + .light_theme()
-        ggp4 <- cowplot::get_legend(legp)
-        cowplot::plot_grid(ggp1, ggp2, ggp3, ggp4, ncol =2)
+    plot_func <- if (theme[1] == "light") .light_theme else .dark_theme
 
-    }else{
-        ggp1 <- ggp1 + .dark_theme() + ggplot2::ggtitle("Control counts ratio") +
-            ggplot2::theme(legend.position="none")
-        ggp2 <- ggp2 + .dark_theme() + ggplot2::ggtitle("Area in um") +
-            ggplot2::theme(legend.position="none")
-        ggp3 <- ggp3 + .dark_theme() + ggplot2::ggtitle("Mean DAPI") +
-            ggplot2::theme(legend.position="none")
-        legp <- legp + .dark_theme()
-        ggp4 <- cowplot::get_legend(legp)
-        cowplot::plot_grid(ggp1, ggp2, ggp3, ggp4, ncol =2) +
-            theme(panel.background=element_rect(fill="black"))
+    ggp1 <- ggp1 + plot_func() +
+        ggplot2::ggtitle("Control counts ratio") +
+        ggplot2::theme(legend.position = "none")
+    ggp2 <- ggp2 + plot_func() +
+        ggplot2::ggtitle("Area in um") +
+        ggplot2::theme(legend.position = "none")
+    ggp3 <- ggp3 + plot_func() +
+        ggplot2::ggtitle("Mean DAPI") +
+        ggplot2::theme(legend.position = "none")
+    legp <- legp + plot_func()
+
+    ggp4 <- cowplot::get_legend(legp)
+    final <- cowplot::plot_grid(ggp1, ggp2, ggp3, ggp4, ncol = 2)
+
+    if (theme[1] == "dark") {
+        final <- final + ggplot2::theme(
+            panel.background = element_rect(fill = "black")
+        )
     }
 
+    return(final)
 }
+
 
 
