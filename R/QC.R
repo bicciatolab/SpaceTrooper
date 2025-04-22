@@ -1,35 +1,32 @@
-#' spatialPerCellQC
+#' Perform per‐cell QC on a SpatialExperiment
+#'
 #' @description
-#' Perform Per-Cell Quality Control on a SpatialExperiment Object
+#' Computes quality‐control metrics for each cell and adds them to `colData`.
 #'
-#' This function calculates quality control metrics for each cell in a
-#' `SpatialExperiment` object and adds them to `colData`.
+#' @param spe A `SpatialExperiment` object containing spatial data.
+#' @param micronConvFact Numeric factor to convert pixels to microns. Default
+#'   `0.12`.
+#' @param negProbList Character vector of patterns to identify negative probes.
+#'   Defaults include:
+#'   - Nanostring CosMx: `"NegPrb"`, `"Negative"`, `"SystemControl"`
+#'   - Xenium: `"NegControlProbe"`, `"NegControlCodeword"`,
+#'     `"UnassignedCodeword"`
+#'   - MERFISH: `"Blank"`
 #'
-#' @param spe A `SpatialExperiment` object containing spatial transcriptomics
-#' data.
-#' @param micronConvFact A numeric value for converting pixel dimensions to
-#' microns. Default is `0.12`.
-#' @param negProbList A character vector of patterns used to identify negative
-#' probes.
-#' Default values are:
-#' - For Nanostring CosMx: `"NegPrb"`, `"Negative"`, `"SystemControl"`
-#' - For Xenium: `"NegControlProbe"`, `"NegControlCodeWord"`,
-#' `"UnassignedCodeWord"`
-#' - For MERFISH: `"Blank"`
+#' @return A `SpatialExperiment` object with added QC metrics in `colData`.
 #'
-#'
-#' @return The `SpatialExperiment` object with added quality control metrics in
-#' `colData`.
-#'
-#' @details The function computes several QC metrics, including control probe
-#' sums, target probe sums, and the ratio of control probes to the total.
+#' @details
+#' Calculates sums and detected counts for control and target probes,
+#' computes ratio and count‐area metrics, converts coords to microns for
+#' CosMx, and drops zero‐count cells.
 #'
 #' @importFrom SummarizedExperiment colData
 #' @importFrom scater addPerCellQC
 #' @importFrom S4Vectors cbind.DataFrame
 #' @export
-#' @example
-#' # TBD
+#' @examples
+#' example(readCosmxSPE)
+#' spe <- spatialPerCellQC(spe)
 spatialPerCellQC <- function(spe, micronConvFact=0.12,
     negProbList=c("NegPrb", "Negative", "SystemControl", # CosMx
         "Ms IgG1", "Rb IgG", # CosMx Protein
@@ -37,8 +34,6 @@ spatialPerCellQC <- function(spe, micronConvFact=0.12,
         "Blank" # MERFISH
     ))
 {
-    ## CHECK EXISTENCE OF POLYGONS/AREAS ETC -> create function for
-    ## metrics creation
     stopifnot(is(object=spe, "SpatialExperiment"))
     idxlist <- lapply(negProbList, function(ng){
         grep(paste0("^", ng), rownames(spe))
@@ -51,8 +46,6 @@ spatialPerCellQC <- function(spe, micronConvFact=0.12,
     npc = npd = 0
     if ( length(idx) !=0 )
     {
-        ## TO TEST -> BENEDETTA
-        # meglio dataframe, perché rowsums non funziona -> ?
         npc <- rowSums(as.matrix(colData(spe)[ , idx, drop=FALSE])) #sum
         ## getting detected probes as the column suddenly after the sum column
         ## # not robust at all! the +1 is not a really good choice
@@ -80,12 +73,12 @@ spatialPerCellQC <- function(spe, micronConvFact=0.12,
     }
 
     # adding this line so that Area in Xenium has the same name as the others
-    # already in um ## move to a specific standardized function (?)
+    # already in um ## could be moved to a specific standardized function
     if (metadata(spe)$technology == "10X_Xenium"){
         spe$Area_um <- spe$cell_area
     }
 
-    #### compute AspectRatio for other technologies ####
+    #### compute AspectRatio for not cosmx technologies ####
     if ("AspectRatio" %in% colnames(colData(spe)))
     {
         spe$log2AspectRatio <- log2(spe$AspectRatio)
@@ -99,36 +92,32 @@ spatialPerCellQC <- function(spe, micronConvFact=0.12,
     # changed to Area um, now it's the same for every technology
     spe$CountArea <- spe$sum/spe$Area_um
     spe$log2CountArea <- log2(spe$CountArea)
-    ## adding a flag argument (?)
+    ## adding a flag argument
     message("Removing ", dim(spe[,spe$sum==0])[2], " cells, they have 0 counts")
     spe <- spe[,!spe$sum==0]
 
     return(spe)
 }
 
-#' computeBorderDistanceCosMx
+#' Compute distance to FOV border for CosMx
+#'
 #' @description
-#' Compute Distance to FoV Border in SpatialExperiment for CosMx technology.
+#' Calculates the minimum distance of each cell to the field‐of‐view border
+#' and adds it to `colData`.
 #'
-#' Calculates the minimum distance of each coordinate in a `SpatialExperiment`
-#' object to the nearest border of the field of view (FOV) and adds it to
-#' `colData`.
+#' @param spe A `SpatialExperiment` object with CosMx data.
+#' @param xwindim Width of FOV in x (default from `metadata(spe)$fov_dim`).
+#' @param ywindim Height of FOV in y (default from `metadata(spe)$fov_dim`).
 #'
-#' @param spe A `SpatialExperiment` object with spatial transcriptomics data.
-#' @param xwindim Width of the FOV in the x-dimension. Defaults to
-#' `metadata(spe)$fov_dim[["xdim"]]`.
-#' @param ywindim Height of the FOV in the y-dimension. Defaults to
-#' `metadata(spe)$fov_dim[["ydim"]]`.
-#'
-#' @return The `SpatialExperiment` object with added border distance data in
-#' `colData`.
+#' @return A `SpatialExperiment` object with `dist_border` columns in
+#'   `colData`.
 #'
 #' @importFrom dplyr left_join
 #' @importFrom SummarizedExperiment colData
 #' @export
-#' @example
-#' # TBD
-## move to a specific reading/missing metrics function (?)
+#' @examples
+#' example(readCosmxSPE)
+#' spe <- computeBorderDistanceCosMx(spe)
 computeBorderDistanceCosMx <- function(spe,
                                        xwindim=metadata(spe)$fov_dim[["xdim"]],
                                        ywindim=metadata(spe)$fov_dim[["ydim"]])
@@ -178,19 +167,24 @@ computeBorderDistanceCosMx <- function(spe,
 #' for the outlier detection should be scaled (default is FALSE, as suggested
 #' by the original Medcouple authors.). See \link[robustbase]{mc} for further
 #' readings.
+#' @param scuttleType One of `"both"`, `"lower"`, `"higher"` for scuttle method.
 #'
 #' @return a SpatialExperiment object with additional column(s) (named as
 #' the column name indicated in `column_by` followed by the outlier_sc/mc
 #' nomenclature) with the outlier detection as `outlier.filter` logical class
 #' object. This allows to store the thresholds as attributes of the column.
 #' use attr(,"thresholds") to retrieve them.
+#'
 #' @export
 #' @importFrom robustbase mc adjbox
 #' @importFrom e1071 skewness
 #' @importFrom scuttle isOutlier outlier.filter
 #'
 #' @examples
-#' # TBD
+#' example(readCosmxSPE)
+#' spe <- computeSpatialOutlier(spe, compute_by="log2CountArea", method="both")
+#' table(spe$log2CountArea_outlier_mc)
+#' table(spe$log2CountArea_outlier_sc)
 computeSpatialOutlier <- function(spe, compute_by=NULL,
                                   method=c("mc", "scuttle", "both"),
                                   mcDoScale=FALSE,
@@ -294,10 +288,12 @@ computeSpatialOutlier <- function(spe, compute_by=NULL,
 #' @importFrom SummarizedExperiment colData
 #' @export
 #' @examples
-#' # TBD
-computeFixedFlags <- function(spe,
-                              total_threshold=0,
-                              ctrl_tot_ratio_threshold=0.1)
+#' example(readCosmxSPE)
+#' spe <- spatialPerCellQC(spe)
+#' spe <- computeFixedFlags(spe)
+#' table(spe$fixed_filter_out)
+computeFixedFlags <- function(spe, total_threshold=0,
+                            ctrl_tot_ratio_threshold=0.1)
 {
     stopifnot(is(spe, "SpatialExperiment"))
     stopifnot("total" %in% names(colData(spe)))
@@ -306,48 +302,36 @@ computeFixedFlags <- function(spe,
     spe$is_zero_counts <- ifelse(spe$total == total_threshold, TRUE, FALSE)
     #flagging cells with probe counts on total counts ratio > 0.1
     spe$is_ctrl_tot_outlier <- ifelse(spe$ctrl_total_ratio >
-                                          ctrl_tot_ratio_threshold, TRUE, FALSE)
+                                        ctrl_tot_ratio_threshold, TRUE, FALSE)
 
     spe$fixed_filter_out <- (spe$is_ctrl_tot_outlier &
-                                 spe$is_zero_counts)
+                                spe$is_zero_counts)
     return(spe)
 }
 
 #' computeQScore
+#'
 #' @description
 #' Compute quality score and automatically define weights for quality score
-#' through glm training
-#'
-#' This function computes quality score with a formula that depends on the
-#' technology.
+#' through glm training. This function computes quality score with a formula
+#' that depends on the technology.
 #' To automatically define the formula coefficient weights, model training
-#' is performed
-#' through ridge regression.
-#'
-#' `SpatialExperiment` object.
+#' is performed through ridge regression.
 #'
 #' @param spe A `SpatialExperiment` object with spatial transcriptomics data.
 #'
 #' @return The `SpatialExperiment` object with added quality score in `colData`.
-#'
-#' @details
-#'
-#' @importFrom SummarizedExperiment colData
-#' @importFrom dplyr filter mutate full_join distinct case_when
-#' @importFrom glmnet glmnet cv.glmnet
-#' @export
-#' @examples
-#' # TBD
-computeQScore <- function(spe=spe) {
-
+computeQScore <- function(spe) {
     # this is necessary because I found Xenium and Merfish datasets with 0
-    #  counts cells having log2CountArea as -Inf
+    # counts cells having log2CountArea as -Inf
     # something our functions such as medcouple and skewness don't deal with,
-    # thus I exclude cells
-    # with 0 counts and don't use them for training
-
+    # thus I exclude cells with 0 counts and don't use them for training.
     spe_temp <- computeSpatialOutlier(spe[,spe$total>0],
                         compute_by="log2CountArea", method="both")
+#     stopifnot(all(c("log2CountArea", "log2AspectRatio_outlier_sc")
+#                     %in% colnames(colData(spe))
+#     ))
+
     if(attr(spe_temp$log2CountArea_outlier_mc, "thresholds")[1] <
         min(spe_temp$log2CountArea)){
             low_thr <- quantile(spe$log2CountArea, probs = 0.01)
@@ -357,34 +341,38 @@ computeQScore <- function(spe=spe) {
     high_thr <- attr(spe_temp$log2CountArea_outlier_mc, "thresholds")[2]
 
     spe$log2CountArea_outlier_train <- case_when(spe$total == 0 ~ "NO",
-                                         spe$log2CountArea < low_thr ~ "LOW",
-                                         spe$log2CountArea > high_thr ~ "HIGH",
-                                         TRUE ~ "NO")
+                                        spe$log2CountArea < low_thr ~ "LOW",
+                                        spe$log2CountArea > high_thr ~ "HIGH",
+                                        TRUE ~ "NO")
 
     attr(spe$log2CountArea_outlier_train, "thresholds") <-
         attr(spe_temp$log2CountArea_outlier_mc, "thresholds")
 
     attr(spe$log2CountArea_outlier_train, "thresholds")[1] <- low_thr
 
-    print("How many LOW outliers cells will be used for training?")
-    print(table(spe$log2CountArea_outlier_train))
+    # print("How many LOW outliers cells will be used for training?")
+    # print(table(spe$log2CountArea_outlier_train))
 
     if(metadata(spe)$technology == "Nanostring_CosMx")
     {
         # I selected scuttle because otherwise it would return a warning, since
-        # aspect ratio is always normal in every technology, I would turn to scuttle
-        # instead
-        spe <- computeSpatialOutlier(spe, compute_by="log2AspectRatio", method="scuttle")
-        print("How many outliers were found for log2AspectRatio")
-        print(table(spe$log2AspectRatio_outlier_sc))
-
+        # aspect ratio is always normal in every technology,
+        # I would turn to scuttle instead
+        spe <- computeSpatialOutlier(spe, compute_by="log2AspectRatio",
+                                        method="scuttle")
+        # print("How many outliers were found for log2AspectRatio")
+        # print(table(spe$log2AspectRatio_outlier_sc))
         train_bad <- data.frame(colData(spe)) |>
             filter((log2AspectRatio_outlier_sc == "HIGH" & dist_border < 50) |
                     (log2AspectRatio_outlier_sc == "LOW" & dist_border < 50) |
                     log2CountArea_outlier_train == "LOW") |>
             mutate(qscore_train = 0)
 
-        train_good <- data.frame(colData(spe)) |>
+        # train_bad <- (spe$log2AspectRatio_outlier_sc == "HIGH" & spe$dist_border < 50) |
+        #     (spe$log2AspectRatio_outlier_sc == "LOW" & spe$dist_border < 50) |
+        #     spe$log2CountArea_outlier_train == "LOW"
+
+            train_good <- data.frame(colData(spe)) |>
             filter((log2AspectRatio > quantile(log2AspectRatio, probs = 0.25) &
                     log2AspectRatio < quantile(log2AspectRatio, probs = 0.75) &
                     dist_border > 50) |
@@ -490,9 +478,7 @@ computeQScore <- function(spe=spe) {
 
     # column with information about which cells were used in the training
     # loaded in spe
-
     # again, preferred code but Merfish cellids giving problems
-
     #cd <- left_join(cd, train_df, by = "cell_id")
     #cd$doom <- tidyr::replace_na(cd$doom, "TEST")
     #spe$doom <- cd$doom
@@ -501,7 +487,7 @@ computeQScore <- function(spe=spe) {
     #'names' attribute [395215] must be the same length as the vector [5242]
 
     train_identity <- rep("TEST", dim(spe)[2])
-    spe$doom <- dplyr::case_when( ## change into something $training_status !
+    spe$training_status <- dplyr::case_when(
         spe$cell_id%in%train_bad$cell_id ~ "BAD",
         spe$cell_id%in%train_good$cell_id ~ "GOOD",
         TRUE ~ train_identity)
@@ -517,22 +503,21 @@ computeQScore <- function(spe=spe) {
 #' quality score stored in `SpatialExperiment` object.
 #'
 #' @param spe A `SpatialExperiment` object with spatial transcriptomics data.
-#' @param use_qs_quantiles a boolean. If TRUE uses the value specified in
-#' qs_threshold as a percentile
-#' @param opt a boolean value to set to TRUE if you want to compute flagged cells
-#' for optimized quality score
+#' @param qs_threshold Numeric threshold or quantile for quality score. Default
+#'   `0.5`.
+#' @param use_qs_quantiles Logical; if `TRUE`, treat `qs_threshold` as a
+#'   percentile.
 #'
 #' @return The `SpatialExperiment` object with added filter flags in `colData`.
 #'
-#' @details
 #'
 #' @importFrom SummarizedExperiment colData
 #' @export
 #' @examples
-#' # TBD
-#'
-computeQscoreFlags <- function(spe, qs_threshold=0.5,
-                               use_qs_quantiles=FALSE)
+#' example(computeQScore)
+#' spe <- computeQscoreFlags(spe)
+#' table(spe$fixed_qscore_out)
+computeQscoreFlags <- function(spe, qs_threshold=0.5, use_qs_quantiles=FALSE)
 {
     stopifnot(is(spe, "SpatialExperiment"))
     stopifnot("quality_score" %in% names(colData(spe)))
@@ -540,14 +525,14 @@ computeQscoreFlags <- function(spe, qs_threshold=0.5,
     if(use_qs_quantiles)
     {
             spe$is_qscore_opt_outlier <- ifelse(spe$quality_score <
-                                                    quantile(spe$quality_score,
-                                                             probs=qs_threshold),
-                                                TRUE, FALSE)
+                                            quantile(spe$quality_score,
+                                                    probs=qs_threshold),
+                                            TRUE, FALSE)
     } else {
             spe$is_qscore_outlier <- spe$quality_score < qs_threshold
 
     }
-        spe$fixed_qscore_out <- (spe$is_qscore_outlier & spe$fixed_filter_out)
+    spe$fixed_qscore_out <- (spe$is_qscore_outlier & spe$fixed_filter_out)
 
     return(spe)
 }

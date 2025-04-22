@@ -2,7 +2,7 @@
 % Please edit documentation in R/readXenium.R
 \name{readXeniumSPE}
 \alias{readXeniumSPE}
-\title{Load data from a 10x Geonomics Xenium experiment}
+\title{Load data from a 10x Genomics Xenium experiment}
 \usage{
 readXeniumSPE(
   dirname,
@@ -19,60 +19,65 @@ readXeniumSPE(
 )
 }
 \arguments{
-\item{dirname}{a directory path to Xenium Output Bundle download that contains
-files of interest.}
+\item{dirname}{`character(1)`
+Path to a Xenium Output Bundle directory.}
 
-\item{keep_polygons}{logical indicating if to save the optionally loaded
-(to compute the missing metrics) polygons into the `colData`}
+\item{sample_name}{`character(1)`
+Sample identifier to assign to `sample_id`. Default: `"sample01"`.}
 
-\item{metadatafpattern}{a filename pattern of the zipped .csv file that
-contains cell metadata and spatial coords. Default value is \code{"cells.csv.gz"}, and there is no
-need to change.}
+\item{type}{`character(1)`
+One of `"HDF5"` or `"sparse"`; method to read the feature matrix.}
 
-\item{polygonsfpattern}{a vector of two strings specify the spatial coord names.
-Default value is \code{c("x_centroid", "y_centroid")}, and there is no need to change.}
+\item{coord_names}{`character(2)`
+Names of X/Y spatial coordinate columns. Default:
+`c("x_centroid", "y_centroid")`.}
 
-\item{polygonsCol}{character indicating the name of the polygons column to
-add into the colData (default is `polygons`).}
+\item{boundaries_type}{`character(1)`
+One of `"parquet"` or `"csv"`; format of the polygon file.}
+
+\item{compute_missing_metrics}{`logical(1)`
+If `TRUE`, compute area and aspect‐ratio from boundary polygons.}
+
+\item{keep_polygons}{`logical(1)`
+If `TRUE`, append raw polygon geometries to `colData`.}
+
+\item{countsfilepattern}{`character(1)`
+Pattern to locate the feature matrix file. Default:
+`"cell_feature_matrix"`.}
+
+\item{metadatafpattern}{`character(1)`
+Pattern to locate the cell metadata file. Default: `"cells"`.}
+
+\item{polygonsfpattern}{`character(1)`
+Pattern to locate the cell boundaries file. Default:
+`"cell_boundaries"`.}
+
+\item{polygonsCol}{`character(1)`
+Name of the polygons column to add to `colData`. Default:
+`"polygons"`.}
 }
 \value{
-a \code{\link{SpatialExperiment}} object
+A [`SpatialExperiment`] object with assays, `colData`, spatial
+  coordinates, and `metadata$polygons` & `metadata$technology`.
 }
 \description{
-Creates a \code{\link{SpatialExperiment}} from the downloaded unzipped Xenium
-Output Bundle directory for 10x Genomics Xenium spatial gene expression data.
+Creates a [`SpatialExperiment`] from an unzipped Xenium Output Bundle
+directory containing spatial gene expression data.
 }
 \details{
-# WHAT ABOUT THE OTHER PARAMETERS/FILES? WHAT ABOUT THE OUTS FOLDER(added)?
-The constructor assumes the downloaded unzipped Xenium Output Bundle has the
-following structure, with mandatory file of cells.csv.gz and either folder
-/cell_feature_matrix or .h5 file cell_feature_matrix.h5:
-Xenium_unzipped \cr
-   | - outs
-       | — cell_feature_matrix.h5 \cr
-       | — cell_feature_matrix \cr
-           | - barcodes.tsv.gz \cr
-           | - features.tsv.gz \cr
-           | - matrix.mtx.gz \cr
-       | — cells.csv.gz \cr
+Expects the unzipped bundle to contain an `outs/` folder with:
+- `cell_feature_matrix.h5` or `cell_feature_matrix/`
+- `cells.csv.gz`
 }
 \examples{
-\dontrun{
-# Data download is from:
-# https://cf.10xgenomics.com/samples/xenium/1.0.2/Xenium_V1_FF_Mouse_Brain_
-# Coronal_Subset_CTX_HP/Xenium_V1_FF_Mouse_Brain_Coronal_Subset_CTX_HP_outs.zip
-
 xepath <- system.file(
-  file.path("extdata", "Xenium_small"),
-  package = "SpaceTrooper")
-
-list.files(xepath)
-
-# read the count matrix .h5 file
-xe_spe <- readXeniumSPE(dirname = xepath, keep_polygons=TRUE)
-
-}
+  "extdata", "Xenium_small", package = "SpaceTrooper"
+)
+(xe_spe <- readXeniumSPE(
+  dirname = xepath,
+  keep_polygons = TRUE
+))
 }
 \author{
-Estella Yixing Dong
+Estella Yixing Dong, Dario Righelli
 }

@@ -30,6 +30,8 @@
 #' metadata, and FOV positions, and constructs a `SpatialExperiment` object.
 #' Optionally, polygon data can be read and added to the object.
 #'
+#' @author Estella Yixing Dong, Dario Righelli
+#'
 #' @importFrom data.table fread merge.data.table
 #' @importFrom SpatialExperiment SpatialExperiment
 #' @importFrom S4Vectors DataFrame
@@ -37,19 +39,18 @@
 #' @export
 #'
 #' @examples
-#' # Assuming the data files are located in "path/to/cosmx_data":
 #' cospath <- system.file(file.path("extdata", "CosMx_DBKero_Tiny"),
 #'    package="SpaceTrooper")
 #' spe <- readCosmxSPE(cospath, sample_name="DBKero_Tiny")
-## for old fovs consider dimensions 5472 x 3648 pixels.
 readCosmxSPE <- function(dirname,
-                         sample_name="sample01",
-                         coord_names=c("CenterX_global_px", "CenterY_global_px"),
-                         countmatfpattern="exprMat_file.csv",
-                         metadatafpattern="metadata_file.csv",
-                         polygonsfpattern="polygons.csv",
-                         fovposfpattern="fov_positions_file.csv",
-                         fov_dims=c(xdim=4256, ydim=4256))
+                        sample_name="sample01",
+                        coord_names=c("CenterX_global_px", "CenterY_global_px"),
+                        countmatfpattern="exprMat_file.csv",
+                        metadatafpattern="metadata_file.csv",
+                        polygonsfpattern="polygons.csv",
+                        fovposfpattern="fov_positions_file.csv",
+                        fov_dims=c(xdim=4256, ydim=4256))
+## for old fovs consider dimensions 5472 x 3648 pixels.
 {
     stopifnot(all(names(fov_dims) == c("xdim", "ydim"), file.exists(dirname)))
     countmat_file <- list.files(dirname, countmatfpattern, full.names=TRUE)

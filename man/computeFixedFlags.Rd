@@ -30,5 +30,8 @@ ratio, and `quality_score` to identify potential outliers. It also combines
 these flags into a single filter flag.
 }
 \examples{
-# TBD
+example(readCosmxSPE)
+spe <- spatialPerCellQC(spe)
+spe <- computeFixedFlags(spe)
+table(spe$fixed_filter_out)
 }

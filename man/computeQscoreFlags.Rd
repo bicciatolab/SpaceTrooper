@@ -9,11 +9,11 @@ computeQscoreFlags(spe, qs_threshold = 0.5, use_qs_quantiles = FALSE)
 \arguments{
 \item{spe}{A `SpatialExperiment` object with spatial transcriptomics data.}
 
-\item{use_qs_quantiles}{a boolean. If TRUE uses the value specified in
-qs_threshold as a percentile}
+\item{qs_threshold}{Numeric threshold or quantile for quality score. Default
+`0.5`.}
 
-\item{opt}{a boolean value to set to TRUE if you want to compute flagged cells
-for optimized quality score}
+\item{use_qs_quantiles}{Logical; if `TRUE`, treat `qs_threshold` as a
+percentile.}
 }
 \value{
 The `SpatialExperiment` object with added filter flags in `colData`.
@@ -25,6 +25,7 @@ This function Compute flagged cells based on a manually chosen threshold on
 quality score stored in `SpatialExperiment` object.
 }
 \examples{
-# TBD
-
+example(computeQScore)
+spe <- computeQscoreFlags(spe)
+table(spe$fixed_qscore_out)
 }

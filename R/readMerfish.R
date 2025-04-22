@@ -1,36 +1,57 @@
-#' readMerfishSPE
+#' Read a MERFISH SpatialExperiment
 #'
 #' @description
+#' `readMerfishSPE()` imports MERFISH outputs (counts, metadata, and optionally
+#' cell boundary polygons) from a directory and builds a SpatialExperiment
+#' object.
 #'
+#' @param dirname `character(1)`
+#'   Path to a folder containing MERFISH output files.
+#' @param sample_name `character(1)`
+#'   Identifier to assign to the `sample_id` field in the returned object.
+#'   Default: `"sample01"`.
+#' @param compute_missing_metrics `logical(1)`
+#'   If `TRUE`, compute area and aspect‐ratio metrics from the cell boundary
+#'   polygons. Default: `TRUE`.
+#' @param keep_polygons `logical(1)`
+#'   If `TRUE`, attach raw polygon geometries as extra columns in `colData`.
+#'   Default: `FALSE`.
+#' @param boundaries_type `character(1)`
+#'   One of `"HDF5"` or `"parquet"`. If `"HDF5"`, uses a folder of HDF5
+#'   polygon files; if `"parquet"`, reads a single Parquet file of boundaries.
+#' @param countmatfpattern `character(1)`
+#'   Regex passed to `list.files()` to find the count matrix CSV. Default:
+#'   `"cell_by_gene.csv"`.
+#' @param metadatafpattern `character(1)`
+#'   Pattern to find the cell metadata CSV. Default: `"cell_metadata.csv"`.
+#' @param polygonsfpattern `character(1)`
+#'   Pattern to find the cell boundaries file. Default:
+#'   `"cell_boundaries.parquet"`.
+#' @param coord_names `character(2)`
+#'   Names of the columns in `colData` that store X/Y spatial coordinates.
+#'   Default: `c("center_x", "center_y")`.
 #'
-#' @param dirname
-#' @param sample_name
-#' @compute_missing_metrics boolean
-#' @boundaries_type one of HDF5, parquet.
-#' If HDF5 indicate the polygons folder in `polygonspattern` where the HDF5
-#' polygons files are stored
-#' @param countmatfpattern
-#' @param metadatafpattern
-#' @param coord_names
-#' @param polygonspattern
-#' @param fov_dims
-#'
-#' @return A SpatialExperiment object
+#' @return A `SpatialExperiment` object with:
+#'   - `assays$counts`: gene × cell count matrix
+#'   - `colData`: per‐cell metadata (including computed metrics)
+#'   - spatial coordinates named by `coord_names`
+#'   - `metadata$polygons`: path to the boundaries file
+#'   - `metadata$technology`: `"Vizgen_MERFISH"`.
+#' @author Estella Yixing Dong, Dario Righelli
 #' @export
-#'
 #' @importFrom data.table fread
 #' @importFrom S4Vectors DataFrame
 #' @importFrom dplyr left_join
 #' @importFrom SpatialExperiment SpatialExperiment
 #' @examples
-#'
-#' path <- system.file(
-#'   file.path("extdata", "Merfish_Tiny"),
-#'   package = "SpaceTrooper")
-#'
-#' # read the count matrix .h5 file
-#' spe <- readMerfishSPE(dirname = path, keep_polygons=TRUE,
-#'     boundaries_type="parquet")
+#' path <- system.file("extdata", "Merfish_Tiny",
+#'                     package = "SpaceTrooper")
+#' spe <- readMerfishSPE(
+#'   dirname = path,
+#'   sample_name = "Patient2",
+#'   keep_polygons = TRUE,
+#'   boundaries_type = "parquet"
+#' )
 #' spe
 readMerfishSPE <- function(dirname,
                            sample_name="sample01",
@@ -95,6 +116,34 @@ readMerfishSPE <- function(dirname,
 
 }
 
+#' Compute Missing Spatial Metrics for MERFISH
+#'
+#' @description
+#' `computeMissingMetricsMerfish()` takes cell metadata and boundary
+#' polygons, calculates per‐cell area and aspect‐ratio, and optionally
+#' appends the raw polygon geometries.
+#'
+#' @param pol_file `character`
+#'   Path (or vector of paths) to polygon files (HDF5 or Parquet).
+#' @param coldata `DataFrame` or `data.frame`
+#'   Cell metadata with at least a `cell_id` column.
+#' @param boundaries_type `character(1)`
+#'   One of `"HDF5"` or `"parquet"`—passed on to
+#'   `readPolygonsMerfish()`.
+#' @param keep_polygons `logical(1)`
+#'   If `TRUE`, cbinds the raw polygon `sf` columns onto `coldata`.
+#'
+#' @return A `DataFrame` (or `data.frame`) with:
+#'   - all columns of `coldata`
+#'   - `um_area`: area of each cell’s polygon
+#'   - `AspectRatio`: width/height aspect ratio
+#'   - (optionally) the polygon geometries
+#'
+#' @export
+#' @importFrom S4Vectors DataFrame
+#' @examples
+#' example(readMerfishSPE)
+#' spe <- computeMissingMetricsMerfish(spe)
 computeMissingMetricsMerfish <- function(pol_file, coldata,
                                         boundaries_type=c("HDF5", "parquet"),
                                         keep_polygons=FALSE)

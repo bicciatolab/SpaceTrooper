@@ -27,6 +27,8 @@ in `scuttle`, `both` for computing both of them.}
 for the outlier detection should be scaled (default is FALSE, as suggested
 by the original Medcouple authors.). See \link[robustbase]{mc} for further
 readings.}
+
+\item{scuttleType}{One of `"both"`, `"lower"`, `"higher"` for scuttle method.}
 }
 \value{
 a SpatialExperiment object with additional column(s) (named as
@@ -50,5 +52,8 @@ function in the scuttle package. Please see McCarthy DJ et al (2017)
 for further details.
 }
 \examples{
-# TBD
+example(readCosmxSPE)
+spe <- computeSpatialOutlier(spe, compute_by="log2CountArea", method="both")
+table(spe$log2CountArea_outlier_mc)
+table(spe$log2CountArea_outlier_sc)
 }

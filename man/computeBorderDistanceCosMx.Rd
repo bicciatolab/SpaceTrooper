@@ -2,7 +2,7 @@
 % Please edit documentation in R/QC.R
 \name{computeBorderDistanceCosMx}
 \alias{computeBorderDistanceCosMx}
-\title{computeBorderDistanceCosMx}
+\title{Compute distance to FOV border for CosMx}
 \usage{
 computeBorderDistanceCosMx(
   spe,
@@ -11,22 +11,21 @@ computeBorderDistanceCosMx(
 )
 }
 \arguments{
-\item{spe}{A `SpatialExperiment` object with spatial transcriptomics data.}
+\item{spe}{A `SpatialExperiment` object with CosMx data.}
 
-\item{xwindim}{Width of the FOV in the x-dimension. Defaults to
-`metadata(spe)$fov_dim[["xdim"]]`.}
+\item{xwindim}{Width of FOV in x (default from `metadata(spe)$fov_dim`).}
 
-\item{ywindim}{Height of the FOV in the y-dimension. Defaults to
-`metadata(spe)$fov_dim[["ydim"]]`.}
+\item{ywindim}{Height of FOV in y (default from `metadata(spe)$fov_dim`).}
 }
 \value{
-The `SpatialExperiment` object with added border distance data in
-`colData`.
+A `SpatialExperiment` object with `dist_border` columns in
+  `colData`.
 }
 \description{
-Compute Distance to FoV Border in SpatialExperiment for CosMx technology.
-
-Calculates the minimum distance of each coordinate in a `SpatialExperiment`
-object to the nearest border of the field of view (FOV) and adds it to
-`colData`.
+Calculates the minimum distance of each cell to the field‐of‐view border
+and adds it to `colData`.
+}
+\examples{
+example(readCosmxSPE)
+spe <- computeBorderDistanceCosMx(spe)
 }

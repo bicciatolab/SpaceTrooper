@@ -57,8 +57,10 @@ metadata, and FOV positions, and constructs a `SpatialExperiment` object.
 Optionally, polygon data can be read and added to the object.
 }
 \examples{
-# Assuming the data files are located in "path/to/cosmx_data":
 cospath <- system.file(file.path("extdata", "CosMx_DBKero_Tiny"),
    package="SpaceTrooper")
 spe <- readCosmxSPE(cospath, sample_name="DBKero_Tiny")
+}
+\author{
+Estella Yixing Dong, Dario Righelli
 }
