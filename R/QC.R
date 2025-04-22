@@ -319,9 +319,17 @@ computeFixedFlags <- function(spe, total_threshold=0,
 #' is performed through ridge regression.
 #'
 #' @param spe A `SpatialExperiment` object with spatial transcriptomics data.
+#' @param verbose logical for having a verbose output. Default is FALSE.
 #'
 #' @return The `SpatialExperiment` object with added quality score in `colData`.
-computeQScore <- function(spe) {
+#' @export
+#' @importFrom dplyr case_when filter mutate distinct
+#' @importFrom glmnet glmnet cv.glmnet
+#' @examples
+#' example(spatialPerCellQC)
+#' spe <- computeQScore(spe)
+#' summary(spe$training_status)
+computeQScore <- function(spe, verbose=FALSE) {
     # this is necessary because I found Xenium and Merfish datasets with 0
     # counts cells having log2CountArea as -Inf
     # something our functions such as medcouple and skewness don't deal with,
@@ -408,7 +416,8 @@ computeQScore <- function(spe) {
 
     train_bad <- train_bad |> distinct(cell_id, .keep_all = TRUE)
 
-    message(paste0("Chosen low quality examples: ", dim(train_bad)[1]))
+    if(verbose) message(paste0("Chosen low quality examples: ",
+                        dim(train_bad)[1]))
 
     # good example duplicates removal without any warning to the user
 
@@ -418,8 +427,8 @@ computeQScore <- function(spe) {
     train_good <- train_good[sample(rownames(train_good), dim(train_bad)[1],
                                 replace=FALSE),]
 
-    message(paste0("Chosen good quality examples, (should be the same number
-              of bad quality examples): ", dim(train_good)[1]))
+    if(verbose) message(paste0("Chosen good quality examples: ",
+                            dim(train_good)[1]))
 
     # merge into same training dataset
 
@@ -481,7 +490,7 @@ computeQScore <- function(spe) {
     #spe$doom <- cd$doom
 
     # error output: Error in attributes(lst) <- a :
-    #'names' attribute [395215] must be the same length as the vector [5242]
+    # names' attribute [395215] must be the same length as the vector [5242]
 
     train_identity <- rep("TEST", dim(spe)[2])
     spe$training_status <- dplyr::case_when(

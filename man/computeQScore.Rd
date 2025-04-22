@@ -4,14 +4,15 @@
 \alias{computeQScore}
 \title{computeQScore}
 \usage{
-computeQScore(spe)
+computeQScore(spe, verbose = FALSE)
 }
 \arguments{
 \item{spe}{A `SpatialExperiment` object with spatial transcriptomics data.}
+
+\item{verbose}{logical for having a verbose output. Default is FALSE.}
 }
 \value{
 The `SpatialExperiment` object with added quality score in `colData`.
-names' attribute [395215] must be the same length as the vector [5242]
 }
 \description{
 Compute quality score and automatically define weights for quality score
@@ -19,4 +20,9 @@ through glm training. This function computes quality score with a formula
 that depends on the technology.
 To automatically define the formula coefficient weights, model training
 is performed through ridge regression.
+}
+\examples{
+example(spatialPerCellQC)
+spe <- computeQScore(spe)
+summary(spe$training_status)
 }

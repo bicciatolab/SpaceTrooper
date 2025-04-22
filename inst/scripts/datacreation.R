@@ -1,5 +1,6 @@
 ## creating data for cosmx starting from DBKero
-
+cospath <- "/Users/inzirio/Downloads/CosMx_data/DBKero/CosMx_Breast/CosMx_data_Case2"
+spe<- readCosmxSPE(cospath)
 f=11
 c=c(1:50)
 gc<- 1:12
