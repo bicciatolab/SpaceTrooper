@@ -309,14 +309,14 @@ readAndAddPolygonsToSPE <- function(spe, keepMultiPol=TRUE,
 .addPolygonsToCD <- function(cd, polygons, polygonsCol="polygons") {
     stopifnot(inherits(cd, "DataFrame"), inherits(polygons, "sf"))
 
-    if("fov"%in%colnames(cd))
+    if("fov" %in% colnames(polygons)) ## case of CosMx
     {
         # Build consistent cell IDs
         cd$cell_id <- paste0("f", cd$fov, "_c", cd$cellID)
         polygons$cell_id <- paste0("f", polygons$fov, "_c", polygons$cellID)
         rownames(cd) <- cd$cell_id
         rownames(polygons) <- polygons$cell_id
-    } else {
+    } else { ## valid for both xenium and merfish
         rownames(cd) <- cd$cell_id
         rownames(polygons) <- polygons$cell_id
     }
@@ -365,7 +365,7 @@ addPolygonsToSPE <- function(spe, polygons, polygonsCol="polygons") {
     cd <- .addPolygonsToCD(cd, polygons, polygonsCol)
 
     # Subset and reorder the SpatialExperiment
-    spe <- spe[, cd$cell_id, drop = FALSE]
+    spe <- spe[, which(colnames(spe) %in% cd$cell_id), drop = FALSE]
 
     # Replace colData with enriched DataFrame
     colData(spe) <- cd

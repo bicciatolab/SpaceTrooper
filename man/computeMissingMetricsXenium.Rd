@@ -4,7 +4,12 @@
 \alias{computeMissingMetricsXenium}
 \title{computeMissingMetricsXenium}
 \usage{
-computeMissingMetricsXenium(pol_file, coldata, keep_polygons = FALSE)
+computeMissingMetricsXenium(
+  pol_file,
+  coldata,
+  keep_polygons = FALSE,
+  polygonsCol = "polygons"
+)
 }
 \arguments{
 \item{pol_file}{A character string specifying the file path to the polygon
@@ -14,6 +19,9 @@ data.}
 
 \item{keep_polygons}{A logical value indicating whether to keep the polygon
 data in the resulting `colData`. Default is `FALSE`.}
+
+\item{polygonsCol}{character indicating the name of the polygons column to
+add into the colData (default is `polygons`).}
 }
 \value{
 A `DataFrame` containing the updated `colData` with computed metrics.

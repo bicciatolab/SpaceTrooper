@@ -14,7 +14,8 @@ readXeniumSPE(
   keep_polygons = FALSE,
   countsfilepattern = "cell_feature_matrix",
   metadatafpattern = "cells",
-  polygonsfpattern = "cell_boundaries"
+  polygonsfpattern = "cell_boundaries",
+  polygonsCol = "polygons"
 )
 }
 \arguments{
@@ -30,6 +31,9 @@ need to change.}
 
 \item{polygonsfpattern}{a vector of two strings specify the spatial coord names.
 Default value is \code{c("x_centroid", "y_centroid")}, and there is no need to change.}
+
+\item{polygonsCol}{character indicating the name of the polygons column to
+add into the colData (default is `polygons`).}
 }
 \value{
 a \code{\link{SpatialExperiment}} object

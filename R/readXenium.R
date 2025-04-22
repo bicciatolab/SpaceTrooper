@@ -170,7 +170,7 @@ computeMissingMetricsXenium <- function(pol_file, coldata, keep_polygons=FALSE,
     polygons <- readPolygonsXenium(pol_file, keepMultiPol=TRUE)
     cd <- coldata
     cd$AspectRatio <- computeAspectRatioFromPolygons(polygons)
-    if(keep_polygons) cd <- addPolygonsToSPE(cd, polygons, polygonsCol)
+    if(keep_polygons) cd <- .addPolygonsToCD(cd, polygons, polygonsCol)
     return(cd)
 }
 

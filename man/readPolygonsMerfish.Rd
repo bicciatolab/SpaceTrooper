@@ -5,7 +5,7 @@
 \title{readPolygonsMerfish}
 \usage{
 readPolygonsMerfish(
-  polygonsFolder,
+  polygons,
   type = c("HDF5", "parquet"),
   keepMultiPol = TRUE,
   hdf5pattern = "hdf5",
@@ -16,10 +16,10 @@ readPolygonsMerfish(
 )
 }
 \arguments{
-\item{polygonsFolder}{A character string specifying the folder containing the
-polygon data files.}
+\item{polygons}{A character string specifying the folder containing the
+polygon data files in case of HDF5, or a path to a parquet file (see `type`).}
 
-\item{type}{A character string specifying the file type ("HDF5" or "parquet").}
+\item{type}{A character string specifying the file type("HDF5" or "parquet").}
 
 \item{keepMultiPol}{A logical value indicating whether to keep multipolygons.}
 

@@ -83,7 +83,7 @@ readMerfishSPE <- function(dirname,
         spatialCoordsNames = coord_names,
         metadata=list(polygons=pol_file, technology="Vizgen_MERFISH")
     )
-
+    colnames(spe) <- spe$cell_id
     return(spe)
 
 }
