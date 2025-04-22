@@ -26,5 +26,13 @@ A SpatialExperiment object
 readMerfishSPE
 }
 \examples{
-# TBD
+
+path <- system.file(
+  file.path("extdata", "Merfish_Tiny"),
+  package = "SpaceTrooper")
+
+# read the count matrix .h5 file
+spe <- readMerfishSPE(dirname = path, keep_polygons=TRUE,
+    boundaries_type="parquet")
+spe
 }

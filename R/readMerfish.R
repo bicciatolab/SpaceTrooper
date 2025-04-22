@@ -23,8 +23,15 @@
 #' @importFrom dplyr left_join
 #' @importFrom SpatialExperiment SpatialExperiment
 #' @examples
-#' # TBD
-## for old fovs consider dimensions 5472 x 3648 pixels.
+#'
+#' path <- system.file(
+#'   file.path("extdata", "Merfish_Tiny"),
+#'   package = "SpaceTrooper")
+#'
+#' # read the count matrix .h5 file
+#' spe <- readMerfishSPE(dirname = path, keep_polygons=TRUE,
+#'     boundaries_type="parquet")
+#' spe
 readMerfishSPE <- function(dirname,
                            sample_name="sample01",
                            compute_missing_metrics=TRUE, keep_polygons=FALSE,
@@ -70,7 +77,7 @@ readMerfishSPE <- function(dirname,
     if (compute_missing_metrics)
     {
         message("Computing missing metrics, this could take a while...")
-        cd <- computeMissingMetricsMerfish(pol_file, colData,
+        cd <- computeMissingMetricsMerfish(pol_file, colData, boundaries_type,
                                            keep_polygons)
     }
 
@@ -89,12 +96,10 @@ readMerfishSPE <- function(dirname,
 }
 
 computeMissingMetricsMerfish <- function(pol_file, coldata,
-                                         boundaries_type, keep_polygons=FALSE)
+                                        boundaries_type=c("HDF5", "parquet"),
+                                        keep_polygons=FALSE)
 {
-    stopifnot(dir.exists(pol_file)) # I don't know if it was called polygonsFolder
-    # not to mix variables between functions, readMerfishSPE and computeMissingMetricsMerfish
-    polygons <- readPolygonsMerfish(pol_file, keepMultiPol=TRUE,
-                                    type=boundaries_type)
+    polygons <- readPolygonsMerfish(pol_file, type=boundaries_type)
     cd <- coldata
     cd$um_area <- computeAreaFromPolygons(polygons)
     cd$AspectRatio <- computeAspectRatioFromPolygons(polygons)

@@ -137,9 +137,6 @@ readPolygons <- function(polygonsFile, type=c("csv", "parquet", "h5"),
 #' removed.
 #' @keywords internal
 #' @importFrom sf st_is_valid st_buffer st_geometry_type
-#'
-#' @examples
-#' # TBD
 .checkPolygonsValidity <- function(sf, geometry=NULL, keepMultiPol=TRUE,
                                     verbose=FALSE)
 {
@@ -151,8 +148,8 @@ readPolygons <- function(polygonsFile, type=c("csv", "parquet", "h5"),
         act <- .getActiveGeometryName(sf)
         sf <- .setActiveGeometry(sf, geometry)
     }
-
-    sf_tf <- st_is_valid(sf) # to parallelize? how? split sf in multiple sf and parallelize on it?
+    # to parallelize? how? split sf in multiple sf and parallelize on it?
+    sf_tf <- st_is_valid(sf)
 
     if(sum(sf_tf)!=dim(sf)[1]) sf <- st_buffer(sf, dist=0)
 
@@ -167,7 +164,7 @@ readPolygons <- function(polygonsFile, type=c("csv", "parquet", "h5"),
         #     return(geom$cell_id)
         # }
     # }))
-    is_multi <- sf::st_geometry_type(sf$global) == "MULTIPOLYGON"
+    is_multi <- sf::st_geometry_type(sf[[geometry]]) == "MULTIPOLYGON" ## <<<<
     ## TRUE is merscope - FALSE is cosmx and xenium
     merscopeFl <- (sum(is_multi) == dim(sf)[1])
     funct <- ifelse(merscopeFl, "lengths", "length")
@@ -182,9 +179,14 @@ readPolygons <- function(polygonsFile, type=c("csv", "parquet", "h5"),
         sf$multi_n[idx] <- unlist(sums[idx])
 
     }
-    if( all(merscopeFl, length(idx)!=0) )
+    if( merscopeFl )
     {
-        sf$global[-idx] <- st_cast(sf$global[-idx], "POLYGON")
+        if( length(idx)!=0 )
+        {
+            sf$global[-idx] <- st_cast(sf$global[-idx], "POLYGON")
+        } else {
+            sf$global <- st_cast(sf$global, "POLYGON")
+        }
     }
 
     if(verbose) message("Detected ", sum(sf$is_multi), " multipolygons.")
@@ -256,43 +258,6 @@ readAndAddPolygonsToSPE <- function(spe, keepMultiPol=TRUE,
 }
 
 
-#
-# addPolygonsToSPE <- function(spe, polygons=NULL)
-# {
-#     stopifnot(all(is(spe, "SpatialExperiment"), is(polygons, "sf")))
-#
-#     if (sum(rownames(polygons) == colnames(spe)) != dim(spe)[2])
-#     {
-#         cd <- data.frame(colData(spe))
-#         # polygons <- left_join(polygons, cd[, c("fov", "cellID")],
-#         #                       by=c("fov", "cellID"))
-#         # cd <- left_join(cd, polygons[ , c("fov", "cellID")],
-#         #                 by=c("fov","cellID"))
-#         # polygons$cell_id <- paste0("f", polygons$fov, "_c", polygons$cellID)
-#         # rownames(cd) <- cd$cell_id
-#         # rownames(polygons) <- polygons$cell_id
-#         # polygons <- polygons[polygons$cell_id %in% rownames(cd),]
-#         cd <- .addPolygonsToCD(cd, polygons)
-#         spe <- spe[, spe$cell_id %in% rownames(cd$polygons)]
-#     }
-#     spe <- spe[, rownames(polygons)]
-#     colData(spe)$polygons <- polygons
-#     return(spe)
-# }
-
-# .addPolygonsToCD <- function(cd, polygons)
-# {
-#     stopifnot(all(is(cd, "DataFrame"), is(polygons, "sf")))
-#     polygons <- left_join(polygons, cd[, c("fov", "cellID")],
-#                           by=c("fov", "cellID"))
-#     cd <- left_join(cd, polygons[ , c("fov", "cellID")],
-#                     by=c("fov","cellID"))
-#     polygons$cell_id <- paste0("f", polygons$fov, "_c", polygons$cellID)
-#     rownames(cd) <- cd$cell_id
-#     rownames(polygons) <- polygons$cell_id
-#     cd$polygons <- polygons
-#     return(cd)
-# }
 
 #' Attach sf polygons to a DataFrame of cell metadata
 #'

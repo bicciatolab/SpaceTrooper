@@ -45,9 +45,6 @@
 #'
 #' @return an sf object
 #' @export
-#'
-#' @examples
-#' #TBD
 .renameGeometry <- function(sf, from, to, activate=FALSE)
 {
     stopifnot(all(is(sf, "sf"), from %in% names(sf)))
