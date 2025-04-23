@@ -7,7 +7,8 @@ To install the package, R must be at least 4.1.
 
 # Installation
 First try to run the following either in R or in a virgin environment:
-remotes::install_github(repo="https://github.com/drighelli/SpaceTrooper", ref = "devel")
+
+```remotes::install_github(repo="https://github.com/drighelli/SpaceTrooper", ref = "devel")```
 
 # Demo
 If you were able to install the package correctly, CONGRATULATIONS!!! 🎉🎉🎉
