@@ -60,7 +60,8 @@ readMerfishSPE <- function(dirname,
                            countmatfpattern = "cell_by_gene.csv",
                            metadatafpattern = "cell_metadata.csv",
                            polygonsfpattern = "cell_boundaries.parquet",
-                           coord_names = c("center_x", "center_y"))
+                           coord_names = c("center_x", "center_y"),
+                           polygonsCol="polygons")
 {
     countmat_file <- list.files(dirname, countmatfpattern, full.names=TRUE)
     metadata_file <- list.files(dirname, metadatafpattern, full.names=TRUE)
@@ -83,9 +84,8 @@ readMerfishSPE <- function(dirname,
 
     features <- colnames(counts)
     counts <- t(as.matrix(counts))
-
     rownames(counts) <- features
-    colnames(counts) <- cn
+    colnames(counts) <- as.character(cn)
 
     # rowData (does not exist)
     # To be associated to the tx file
@@ -99,7 +99,7 @@ readMerfishSPE <- function(dirname,
     {
         message("Computing missing metrics, this could take a while...")
         cd <- computeMissingMetricsMerfish(pol_file, colData, boundaries_type,
-                                           keep_polygons)
+                                           keep_polygons, polygonsCol)
     }
 
     spe <- SpatialExperiment::SpatialExperiment(
@@ -118,16 +118,16 @@ readMerfishSPE <- function(dirname,
 
 #' Compute Missing Spatial Metrics for MERFISH
 #'
-#' @description
+#'@description
 #' `computeMissingMetricsMerfish()` takes cell metadata and boundary
 #' polygons, calculates per‐cell area and aspect‐ratio, and optionally
 #' appends the raw polygon geometries.
 #'
-#' @param pol_file `character`
-#'   Path (or vector of paths) to polygon files (HDF5 or Parquet).
-#' @param coldata `DataFrame` or `data.frame`
-#'   Cell metadata with at least a `cell_id` column.
-#' @param boundaries_type `character(1)`
+#'@param pol_file `character`
+#'  Path (or vector of paths) to polygon files (HDF5 or Parquet).
+#'@param coldata `DataFrame` or `data.frame`
+#'  Cell metadata with at least a `cell_id` column.
+#'@param boundaries_type `character(1)`
 #'   One of `"HDF5"` or `"parquet"`—passed on to
 #'   `readPolygonsMerfish()`.
 #' @param keep_polygons `logical(1)`
@@ -146,14 +146,15 @@ readMerfishSPE <- function(dirname,
 #' spe <- computeMissingMetricsMerfish(spe)
 computeMissingMetricsMerfish <- function(pol_file, coldata,
                                         boundaries_type=c("HDF5", "parquet"),
-                                        keep_polygons=FALSE)
+                                        keep_polygons=FALSE,
+                                        polygonsCol="polygons")
 {
     polygons <- readPolygonsMerfish(pol_file, type=boundaries_type)
-    cd <- coldata
+    cd <- DataFrame(coldata)
     cd$um_area <- computeAreaFromPolygons(polygons)
     cd$AspectRatio <- computeAspectRatioFromPolygons(polygons)
 
-    if (keep_polygons) cd <- cbind.DataFrame(cd, polygons)
+    if (keep_polygons) cd <- .addPolygonsToCD(cd, polygons, polygonsCol)
     return(cd)
 }
 
