@@ -1,6 +1,7 @@
 # SpaceTrooper
 an R package for the preprocessing and quality control of imaging-based spatial transcriptomics data
-![alt text](https://github.com/drighelli/SpaceTrooper/blob/devel/spacetrooper_logo.png)
+
+![(https://github.com/drighelli/SpaceTrooper/blob/devel/spacetrooper_logo.png)](https://github.com/drighelli/SpaceTrooper/blob/devel/SpaceTrooper_logo.png)
 
 # Requirements
 To install the package, R must be at least 4.1.
