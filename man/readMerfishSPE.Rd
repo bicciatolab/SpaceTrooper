@@ -13,7 +13,8 @@ readMerfishSPE(
   countmatfpattern = "cell_by_gene.csv",
   metadatafpattern = "cell_metadata.csv",
   polygonsfpattern = "cell_boundaries.parquet",
-  coord_names = c("center_x", "center_y")
+  coord_names = c("center_x", "center_y"),
+  polygonsCol = "polygons"
 )
 }
 \arguments{

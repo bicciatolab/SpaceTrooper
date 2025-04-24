@@ -151,11 +151,9 @@ readXeniumSPE <- function(dirname,
 #' @export
 #'
 #' @examples
-#' # Assuming 'pol_file' is the path to the polygon file and 'coldata' is a
-#' # DataFrame:
-#' #updated_cd <- computeMissingMetricsXenium(pol_file = "path/to/polygons",
-#' #                                          coldata = coldata,
-#' #                                          keep_polygons = TRUE)
+#' example(readXeniumSPE)
+#' colData(spe) <- computeMissingMetricsXenium(metadata(spe)$polygons,
+#'     colData(spe), keep_polygons=TRUE)
 computeMissingMetricsXenium <- function(pol_file, coldata, keep_polygons=FALSE,
                                 polygonsCol="polygons")
 {

@@ -41,9 +41,7 @@ the provided `colData`. Optionally, the polygon data can be kept in the
 returned `colData`.
 }
 \examples{
-# Assuming 'pol_file' is the path to the polygon file and 'coldata' is a
-# DataFrame:
-#updated_cd <- computeMissingMetricsXenium(pol_file = "path/to/polygons",
-#                                          coldata = coldata,
-#                                          keep_polygons = TRUE)
+example(readXeniumSPE)
+colData(spe) <- computeMissingMetricsXenium(metadata(spe)$polygons,
+    colData(spe), keep_polygons=TRUE)
 }

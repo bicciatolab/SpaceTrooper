@@ -8,7 +8,8 @@ computeMissingMetricsMerfish(
   pol_file,
   coldata,
   boundaries_type = c("HDF5", "parquet"),
-  keep_polygons = FALSE
+  keep_polygons = FALSE,
+  polygonsCol = "polygons"
 )
 }
 \arguments{

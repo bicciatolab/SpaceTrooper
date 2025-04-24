@@ -25,4 +25,5 @@ is performed through ridge regression.
 example(spatialPerCellQC)
 spe <- computeQScore(spe)
 summary(spe$training_status)
+summary(spe$quality_score)
 }
