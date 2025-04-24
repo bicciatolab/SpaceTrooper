@@ -329,6 +329,7 @@ computeFixedFlags <- function(spe, total_threshold=0,
 #' example(spatialPerCellQC)
 #' spe <- computeQScore(spe)
 #' summary(spe$training_status)
+#' summary(spe$quality_score)
 computeQScore <- function(spe, verbose=FALSE) {
     # this is necessary because I found Xenium and Merfish datasets with 0
     # counts cells having log2CountArea as -Inf
