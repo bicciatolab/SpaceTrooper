@@ -41,7 +41,7 @@ example(readAndAddPolygonsToSPE)
 example(computeFixedFlags)
 spe <- computeSpatialOutlier(spe, compute_by="Area_um", method="both")
 spe <- computeSpatialOutlier(spe, compute_by="Mean.DAPI", method="both")
-p <- firstFilterPlot(spe, fov = c(11, 12), theme = "dark")
+p <- firstFilterPlot(spe, fov = 32, theme = "dark")
 print(p)
 
 }

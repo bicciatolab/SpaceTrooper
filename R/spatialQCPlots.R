@@ -98,6 +98,7 @@ plotCellsFovs <- function(spe, sample_id=unique(spe$sample_id),
 #' @return A `ggplot` object representing the spatial coordinates plot of
 #' polygon centroids.
 #'
+#' @import SpatialExperiment
 #' @importFrom ggplot2 geom_point aes_string theme_bw theme ggtitle guides
 #' guide_legend scale_color_gradient scale_color_manual scale_color_gradientn
 #' @importFrom scater plotColData
@@ -201,6 +202,7 @@ plotCentroids <- function(spe, colour_by=NULL, colour_log=FALSE,
 #' @importFrom ggplot2 ggplot geom_histogram aes ggtitle theme_bw geom_vline
 #' labs scale_colour_manual
 #' @importFrom SummarizedExperiment colData
+#' @importFrom methods is
 #' @export
 #' @examples
 #' example(readCosMx)
