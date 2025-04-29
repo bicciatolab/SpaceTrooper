@@ -225,7 +225,7 @@ readPolygons <- function(polygonsFile, type=c("csv", "parquet", "h5"),
 #' spe <- readAndAddPolygonsToSPE(spe)
 #' colData(spe)
 readAndAddPolygonsToSPE <- function(spe, polygonsCol="polygons",
-                    keepMultiPol=TRUE, boundaries_type=c("HDF5", "parquet"))
+                    keepMultiPol=TRUE, boundaries_type=c("csv", "HDF5", "parquet"))
 {
     boundaries_type <- match.arg(boundaries_type)
     stopifnot("technology" %in% names(metadata(spe)))
@@ -407,11 +407,13 @@ readPolygonsCosmx <- function(polygonsFile, type=c("csv", "parquet"),
     type=match.arg(type)
     polygons <- readPolygons(polygonsFile, type=type, x=x, y=y, xloc=xloc,
                     yloc=yloc, keepMultiPol=keepMultiPol, verbose=verbose)
-    polygons <- st_cast(polygons, "GEOMETRY")
+    polygons <- sf::st_cast(polygons, "GEOMETRY")
     mandatory <- c("cell_id", "global", "is_multi", "multi_n")
     cnames <- colnames(polygons)[!colnames(polygons) %in% mandatory]
     polygons <- polygons[,c(mandatory, cnames)]
-    polygons <- st_cast(polygons, "GEOMETRY")
+    polygons <- .setActiveGeometry(polygons, "local")
+    polygons <- sf::st_cast(polygons, "GEOMETRY")
+    polygons <- .setActiveGeometry(polygons, "global")
     return(polygons)
 }
 

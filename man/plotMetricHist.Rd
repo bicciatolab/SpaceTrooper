@@ -7,7 +7,7 @@
 plotMetricHist(
   spe,
   metric,
-  fill_color = "#69b3a2",
+  fill_color = "#c0c8cf",
   use_fences = NULL,
   fences_colors = c(lower = "purple4", higher = "tomato"),
   bins = 30,

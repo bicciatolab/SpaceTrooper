@@ -41,7 +41,7 @@ plotCellsFovs <- function(spe, sample_id=unique(spe$sample_id),
                                 y=.data[[y_coord]]),
                     colour=point_col,
                     fill=point_col,
-                    size=0.05, alpha=0.2) +
+                    size=0.05, alpha=0.8) +
         annotate("rect",
             xmin=metadata(spe)$fov_positions["x_global_px"][ , , drop=TRUE],
             xmax=metadata(spe)$fov_positions["x_global_px"][ , , drop=TRUE] +
@@ -113,7 +113,7 @@ plotCellsFovs <- function(spe, sample_id=unique(spe$sample_id),
 plotCentroids <- function(spe, colour_by=NULL, colour_log=FALSE,
                         sample_id=unique(spe$sample_id),
                         isNegativeProbe=FALSE, palette=NULL,
-                        point_col="darkmagenta", size=0.05, alpha=0.2,
+                        point_col="darkmagenta", size=0.05, alpha=0.8,
                         aspect_ratio=1)
 {
 
@@ -206,7 +206,7 @@ plotCentroids <- function(spe, colour_by=NULL, colour_log=FALSE,
 #' example(readCosMx)
 #' g <- plotMetricHist(spe, metric="Mean.DAPI")
 #' print(g)
-plotMetricHist <- function(spe, metric, fill_color="#69b3a2",
+plotMetricHist <- function(spe, metric, fill_color="#c0c8cf",
         use_fences=NULL, fences_colors=c("lower"="purple4", "higher"="tomato"),
         bins=30, bin_width=NULL)
 {
@@ -418,6 +418,7 @@ plotPolygons <- function(spe, colour_by="darkgrey", colour_log=FALSE,
             # plot.background=element_rect(fill="lightblue",color="black",size=1),
             # Background for the panel
             panel.background=element_rect(fill=bg_color, color=bg_color, size=1),
+            panel.border = element_rect(color = "black", fill = NA, linewidth = 0.1),
             # Customize grid lines
             # panel.grid.major=element_line(color="gray"),
             panel.grid.minor=element_blank()
@@ -499,7 +500,7 @@ plotZoomFovsMap <- function(spe, fovs=NULL,
 }
 #' Plot quality‐score term contributions
 #'
-#' @title Plot QC score terms for SpatialExperiment
+#' @title Plot quality score terms for SpatialExperiment
 #'
 #' @description
 #' Plots the individual terms that combine into the quality score formula,
@@ -509,14 +510,13 @@ plotZoomFovsMap <- function(spe, fovs=NULL,
 #'   columns in `colData`.
 #' @param sample_id Character string for plot title. Must match values in the
 #'   `fov` column of `colData(spe)`. Default: `unique(spe$sample_id)`.
-#' @param palette Optional color palette for continuous terms. Default: `NULL`.
 #' @param size Numeric point size for the scatter plots. Default: `0.05`.
 #' @param alpha Numeric transparency for the scatter plots. Default: `0.2`.
 #' @param aspect_ratio Numeric aspect ratio of the plots. Default: `1`.
 #' @param custom Logical; if `TRUE`, use custom polygon‐derived metrics.
 #'
 #' @return A combined plot (via `cowplot::plot_grid`) showing spatial maps
-#'   of each QC term.
+#'   of each QS term.
 #'
 #' @importFrom scater plotColData
 #' @importFrom ggplot2 ggtitle coord_fixed
@@ -524,16 +524,15 @@ plotZoomFovsMap <- function(spe, fovs=NULL,
 #' @export
 #'
 #' @examples
-#' example(computeQScore)
-#' p <- plotQCscoreTerms(spe)
+#' example(readAndAddPolygonsToSPE)
+#' example(spatialPerCellQC)
+#' p <- plotQScoreTerms(spe)
 #' print(p)
-plotQCscoreTerms <- function(spe,
+plotQScoreTerms <- function(spe,
                              sample_id=unique(spe$sample_id),
-                             palette=NULL,
-                             size=0.05, alpha=0.2,
+                             size=0.05, alpha=0.8,
                              aspect_ratio=1, custom = FALSE)
 {
-    stopifnot(all("quality_score" %in% colnames(colData(spe))))
     if(metadata(spe)$technology=="Nanostring_CosMx")
     {
         if(custom==TRUE){
@@ -588,7 +587,7 @@ plotQCscoreTerms <- function(spe,
 
 
 
-#' FirstFilterPlot
+#' firstFilterPlot
 #' @description
 #'
 #' Plots the flagged cells identified with first filter, based on control count
@@ -617,9 +616,14 @@ plotQCscoreTerms <- function(spe,
 #'
 #' @examples
 #' # Assuming 'spe' is a SpatialExperiment object with FOVs and polygon data:
-#' # plotZoomFovsMap(spe, fovs = c("FOV1", "FOV2"), colour_by = "cell_type",
-#' #                title = "Zoomed FOVs with Polygons")
-FirstFilterPlot <- function(
+#' example(readAndAddPolygonsToSPE)
+#' example(computeFixedFlags)
+#' spe <- computeSpatialOutlier(spe, compute_by="Area_um", method="both")
+#' spe <- computeSpatialOutlier(spe, compute_by="Mean.DAPI", method="both")
+#' p <- firstFilterPlot(spe, fov = c(11, 12), theme = "dark")
+#' print(p)
+#'
+firstFilterPlot <- function(
         spe,
         fov    = unique(spe$fov),
         theme  = c("light", "dark"),
@@ -636,6 +640,10 @@ FirstFilterPlot <- function(
         )
     }
 
+    spe <- computeSpatialOutlier(spe, compute_by="Area_um", method="both")
+    spe <- computeSpatialOutlier(spe, compute_by="Mean.DAPI", method="both")
+
+
     # Assign fixed flags colors
     spe$polygons$fixed_flags_color <- case_when(
         spe$is_zero_counts == TRUE             ~ "0 counts",
@@ -643,6 +651,17 @@ FirstFilterPlot <- function(
             "ctrl/total ratio > 0.1",
         TRUE                                    ~ "unflagged"
     )
+
+    if(any(spe$polygons$fixed_flags_color!="unflagged")==FALSE){
+        warning("No cells with 0 counts or control/total ratio > 0.1 were found")
+    }
+
+    if (any(spe$Mean.DAPI_outlier_mc=="HIGH",
+            spe$Mean.DAPI_outlier_mc=="LOW",
+            spe$Mean.Area_um_outlier_mc=="HIGH",
+            spe$Mean.Area_um_outlier_mc=="LOW")==FALSE){
+        warning("No outliers were found for Area in um and DAPI signal")
+    }
 
     # Assign DAPI outlier colors
     spe$polygons$dapi_outlier_color <- dplyr::case_when(
@@ -657,7 +676,7 @@ FirstFilterPlot <- function(
 
     # Define palette
     outlier_palette <- c(
-        "unflagged"                  = "grey20",
+        "unflagged"                  = "#c0c8cf",
         "ctrl/total ratio > 0.1"    = "magenta",
         "< area um lower thr."       = "darkturquoise",
         "> area um higher thr."      = "red",
