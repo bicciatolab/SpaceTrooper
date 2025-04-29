@@ -132,6 +132,8 @@ readMerfishSPE <- function(dirname,
 #'   `readPolygonsMerfish()`.
 #' @param keep_polygons `logical(1)`
 #'   If `TRUE`, cbinds the raw polygon `sf` columns onto `coldata`.
+#' @param polygonsCol character indicating the name of the polygons column to
+#' add into the colData (default is `polygons`).
 #'
 #' @return A `DataFrame` (or `data.frame`) with:
 #'   - all columns of `coldata`

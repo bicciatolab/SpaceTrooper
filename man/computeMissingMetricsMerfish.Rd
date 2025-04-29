@@ -25,6 +25,9 @@ One of `"HDF5"` or `"parquet"`—passed on to
 
 \item{keep_polygons}{`logical(1)`
 If `TRUE`, cbinds the raw polygon `sf` columns onto `coldata`.}
+
+\item{polygonsCol}{character indicating the name of the polygons column to
+add into the colData (default is `polygons`).}
 }
 \value{
 A `DataFrame` (or `data.frame`) with:

@@ -34,10 +34,9 @@ Imports:
     scuttle,
     sf,
     sfheaders,
-    terra,
     tmap,
-    tools,
     cowplot,
-    glmnet
+    glmnet,
+    rhdf5
 Suggests:
 RoxygenNote: 7.3.2

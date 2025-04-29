@@ -608,10 +608,11 @@ computeAspectRatioFromPolygons <- function(polygons)
 #'
 #' @return A list containing the polygon geometries and their associated cell IDs.
 #' @author Lambda Moses
+#' @importFrom rhdf5 h5dump
+#' @importFrom sf st_polygon
 #' @export
 #'
 #' @examples
-#' TBD
 #' # Read polygons from an HDF5 file:
 #' # polygons <- readh5polygons("path/to/polygons.h5")
 readh5polygons <- function(pol_file)
