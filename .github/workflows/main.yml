@@ -2,14 +2,7 @@ name: Bioc build and check
 
 on:
   push:
-    paths:
-      - 'DESCRIPTION'
-      - '**.yml'
-    branches:
-      - devel
   pull_request:
-    branches:
-      - devel
 
 jobs:
   build-check:
