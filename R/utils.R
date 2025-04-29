@@ -41,7 +41,8 @@
 #' @param sf an sf object with the `from` geometry
 #' @param from character indicating the name of the geometry to change
 #' @param to character indicating the new name of the geometry
-#' @param activate logical indicating if the renamed geometry has to be activated
+#' @param activate logical indicating if the renamed geometry has to be
+#' activated
 #'
 #' @return an sf object
 #' @export
@@ -67,7 +68,7 @@
 #' @param fences_of A character string specifying the name of the column in
 #' `colData(spe)` from which to extract the fence values. This column should
 #' contain an `outlier.filter` object.
-#' @param decimal.round An optional integer specifying the number of decimal
+#' @param decimal_round An optional integer specifying the number of decimal
 #' places to which the fence values should be rounded. If `NULL`, no rounding is
 #'  applied. Default is `NULL`.
 #'

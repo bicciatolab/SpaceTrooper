@@ -51,6 +51,9 @@ Pattern to find the cell boundaries file. Default:
 \item{coord_names}{`character(2)`
 Names of the columns in `colData` that store X/Y spatial coordinates.
 Default: `c("center_x", "center_y")`.}
+
+\item{polygonsCol}{character indicating the name of the polygons column to
+add into the colData (default is `polygons`).}
 }
 \value{
 A `SpatialExperiment` object with:

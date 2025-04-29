@@ -32,9 +32,7 @@
 #' @description
 #' internal function to setup the theme for the centroid plot background
 #'
-#' @param back.color not used
 #' @param back.border color for the borders of the background (default=NA)
-#' @param title.col character indicating the color of the title
 #'
 #' @return a ggplot2 theme object
 #' @importFrom ggplot2 theme element_blank element_rect

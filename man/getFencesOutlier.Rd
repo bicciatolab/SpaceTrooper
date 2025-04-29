@@ -20,7 +20,7 @@ data.}
 `colData(spe)` from which to extract the fence values. This column should
 contain an `outlier.filter` object.}
 
-\item{decimal.round}{An optional integer specifying the number of decimal
+\item{decimal_round}{An optional integer specifying the number of decimal
 places to which the fence values should be rounded. If `NULL`, no rounding is
  applied. Default is `NULL`.}
 }

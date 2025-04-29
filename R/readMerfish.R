@@ -30,6 +30,8 @@
 #' @param coord_names `character(2)`
 #'   Names of the columns in `colData` that store X/Y spatial coordinates.
 #'   Default: `c("center_x", "center_y")`.
+#' @param polygonsCol character indicating the name of the polygons column to
+#' add into the colData (default is `polygons`).
 #'
 #' @return A `SpatialExperiment` object with:
 #'   - `assays$counts`: gene × cell count matrix

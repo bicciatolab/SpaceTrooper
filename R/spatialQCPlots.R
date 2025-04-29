@@ -333,6 +333,10 @@ plotMetricHist <- function(spe, metric, fill_color="#c0c8cf",
 #' @param border_alpha Transparency level for borders. Default is `1`.
 #' @param border_line_width Width of polygon borders. Default is `0.1`.
 #' @param draw_borders Logical; whether to draw borders. Default is `TRUE`.
+#' @param poly_column character for the name of the column where the polygons sf
+#' are stored (default is "polygons.global")
+#' @param bg_color character indicating color for the background
+#' (default is "white")
 #'
 #' @return A `ggplot` object representing the polygon plot of the spatial data.
 #' @export
@@ -346,7 +350,7 @@ plotMetricHist <- function(spe, metric, fill_color="#c0c8cf",
 #' example(readAndAddPolygonsToSPE)
 #' plotPolygons(spe, colour_by="Mean.DAPI")
 plotPolygons <- function(spe, colour_by="darkgrey", colour_log=FALSE,
-                        poly_column = "polygons.global",
+                        poly_column="polygons.global",
                         sample_id=unique(spe$sample_id),
                         bg_color="white",
                         fill_alpha=1, palette=NULL,
@@ -371,7 +375,8 @@ plotPolygons <- function(spe, colour_by="darkgrey", colour_log=FALSE,
             polflag <- TRUE
         } else {
             if(!(colour_by %in% colors())) {
-                warning("colour_by not in known colors nor in colData assigning a default colour")
+                warning("colour_by not in known colors nor in ",
+                "colData assigning a default darkgrey colour")
                 colour_by="darkgrey"
             }
 
@@ -387,7 +392,8 @@ plotPolygons <- function(spe, colour_by="darkgrey", colour_log=FALSE,
 
     if(polflag)
     {
-        p <- ggplot(df, aes(geometry = .data[[poly_column]], fill=.data[[colour_by]])) +
+        p <- ggplot(df, aes(geometry = .data[[poly_column]],
+                    fill=.data[[colour_by]])) +
             geom_sf(alpha=fill_alpha, # alpha fill for area
                     color=border_params$color, # border color
                     size=border_params$size) # border size
@@ -398,7 +404,8 @@ plotPolygons <- function(spe, colour_by="darkgrey", colour_log=FALSE,
                     color=border_params$color, # border color
                     size=border_params$size)
     }
-    if(!is.null(colour_by) && (is.factor(df[[colour_by]]) || is.logical(df[[colour_by]]))) {
+    if(!is.null(colour_by) && (is.factor(df[[colour_by]]) ||
+                                is.logical(df[[colour_by]]))) {
         if(!is.null(palette)) {
             p <- p + scale_fill_manual(values=palette)
         }
@@ -417,8 +424,9 @@ plotPolygons <- function(spe, colour_by="darkgrey", colour_log=FALSE,
             # Background for entire plot
             # plot.background=element_rect(fill="lightblue",color="black",size=1),
             # Background for the panel
-            panel.background=element_rect(fill=bg_color, color=bg_color, size=1),
-            panel.border = element_rect(color = "black", fill = NA, linewidth = 0.1),
+            panel.background=element_rect(fill=bg_color, color=bg_color,
+                                        size=1),
+            panel.border = element_rect(color="black", fill=NA, linewidth=0.1),
             # Customize grid lines
             # panel.grid.major=element_line(color="gray"),
             panel.grid.minor=element_blank()
@@ -493,7 +501,8 @@ plotZoomFovsMap <- function(spe, fovs=NULL,
     if (!is.null(title))
     {
         final_plot <- ggpubr::annotate_figure(final_plot,
-                                              top=ggpubr::text_grob(title, face="bold", size=14))
+                                top=ggpubr::text_grob(title, face="bold",
+                                                size=14))
     }
 
     return(final_plot)
@@ -620,15 +629,12 @@ plotQScoreTerms <- function(spe,
 #' example(computeFixedFlags)
 #' spe <- computeSpatialOutlier(spe, compute_by="Area_um", method="both")
 #' spe <- computeSpatialOutlier(spe, compute_by="Mean.DAPI", method="both")
-#' p <- firstFilterPlot(spe, fov = c(11, 12), theme = "dark")
+#' p <- firstFilterPlot(spe, fov = 32, theme = "dark")
 #' print(p)
 #'
-firstFilterPlot <- function(
-        spe,
-        fov    = unique(spe$fov),
-        theme  = c("light", "dark"),
-        custom = FALSE
-) {
+firstFilterPlot <- function(spe, fov=unique(spe$fov), theme=c("light", "dark"),
+                        custom=FALSE)
+{
     # Check for required flags
     if (
         !"is_zero_counts" %in% names(colData(spe)) ||
@@ -677,7 +683,7 @@ firstFilterPlot <- function(
     # Define palette
     outlier_palette <- c(
         "unflagged"                  = "#c0c8cf",
-        "ctrl/total ratio > 0.1"    = "magenta",
+        "ctrl/total ratio > 0.1"     = "magenta",
         "< area um lower thr."       = "darkturquoise",
         "> area um higher thr."      = "red",
         "< DAPI lower thr."          = "purple",

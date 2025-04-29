@@ -37,6 +37,7 @@ Imports:
     tmap,
     cowplot,
     glmnet,
-    rhdf5
+    rhdf5,
+    methods
 Suggests:
 RoxygenNote: 7.3.2

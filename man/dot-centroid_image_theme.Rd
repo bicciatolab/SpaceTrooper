@@ -8,10 +8,6 @@
 }
 \arguments{
 \item{back.border}{color for the borders of the background (default=NA)}
-
-\item{back.color}{not used}
-
-\item{title.col}{character indicating the color of the title}
 }
 \value{
 a ggplot2 theme object

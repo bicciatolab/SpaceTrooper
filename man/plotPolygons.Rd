@@ -28,7 +28,13 @@ string color in colors(). (Default is "darkgrey")}
 \item{colour_log}{Logical to log-transform the data to enhance visualization
 (Default is FALSE).}
 
+\item{poly_column}{character for the name of the column where the polygons sf
+are stored (default is "polygons.global")}
+
 \item{sample_id}{Sample ID for plot title. Default is the unique sample ID.}
+
+\item{bg_color}{character indicating color for the background
+(default is "white")}
 
 \item{fill_alpha}{Transparency level for polygon fill. Default is `1`.}
 
