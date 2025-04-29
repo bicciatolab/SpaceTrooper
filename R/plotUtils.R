@@ -94,8 +94,10 @@
 #' @return a ggplot2 theme object
 #' @importFrom ggplot2 theme element_blank element_rect
 #' @keywords internal
-.light_theme <- function(){
-    theme(panel.border=element_rect(color = "black", linewidth = 0.1),
+.light_theme <- function(fill_color="white", fore_color="black"){
+    theme(panel.border=element_rect(color = fore_color, fill = NA, linewidth = 0.1),
+          panel.background=element_rect(fill=fill_color, color=NA),
+          plot.background=element_rect(fill=fill_color, color=NA),
           axis.line=element_blank(),
           axis.title.x=element_blank(),
           axis.title.y=element_blank(),
@@ -117,9 +119,9 @@
 #' @importFrom ggplot2 theme element_blank element_rect element_text
 #' @keywords internal
 .dark_theme <- function(fill_color="black", fore_color="white"){
-    theme(panel.border=element_blank(),
-          panel.background=element_rect(fill=fill_color, color=NA),
+    theme(panel.background=element_rect(fill=fill_color, color=NA),
           plot.background=element_rect(fill=fill_color, color=NA),
+          panel.border=element_rect(color = fore_color, fill = NA, linewidth = 0.1),
           title=element_text(color=fore_color),
           axis.line=element_blank(),
           axis.title.x=element_blank(),

@@ -13,7 +13,7 @@ plotCentroids(
   palette = NULL,
   point_col = "darkmagenta",
   size = 0.05,
-  alpha = 0.2,
+  alpha = 0.8,
   aspect_ratio = 1
 )
 }
