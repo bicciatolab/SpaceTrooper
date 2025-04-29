@@ -16,8 +16,8 @@ Description: SpaceTrooper performs Quality Control analysis using data driven
     QC metrics computation, outlier detection.
 License: MIT + file LICENSE
 Encoding: UTF-8
-LazyData: true
 Depends: 
+    R (>= 4.1.0),
     SpatialExperiment
 Imports:
     DropletUtils,
