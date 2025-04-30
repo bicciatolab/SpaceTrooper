@@ -118,6 +118,7 @@ spatialPerCellQC <- function(spe, micronConvFact=0.12, rmZeros=TRUE,
 #'
 #' @importFrom dplyr left_join
 #' @importFrom SummarizedExperiment colData
+#' @importFrom S4Vectors metadata
 #' @keywords internal
 .computeBorderDistanceCosMx <- function(spe,
                                     xwindim=metadata(spe)$fov_dim[["xdim"]],
