@@ -20,6 +20,9 @@ data.}
 `colData(spe)` from which to extract the fence values. This column should
 contain an `outlier.filter` object.}
 
+\item{high_low}{character indicating which fence to get if "higher", "lower"
+or "both" (default is "both").}
+
 \item{decimal_round}{An optional integer specifying the number of decimal
 places to which the fence values should be rounded. If `NULL`, no rounding is
  applied. Default is `NULL`.}
