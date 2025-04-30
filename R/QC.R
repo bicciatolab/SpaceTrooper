@@ -6,6 +6,7 @@
 #' @param spe A `SpatialExperiment` object containing spatial data.
 #' @param micronConvFact Numeric factor to convert pixels to microns. Default
 #'   `0.12`.
+#' @param rmZeros logical for removing zero counts cells (default is TRUE).
 #' @param negProbList Character vector of patterns to identify negative probes.
 #'   Defaults include:
 #'   - Nanostring CosMx: `"NegPrb"`, `"Negative"`, `"SystemControl"`
@@ -27,7 +28,7 @@
 #' @examples
 #' example(readCosmxSPE)
 #' spe <- spatialPerCellQC(spe)
-spatialPerCellQC <- function(spe, micronConvFact=0.12,
+spatialPerCellQC <- function(spe, micronConvFact=0.12, rmZeros=TRUE,
     negProbList=c("NegPrb", "Negative", "SystemControl", # CosMx
         "Ms IgG1", "Rb IgG", # CosMx Protein
         "NegControlProbe", "NegControlCodeword", "UnassignedCodeword", # Xenium
@@ -40,7 +41,6 @@ spatialPerCellQC <- function(spe, micronConvFact=0.12,
     })
     names(idxlist) <- negProbList
     idxlist <- idxlist[which(lengths(idxlist)!=0)]
-
     spe <- addPerCellQC(spe, subsets=idxlist)
     idx <- grep("^subsets_.*_sum$", colnames(colData(spe)))
     npc = npd = 0
@@ -92,10 +92,12 @@ spatialPerCellQC <- function(spe, micronConvFact=0.12,
     # changed to Area um, now it's the same for every technology
     spe$CountArea <- spe$sum/spe$Area_um
     spe$log2CountArea <- log2(spe$CountArea)
-    ## adding a flag argument
-    message("Removing ", dim(spe[,spe$sum==0])[2], " cells, they have 0 counts")
-    spe <- spe[,!spe$sum==0]
-
+    ## add a flag argument to filter 0 counts cells
+    if(sum(spe$sum==0) > 0)
+    {
+        message("Removing ", dim(spe[,spe$sum==0])[2], " cells with 0 counts!")
+        spe <- spe[,!spe$sum==0]
+    }
     return(spe)
 }
 
