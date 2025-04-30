@@ -5,6 +5,7 @@ utils::globalVariables(c(
     "log2CountArea",
     "log2AspectRatio",
     "cell_id",
+    "cell_ID",
     "fixed_flags_color",
     "area_outlier_color",
     "dapi_outlier_color",

@@ -52,7 +52,7 @@ function in the scuttle package. Please see McCarthy DJ et al (2017)
 for further details.
 }
 \examples{
-example(readCosmxSPE)
+example(spatialPerCellQC)
 spe <- computeSpatialOutlier(spe, compute_by="log2CountArea", method="both")
 table(spe$log2CountArea_outlier_mc)
 table(spe$log2CountArea_outlier_sc)

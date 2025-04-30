@@ -55,5 +55,5 @@ adds a title to the combined plot.
 }
 \examples{
 example(readAndAddPolygonsToSPE)
-plotZoomFovsMap(spe, fovs = c(11), title = "FOV 11")
+plotZoomFovsMap(spe, fovs=16, title="FOV 16")
 }

@@ -145,3 +145,37 @@
         panel.grid.major=element_blank())
 }
 
+#' createPaletteFromColData
+#' @name createPaletteFromColData
+#' @rdname createPaletteFromColData
+#' @description
+#' Create a Palette from colData in a SpatialExperiment Object
+#'
+#' This function generates a palette mapping based on specified columns in
+#' the `colData` of a `SpatialExperiment` object.
+#'
+#' @param spe A `SpatialExperiment` object with spatial transcriptomics data.
+#' @param palette_names A character string specifying the column in
+#' `colData(spe)` to be used for the names in the palette.
+#' @param palette_colors A character string specifying the column in
+#' `colData(spe)` to be used for the colors in the palette.
+#'
+#' @return A character vector representing the palette mapping, where each
+#' element is a string in the format `"name=color"`.
+#'
+#' @details The function creates a new palette based on the unique combinations
+#' of values in the specified `palette_names` and `palette_colors` columns in
+#' `colData(spe)`.
+#'
+#' @importFrom SummarizedExperiment colData
+#' @keywords internal
+createPaletteFromColData <- function(spe, palette_names, palette_colors)
+{
+    stopifnot(is(spe, "SpatialExperiment"))
+    stopifnot(all(c(palette_names, palette_colors) %in% names(colData(spe))))
+
+    tb <- table(spe[[palette_names]], spe[[palette_colors]])
+    newpal <- colnames(tb)[which(tb!=0, arr.ind=TRUE)[,2]]
+    names(newpal) <- rownames(tb)[which(tb!=0, arr.ind=TRUE)[,1]]
+    return(newpal)
+}

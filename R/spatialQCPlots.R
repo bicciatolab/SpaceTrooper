@@ -402,7 +402,7 @@ plotPolygons <- function(spe, colour_by="darkgrey", colour_log=FALSE,
 #'
 #' @examples
 #' example(readAndAddPolygonsToSPE)
-#' plotZoomFovsMap(spe, fovs = c(11), title = "FOV 11")
+#' plotZoomFovsMap(spe, fovs=16, title="FOV 16")
 plotZoomFovsMap <- function(spe, fovs=NULL,
                             map_point_col="darkmagenta",
                             map_numbers_col="black",
@@ -551,26 +551,23 @@ plotQScoreTerms <- function(spe, sample_id=unique(spe$sample_id), size=0.05,
 #' @export
 #'
 #' @examples
-#' # Assuming 'spe' is a SpatialExperiment object with FOVs and polygon data:
+#'
 #' example(readAndAddPolygonsToSPE)
-#' example(computeFixedFlags)
-#' spe <- computeSpatialOutlier(spe, compute_by="Area_um", method="both")
-#' spe <- computeSpatialOutlier(spe, compute_by="Mean.DAPI", method="both")
-#' p <- firstFilterPlot(spe, fov = 32, theme = "dark")
+#' spe <- spatialPerCellQC(spe)
+#' spe <- computeFixedFlags(spe)
+#' p <- firstFilterPlot(spe, fov=16, theme="dark")
+#' \dontrun{
 #' print(p)
+#' }
 #'
 firstFilterPlot <- function(spe, fov=unique(spe$fov), theme=c("light", "dark"),
                         custom=FALSE)
 {
     # Check for required flags
-    if (
-        !"is_zero_counts" %in% names(colData(spe)) ||
-        !"is_ctrl_tot_outlier" %in% names(colData(spe))
-    ) {
-        message(
-            "Fixed thresholds flag cells not found.\n",
-            "Did you run computeFixedFlags()?"
-        )
+    if (!"is_zero_counts" %in% names(colData(spe)) ||
+        !"is_ctrl_tot_outlier" %in% names(colData(spe))) {
+            stop("Fixed thresholds flag cells not found.\n",
+                "Did you run computeFixedFlags()?")
     }
 
     spe <- computeSpatialOutlier(spe, compute_by="Area_um", method="both")
@@ -586,7 +583,7 @@ firstFilterPlot <- function(spe, fov=unique(spe$fov), theme=c("light", "dark"),
     )
 
     if(any(spe$polygons$fixed_flags_color!="unflagged")==FALSE){
-        warning("No cells with 0 counts or control/total ratio > 0.1 were found")
+        warning("No 0 counts cells or control/total ratio > 0.1 were found")
     }
 
     if (any(spe$Mean.DAPI_outlier_mc=="HIGH",

@@ -36,12 +36,13 @@ within a `SpatialExperiment` object, with cells flagged in different colors
 over a light or dark layout chosen by the user.
 }
 \examples{
-# Assuming 'spe' is a SpatialExperiment object with FOVs and polygon data:
+
 example(readAndAddPolygonsToSPE)
-example(computeFixedFlags)
-spe <- computeSpatialOutlier(spe, compute_by="Area_um", method="both")
-spe <- computeSpatialOutlier(spe, compute_by="Mean.DAPI", method="both")
-p <- firstFilterPlot(spe, fov = 32, theme = "dark")
+spe <- spatialPerCellQC(spe)
+spe <- computeFixedFlags(spe)
+p <- firstFilterPlot(spe, fov=16, theme="dark")
+\dontrun{
 print(p)
+}
 
 }

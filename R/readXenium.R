@@ -47,6 +47,7 @@
 #' @importFrom DropletUtils read10xCounts
 #' @importFrom data.table fread
 #' @importFrom SpatialExperiment SpatialExperiment
+#' @importFrom SummarizedExperiment assays rowData
 #' @export
 #' @examples
 #' xepath <- system.file(
