@@ -61,12 +61,12 @@ cross-language support.
 library(SpaceTrooper)
 
 # Load Xenium data into a Spatial Experiment object (SPE)
-xeniumFolder <- "~/Downloads/Xenium_data/pancreas/"
+xeniumFolder <- system.file( "extdata", "Xenium_small", package="SpaceTrooper")
 spe <- readXeniumSPE(xeniumFolder, compute_missing_metrics=TRUE,
                         keep_polygons=TRUE)
 
 # Load Merfish data into an SPE with parquet boundaries
-merscopeFolder <- "~/Downloads/Merfish_data/human_uterine_cancer_patient2/"
+merscopeFolder <- system.file("extdata", "Merfish_Tiny", "SpaceTrooper")
 spe <- readMerfishSPE(merscopeFolder, boundaries_type="parquet",
                         compute_missing_metrics=TRUE, keep_polygons=TRUE)
 

@@ -184,7 +184,7 @@ spatialPerCellQC <- function(spe, micronConvFact=0.12, rmZeros=TRUE,
 #' @importFrom scuttle isOutlier outlier.filter
 #'
 #' @examples
-#' example(readCosmxSPE)
+#' example(spatialPerCellQC)
 #' spe <- computeSpatialOutlier(spe, compute_by="log2CountArea", method="both")
 #' table(spe$log2CountArea_outlier_mc)
 #' table(spe$log2CountArea_outlier_sc)
@@ -331,6 +331,7 @@ computeFixedFlags <- function(spe, total_threshold=0,
 #' @export
 #' @importFrom dplyr case_when filter mutate distinct
 #' @importFrom glmnet glmnet cv.glmnet
+#' @importFrom stats as.formula model.matrix predict quantile
 #' @examples
 #' example(spatialPerCellQC)
 #' set.seed(1998)

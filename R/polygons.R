@@ -632,33 +632,27 @@ computeAspectRatioFromPolygons <- function(polygons)
     return(ar)
 }
 
-# readh5polygons
-# @name readh5polygons
-# @rdname readh5polygons
-# @description This function reads polygon data from an HDF5 file.
-#
-# @param pol_file A character string specifying the file path to the HDF5 polygon data.
-#
-# @return A list containing the polygon geometries and their associated cell IDs.
-# @author Lambda Moses
-# @importFrom rhdf5 h5dump
-# @importFrom sf st_polygon
-# @export
-#
-# @examples
-# h5pol <- system.file("extdata", "Merfish_polygons_h5",
-#                     "Liver1Slice1_cell_boundaries_feature_data_1.hdf5",
-#                     package = "SpaceTrooper")
-# polygons <- readh5polygons(h5pol)
-# readh5polygons <- function(pol_file)
-# {
-#     l <- rhdf5::h5dump(pol_file)[[1]]
-#     cell_ids <- names(l)
-#     geometries <- lapply(l, function(m) {
-#         sf::st_polygon(list(t(m[["zIndex_0"]]$p_0$coordinates[,,1])))
-#     })
-#     return(list(g=geometries, ids=cell_ids))
-# }
+#' readh5polygons
+#' @name readh5polygons
+#' @rdname readh5polygons
+#' @description This function reads polygon data from an HDF5 file.
+#'
+#' @param pol_file A character string specifying the file path to the HDF5 polygon data.
+#'
+#' @return A list containing the polygon geometries and their associated cell IDs.
+#' @author Lambda Moses
+#' @importFrom rhdf5 h5dump
+#' @importFrom sf st_polygon
+#' @keywords internal
+readh5polygons <- function(pol_file)
+{
+    l <- rhdf5::h5dump(pol_file)[[1]]
+    cell_ids <- names(l)
+    geometries <- lapply(l, function(m) {
+        sf::st_polygon(list(t(m[["zIndex_0"]]$p_0$coordinates[,,1])))
+    })
+    return(list(g=geometries, ids=cell_ids))
+}
 
 # customPolyMetrics
 #

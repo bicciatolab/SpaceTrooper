@@ -268,6 +268,7 @@ plotMetricHist <- function(spe, metric, fill_color="#c0c8cf",
 #' scale_fill_identity theme_minimal theme element_text margin labs
 #' @importFrom sf st_as_sf
 #' @importFrom SummarizedExperiment colData
+#' @importFrom grDevices colors
 #'
 #' @examples
 #' example(readAndAddPolygonsToSPE)
@@ -297,7 +298,7 @@ plotPolygons <- function(spe, colour_by="darkgrey", colour_log=FALSE,
             }
             polflag <- TRUE
         } else {
-            if(!(colour_by %in% colors())) {
+            if(!(colour_by %in% grDevices::colors())) {
                 warning("colour_by not in known colors nor in ",
                 "colData assigning a default darkgrey colour")
                 colour_by <- "darkgrey"
