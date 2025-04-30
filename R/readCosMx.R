@@ -94,7 +94,7 @@ readCosmxSPE <- function(dirname,
     rownames(colData) <- rn
 
     if(length(grep("cell_id", colnames(colData)))!=0)
-        message("Warning: overwriting existing cell_id column in colData")
+        warning("Overwriting existing cell_id column in colData")
 
     colData$cell_id <- rn
     colData <- colData[,c(1,2,dim(colData)[2], 3:(dim(colData)[2]-1))]

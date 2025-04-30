@@ -414,12 +414,12 @@ addPolygonsToSPE <- function(spe, polygons, polygonsCol="polygons") {
 #' polygons <- readPolygonsCosmx(metadata(spe)$polygons)
 #' polygons
 readPolygonsCosmx <- function(polygonsFile, type=c("csv", "parquet"),
-                              x="x_global_px",
-                              y="y_global_px",
-                              xloc="x_local_px",
-                              yloc="y_local_px",
-                              keepMultiPol=TRUE,
-                              verbose=FALSE)
+                            x="x_global_px",
+                            y="y_global_px",
+                            xloc="x_local_px",
+                            yloc="y_local_px",
+                            keepMultiPol=TRUE,
+                            verbose=FALSE)
 {
     type <- match.arg(type)
     polygons <- readPolygons(polygonsFile, type=type, x=x, y=y, xloc=xloc,
@@ -457,8 +457,8 @@ readPolygonsCosmx <- function(polygonsFile, type=c("csv", "parquet"),
 #' polygons <- readPolygonsXenium(metadata(spe)$polygons, type="parquet")
 #' polygons
 readPolygonsXenium <- function(polygonsFile, type=c("parquet", "csv"),
-                   x="vertex_x", y="vertex_y", keepMultiPol=TRUE,
-                   verbose=FALSE)
+                    x="vertex_x", y="vertex_y", keepMultiPol=TRUE,
+                    verbose=FALSE)
 {
     type <- match.arg(type)
     polygons <- readPolygons(polygonsFile=polygonsFile, type=type, x=x, y=y,
@@ -512,8 +512,8 @@ readPolygonsMerfish <- function(polygons, type=c("parquet", "HDF5"),
         {
             poll <- readh5polygons(pol_file=polfiles[i])
             df <- data.frame(cell_id=paste0("f", i-1, "_c", poll$ids),
-                             cell_ID=poll$ids,
-                             fov=i-1, geometry=sf::st_sfc(poll$g)) ## geometry can be a simple column
+                            cell_ID=poll$ids,
+                            fov=i-1, geometry=sf::st_sfc(poll$g)) ## geometry can be a simple column
             dfsf <- sf::st_sf(df)
         })
         polygons <- do.call(rbind, dfsfl)
@@ -522,7 +522,7 @@ readPolygonsMerfish <- function(polygons, type=c("parquet", "HDF5"),
         return(polygons)
     } else { ## case parquet
         # polfile <- list.files(polygonsFolder, pattern=type,
-                              # full.names=TRUE)
+                            # full.names=TRUE)
         polfile <- polygons
         polygons <- arrow::read_parquet(polfile, as_data_frame=TRUE)
         polygons <- polygons[polygons[[zcolumn]]==z_lev,]
@@ -625,38 +625,40 @@ computeAspectRatioFromPolygons <- function(polygons)
     }
     aspRatL[!polygons$is_multi] <- lapply(polygons$global[!polygons$is_multi], function(x) {
         (max(x[[1]][, 2]) - min(x[[1]][, 2]))/(max(x[[1]][, 1]) -
-                                                   min(x[[1]][, 1]))
+                                                    min(x[[1]][, 1]))
     })
     names(aspRatL) <- polygons$cell_id
     ar <- unlist(aspRatL)
     return(ar)
 }
 
-#' readh5polygons
-#' @name readh5polygons
-#' @rdname readh5polygons
-#' @description This function reads polygon data from an HDF5 file.
-#'
-#' @param pol_file A character string specifying the file path to the HDF5 polygon data.
-#'
-#' @return A list containing the polygon geometries and their associated cell IDs.
-#' @author Lambda Moses
-#' @importFrom rhdf5 h5dump
-#' @importFrom sf st_polygon
-#' @export
-#'
-#' @examples
-#' # Read polygons from an HDF5 file:
-#' # polygons <- readh5polygons("path/to/polygons.h5")
-readh5polygons <- function(pol_file)
-{
-    l <- rhdf5::h5dump(pol_file)[[1]]
-    cell_ids <- names(l)
-    geometries <- lapply(l, function(m) {
-        sf::st_polygon(list(t(m[["zIndex_0"]]$p_0$coordinates[,,1])))
-    })
-    return(list(g=geometries, ids=cell_ids))
-}
+# readh5polygons
+# @name readh5polygons
+# @rdname readh5polygons
+# @description This function reads polygon data from an HDF5 file.
+#
+# @param pol_file A character string specifying the file path to the HDF5 polygon data.
+#
+# @return A list containing the polygon geometries and their associated cell IDs.
+# @author Lambda Moses
+# @importFrom rhdf5 h5dump
+# @importFrom sf st_polygon
+# @export
+#
+# @examples
+# h5pol <- system.file("extdata", "Merfish_polygons_h5",
+#                     "Liver1Slice1_cell_boundaries_feature_data_1.hdf5",
+#                     package = "SpaceTrooper")
+# polygons <- readh5polygons(h5pol)
+# readh5polygons <- function(pol_file)
+# {
+#     l <- rhdf5::h5dump(pol_file)[[1]]
+#     cell_ids <- names(l)
+#     geometries <- lapply(l, function(m) {
+#         sf::st_polygon(list(t(m[["zIndex_0"]]$p_0$coordinates[,,1])))
+#     })
+#     return(list(g=geometries, ids=cell_ids))
+# }
 
 # customPolyMetrics
 #

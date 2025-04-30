@@ -3,15 +3,15 @@ title: "Spatial Data Quality Control with the SpaceTrooper Package"
 author: "Dario Righelli"
 date: "`r BiocStyle::doc_date()`"
 output:
-  BiocStyle::html_document:
-    toc: true
-    toc_float: true
+    BiocStyle::html_document:
+        toc: true
+        toc_float: true
 vignette: >
-  %\VignetteIndexEntry{Spatial Data Quality Control with the SpaceTrooper Package}
-  %\VignetteEncoding{UTF-8}
-  %\VignetteEngine{knitr::rmarkdown}
+    %\VignetteIndexEntry{Spatial Data Quality Control with the SpaceTrooper Package}
+    %\VignetteEncoding{UTF-8}
+    %\VignetteEngine{knitr::rmarkdown}
 editor_options:
-  chunk_output_type: console
+    chunk_output_type: console
 ---
 
 ```{r setup, include=FALSE}
@@ -133,8 +133,8 @@ the detection of negative control probes, which is crucial for QC.
 
 ```{r cosmx-analysis-qc}
 # Perform per-cell quality control checks
-spe <- spatialPerCellQC(spe, negProbList=c("NegPrb", "Negative",
-                                           "SystemControl"))
+spe <- spatialPerCellQC(spe, negProbList=c("NegPrb", "Negative", 
+                                            "SystemControl"))
 names(colData(spe))
 ```
 
@@ -217,7 +217,7 @@ thresholds for various metrics. Currently, the function considers:
     
 * **Flag Score Quantiles (`use_fs_quantiles`)**: Option to filter based on
     quantiles (default `FALSE`).
-  
+
 * **Total Counts (`total_threshold`)**: Minimum count threshold (default 0).
 
 * **Negative Probe Ratio (`ctrl_tot_ratio_threshold`)**: Minimum ratio of
@@ -278,7 +278,8 @@ work-in-progress).
 ```{r, eval=FALSE}
 ## not working in vignette compilation
 plotZoomFovsMap(spe, fovs=c(16:19), colour_by="flag_score")
-plotZoomFovsMap(spe, fovs=c(16:19), colour_by="is_fscore_outlier", useggplot=FALSE)
+plotZoomFovsMap(spe, fovs=c(16:19), colour_by="is_fscore_outlier", 
+                useggplot=FALSE)
 ```
 
 # Conclusion

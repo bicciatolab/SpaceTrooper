@@ -13,21 +13,21 @@
 #' @importFrom ggplot2 theme element_blank element_rect element_text
 #' @keywords internal
 .fov_image_theme <- function(back.color="black", back.border=NA,
-                             title.col="white")
+                            title.col="white")
 {
     theme(panel.border=element_blank(),
-          legend.key=element_blank(),
-          axis.title.x=element_blank(),
-          axis.title.y=element_blank(),
-          axis.ticks=element_blank(),
-          axis.text.y=element_blank(),
-          axis.text.x=element_blank(),
-          panel.grid=element_blank(),
-          panel.grid.minor=element_blank(),
-          panel.grid.major=element_blank(),
-          panel.background=element_rect(fill = "transparent", colour = NA),
-          plot.title=element_text(color=title.col, hjust=0.5, face="bold"),
-          plot.background=element_rect(fill="transparent", colour=back.border))
+        legend.key=element_blank(),
+        axis.title.x=element_blank(),
+        axis.title.y=element_blank(),
+        axis.ticks=element_blank(),
+        axis.text.y=element_blank(),
+        axis.text.x=element_blank(),
+        panel.grid=element_blank(),
+        panel.grid.minor=element_blank(),
+        panel.grid.major=element_blank(),
+        panel.background=element_rect(fill = "transparent", colour = NA),
+        plot.title=element_text(color=title.col, hjust=0.5, face="bold"),
+        plot.background=element_rect(fill="transparent", colour=back.border))
 }
 
 #' .centroid_image_theme
@@ -41,21 +41,21 @@
 #' @return a ggplot2 theme object
 #' @importFrom ggplot2 theme element_blank element_rect
 #' @keywords internal
-.centroid_image_theme <- function(back.border=NA){
+.centroid_image_theme <- function(back.border=NA) {
     theme(panel.border=element_rect(color = "black"),
-          legend.key=element_blank(),
-          axis.line=element_blank(),
-          axis.title.x=element_blank(),
-          axis.title.y=element_blank(),
-          axis.ticks=element_blank(),
-          axis.text.y=element_blank(),
-          axis.text.x=element_blank(),
-          panel.grid=element_blank(),
-          panel.grid.minor=element_blank(),
-          panel.grid.major=element_blank(),
-          panel.background=element_rect(fill = "transparent", colour = NA),
-          plot.title=element_blank(),
-          plot.background=element_rect(fill="transparent", colour=back.border))
+        legend.key=element_blank(),
+        axis.line=element_blank(),
+        axis.title.x=element_blank(),
+        axis.title.y=element_blank(),
+        axis.ticks=element_blank(),
+        axis.text.y=element_blank(),
+        axis.text.x=element_blank(),
+        panel.grid=element_blank(),
+        panel.grid.minor=element_blank(),
+        panel.grid.major=element_blank(),
+        panel.background=element_rect(fill = "transparent", colour = NA),
+        plot.title=element_blank(),
+        plot.background=element_rect(fill="transparent", colour=back.border))
 }
 
 
@@ -70,25 +70,26 @@
 #' @param fore_color color for all the other elements (default is "white")
 #'
 #' @return a ggplot2 theme object
-#' @importFrom ggplot2 theme element_line element_rect element_text element_blank
+#' @importFrom ggplot2 theme element_line element_rect element_text
+#' element_blank
 #' @keywords internal
-.negative_image_theme <- function(fill_color="black", fore_color="white"){
+.negative_image_theme <- function(fill_color="black", fore_color="white") {
     theme(panel.border = element_rect(color = fore_color),
-          panel.background=element_rect(fill=fill_color, color=NA),
-          plot.background=element_rect(fill=fill_color, color=NA),
-          title=element_blank(),
-          axis.line=element_blank(),
-          axis.title.x=element_blank(),
-          axis.title.y=element_blank(),
-          axis.ticks=element_blank(),
-          axis.text.y=element_blank(),
-          axis.text.x=element_blank(),
-          legend.background=element_rect(fill=fill_color, color=NA),
-          legend.text=element_text(color=fore_color),
-          legend.title=element_text(color=fore_color),
-          panel.grid=element_blank(),
-          panel.grid.minor=element_blank(),
-          panel.grid.major=element_blank())
+        panel.background=element_rect(fill=fill_color, color=NA),
+        plot.background=element_rect(fill=fill_color, color=NA),
+        title=element_blank(),
+        axis.line=element_blank(),
+        axis.title.x=element_blank(),
+        axis.title.y=element_blank(),
+        axis.ticks=element_blank(),
+        axis.text.y=element_blank(),
+        axis.text.x=element_blank(),
+        legend.background=element_rect(fill=fill_color, color=NA),
+        legend.text=element_text(color=fore_color),
+        legend.title=element_text(color=fore_color),
+        panel.grid=element_blank(),
+        panel.grid.minor=element_blank(),
+        panel.grid.major=element_blank())
 }
 
 #' .light_theme
@@ -102,17 +103,17 @@
 #' @keywords internal
 .light_theme <- function(fill_color="white", fore_color="black"){
     theme(panel.border=element_rect(color = fore_color, fill = NA, linewidth = 0.1),
-          panel.background=element_rect(fill=fill_color, color=NA),
-          plot.background=element_rect(fill=fill_color, color=NA),
-          axis.line=element_blank(),
-          axis.title.x=element_blank(),
-          axis.title.y=element_blank(),
-          axis.ticks=element_blank(),
-          axis.text.y=element_blank(),
-          axis.text.x=element_blank(),
-          panel.grid=element_blank(),
-          panel.grid.minor=element_blank(),
-          panel.grid.major=element_blank())
+        panel.background=element_rect(fill=fill_color, color=NA),
+        plot.background=element_rect(fill=fill_color, color=NA),
+        axis.line=element_blank(),
+        axis.title.x=element_blank(),
+        axis.title.y=element_blank(),
+        axis.ticks=element_blank(),
+        axis.text.y=element_blank(),
+        axis.text.x=element_blank(),
+        panel.grid=element_blank(),
+        panel.grid.minor=element_blank(),
+        panel.grid.major=element_blank())
 }
 
 #' .dark_theme
@@ -126,21 +127,21 @@
 #' @return a ggplot2 theme object
 #' @importFrom ggplot2 theme element_blank element_rect element_text
 #' @keywords internal
-.dark_theme <- function(fill_color="black", fore_color="white"){
+.dark_theme <- function(fill_color="black", fore_color="white") {
     theme(panel.background=element_rect(fill=fill_color, color=NA),
-          plot.background=element_rect(fill=fill_color, color=NA),
-          panel.border=element_rect(color = fore_color, fill = NA, linewidth = 0.1),
-          title=element_text(color=fore_color),
-          axis.line=element_blank(),
-          axis.title.x=element_blank(),
-          axis.title.y=element_blank(),
-          axis.ticks=element_blank(),
-          axis.text.y=element_blank(),
-          axis.text.x=element_blank(),
-          legend.background=element_rect(fill=fill_color, color=NA),
-          legend.text=element_text(color=fore_color),
-          panel.grid=element_blank(),
-          panel.grid.minor=element_blank(),
-          panel.grid.major=element_blank())
+        plot.background=element_rect(fill=fill_color, color=NA),
+        panel.border=element_rect(color = fore_color, fill = NA, linewidth = 0.1),
+        title=element_text(color=fore_color),
+        axis.line=element_blank(),
+        axis.title.x=element_blank(),
+        axis.title.y=element_blank(),
+        axis.ticks=element_blank(),
+        axis.text.y=element_blank(),
+        axis.text.x=element_blank(),
+        legend.background=element_rect(fill=fill_color, color=NA),
+        legend.text=element_text(color=fore_color),
+        panel.grid=element_blank(),
+        panel.grid.minor=element_blank(),
+        panel.grid.major=element_blank())
 }
 

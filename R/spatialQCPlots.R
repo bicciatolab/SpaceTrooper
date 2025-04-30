@@ -303,7 +303,7 @@ plotPolygons <- function(spe, colour_by="darkgrey", colour_log=FALSE,
             if(!(colour_by %in% colors())) {
                 warning("colour_by not in known colors nor in ",
                 "colData assigning a default darkgrey colour")
-                colour_by="darkgrey"
+                colour_by <- "darkgrey"
             }
 
         }
@@ -513,9 +513,9 @@ plotQScoreTerms <- function(spe,
     } else {
         ## check if column variable is logical to impose our colors
         ggp <- ggp1 <- scater::plotColData(spe, x=spatialCoordsNames(spe)[1],
-                                           y=spatialCoordsNames(spe)[2],
-                                           colour_by="log2CountArea",
-                                           point_size=size, point_alpha=alpha)+
+                                            y=spatialCoordsNames(spe)[2],
+                                            colour_by="log2CountArea",
+                                            point_size=size, point_alpha=alpha)+
             ggplot2::ggtitle(sample_id)+ .centroid_image_theme() +
             ggplot2::coord_fixed()
     }

@@ -44,7 +44,7 @@ spatialPerCellQC <- function(spe, micronConvFact=0.12, rmZeros=TRUE,
     idxlist <- idxlist[which(lengths(idxlist)!=0)]
     spe <- addPerCellQC(spe, subsets=idxlist)
     idx <- grep("^subsets_.*_sum$", colnames(colData(spe)))
-    npc = npd = 0
+    npc <- npd <- 0
     if ( length(idx) !=0 )
     {
         npc <- rowSums(as.matrix(colData(spe)[ , idx, drop=FALSE])) #sum
@@ -84,9 +84,9 @@ spatialPerCellQC <- function(spe, micronConvFact=0.12, rmZeros=TRUE,
     {
         spe$log2AspectRatio <- log2(spe$AspectRatio)
     } else {
-        warning("Missing aspect ratio in colData...\n",
-                "NB: This could lead to additional warnings or errors.\n",
-                "Missing AspectRatio can be computed by loading polygons.")
+        warning("Missing aspect ratio in colData")
+                # "NB: This could lead to additional warnings or errors.\n",
+                # "Missing AspectRatio can be computed by loading polygons.")
     }
     spe$ctrl_total_ratio <- spe$control_sum/spe$total
     spe$ctrl_total_ratio[which(is.na(spe$ctrl_total_ratio))] <- 0
@@ -132,10 +132,10 @@ spatialPerCellQC <- function(spe, micronConvFact=0.12, rmZeros=TRUE,
             metadata(spe)$fov_positions)%in%c("x_global_px", "y_global_px")]
 
     cd$dist_border_x <- pmin(cdf[,spcn[1]] - cdf[,fovpn[1]],
-                             (cdf[,fovpn[1]] + xwindim) - cdf[,spcn[1]])
+                            (cdf[,fovpn[1]] + xwindim) - cdf[,spcn[1]])
 
     cd$dist_border_y <- pmin(cdf[,spcn[2]] - cdf[,fovpn[2]],
-                             (cdf[,fovpn[2]] + ywindim) - cdf[,spcn[2]])
+                            (cdf[,fovpn[2]] + ywindim) - cdf[,spcn[2]])
 
     cd$dist_border <- pmin(cd$dist_border_x, cd$dist_border_y)
     colData(spe) <- cd
@@ -189,9 +189,9 @@ spatialPerCellQC <- function(spe, micronConvFact=0.12, rmZeros=TRUE,
 #' table(spe$log2CountArea_outlier_mc)
 #' table(spe$log2CountArea_outlier_sc)
 computeSpatialOutlier <- function(spe, compute_by=NULL,
-                                  method=c("mc", "scuttle", "both"),
-                                  mcDoScale=FALSE,
-                                  scuttleType=c("both", "lower", "higher"))
+                                method=c("mc", "scuttle", "both"),
+                                mcDoScale=FALSE,
+                                scuttleType=c("both", "lower", "higher"))
 {
     stopifnot(is(spe, "SpatialExperiment"))
     stopifnot(!is.null(compute_by))
@@ -203,12 +203,12 @@ computeSpatialOutlier <- function(spe, compute_by=NULL,
     scuttleType <- match.arg(scuttleType)
     cd <- colData(spe)
     cdcol <- cd[[compute_by]]
-    mcfl=scuttlefl=FALSE
+    mcfl<-scuttlefl<-FALSE
     switch(method,
-           both={ mcfl=scuttlefl=TRUE },
-           mc={ mcfl=TRUE },
-           scuttle={ scuttlefl=TRUE },
-           {stop("Method is not one of allowed methods")}
+            both={ mcfl<-scuttlefl<-TRUE },
+            mc={ mcfl<-TRUE },
+            scuttle={ scuttlefl<-TRUE },
+            {stop("Method is not one of allowed methods")}
     )
 
     if (mcfl)

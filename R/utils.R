@@ -7,7 +7,8 @@
 #' @export
 #'
 #' @examples
-#' #TBD
+#' example(readPolygonsCosmx)
+#' .getActiveGeometryName(polygons)
 .getActiveGeometryName <- function(sf)
 {
     stopifnot(is(sf, "sf"))
@@ -25,7 +26,8 @@
 #' @export
 #'
 #' @examples
-#' #TBD
+#' example(readPolygonsCosmx)
+#' .setActiveGeometry(polygons, "local")
 .setActiveGeometry <- function(sf, name)
 {
     stopifnot(is(sf, "sf"), name %in% names(sf))
@@ -49,6 +51,9 @@
 #'
 #' @return an sf object
 #' @export
+#' @examples
+#' example(readPolygonsCosmx)
+#' .renameGeometry(polygons, "global", "global1")
 .renameGeometry <- function(sf, from, to, activate=FALSE)
 {
     stopifnot(all(is(sf, "sf"), from %in% names(sf)))
