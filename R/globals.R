@@ -1,0 +1,18 @@
+utils::globalVariables(c(
+    "log2AspectRatio_outlier_sc",
+    "dist_border",
+    "log2CountArea_outlier_train",
+    "log2CountArea",
+    "log2AspectRatio",
+    "cell_id",
+    "fixed_flags_color",
+    "area_outlier_color",
+    "dapi_outlier_color",
+    "collapsed_color",
+    "polygonsFolder",
+    "pol_file",
+    "fov",
+    "x_mm",
+    "y_mm",
+    ".data"
+))
