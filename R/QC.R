@@ -225,8 +225,8 @@ computeSpatialOutlier <- function(spe, compute_by=NULL,
         mcval <- robustbase::mc(cdcol, doScale=mcDoScale, na.rm=TRUE)
         if ( any( (mcval <= -0.6), (mcval >= 0.6) ) )
             stop("Obtained medcouple value is: ", round(mcval, digits=4),
-                 "\nIt doesn't meet the needed requirements for outlier",
-                 " identification with this method.")
+                "\nIt doesn't meet the needed requirements for outlier",
+                " identification with this method.")
         names(cdcol) <- colnames(spe)
         outl <- robustbase::adjbox(cdcol, plot=FALSE)
         # now outliers are defined as NO, HIGH or LOW, no more TRUE or FALSE,
@@ -344,7 +344,6 @@ computeQScore <- function(spe, verbose=FALSE) {
     # thus I exclude cells with 0 counts and don't use them for training.
     spe_temp <- computeSpatialOutlier(spe[,spe$total>0],
                         compute_by="log2CountArea", method="both")
-
     if(attr(spe_temp$log2CountArea_outlier_mc, "thresholds")[1] <
         min(spe_temp$log2CountArea)){
             low_thr <- quantile(spe$log2CountArea, probs = 0.01)
@@ -352,20 +351,15 @@ computeQScore <- function(spe, verbose=FALSE) {
         low_thr <- attr(spe_temp$log2CountArea_outlier_mc, "thresholds")[1]
     }
     high_thr <- attr(spe_temp$log2CountArea_outlier_mc, "thresholds")[2]
-
     spe$log2CountArea_outlier_train <- case_when(spe$total == 0 ~ "NO",
                                         spe$log2CountArea < low_thr ~ "LOW",
                                         spe$log2CountArea > high_thr ~ "HIGH",
                                         TRUE ~ "NO")
-
     attr(spe$log2CountArea_outlier_train, "thresholds") <-
         attr(spe_temp$log2CountArea_outlier_mc, "thresholds")
-
     attr(spe$log2CountArea_outlier_train, "thresholds")[1] <- low_thr
-
     # print("How many LOW outliers cells will be used for training?")
     # print(table(spe$log2CountArea_outlier_train))
-
     if(metadata(spe)$technology == "Nanostring_CosMx")
     {
         # I selected scuttle because otherwise it would return a warning, since
@@ -380,76 +374,56 @@ computeQScore <- function(spe, verbose=FALSE) {
                     (log2AspectRatio_outlier_sc == "LOW" & dist_border < 50) |
                     log2CountArea_outlier_train == "LOW") |>
             mutate(qscore_train = 0)
-
         # train_bad <- (spe$log2AspectRatio_outlier_sc == "HIGH" & spe$dist_border < 50) |
         #     (spe$log2AspectRatio_outlier_sc == "LOW" & spe$dist_border < 50) |
         #     spe$log2CountArea_outlier_train == "LOW"
-
             train_good <- data.frame(colData(spe)) |>
             filter((log2AspectRatio > quantile(log2AspectRatio, probs = 0.25) &
                     log2AspectRatio < quantile(log2AspectRatio, probs = 0.75) &
                     dist_border > 50) |
                     (log2CountArea > quantile(log2CountArea, probs = 0.90) &
-                      log2CountArea < quantile(log2CountArea, probs = 0.99))) |>
+                    log2CountArea < quantile(log2CountArea, probs = 0.99))) |>
             mutate(qscore_train=1, is_a_bad_boy=cell_id%in%train_bad$cell_id)
-
         # model formula definition for glmnet training for CosMx technology
-
         model_formula <- paste0("~ log2CountArea + I(abs(log2AspectRatio) ",
             "* as.numeric(dist_border<50)) + ",
             " log2CountArea:I(abs(log2AspectRatio)",
             "* as.numeric(dist_border<50))")
     }
-
     if(metadata(spe)$technology == "10X_Xenium" |
-       metadata(spe)$technology =="Vizgen_MERFISH") {
-
+        metadata(spe)$technology =="Vizgen_MERFISH") {
         train_bad <- data.frame(colData(spe)) |>
             filter(log2CountArea_outlier_train == "LOW") |>
             mutate(qscore_train = 0)
-
         train_good <- data.frame(colData(spe)) |>
             filter((log2CountArea > quantile(log2CountArea, probs = 0.90) &
                     log2CountArea < quantile(log2CountArea, probs = 0.99))) |>
             mutate(qscore_train=1, is_a_bad_boy=cell_id%in%train_bad$cell_id)
-
         # model formula definition for glmnet training for
         # Xenium and Merfish technology
         model_formula <- "~log2CountArea"
     }
-
     # check of duplicates
-
     # bad example duplicates removal without any warning to the user
-
     train_bad <- train_bad |> distinct(cell_id, .keep_all = TRUE)
-
     if(verbose) message("Chosen low quality examples: ", dim(train_bad)[1])
-
     # good example duplicates removal without any warning to the user
-
     train_good <- train_good |> distinct(cell_id, .keep_all = TRUE)
-
     train_good <- train_good[!train_good$is_a_bad_boy,]
     train_good <- train_good[sample(rownames(train_good), dim(train_bad)[1],
                                 replace=FALSE),]
-
     if(verbose) message("Chosen good quality examples: ", dim(train_good)[1])
-
     # merge into same training dataset
-
     # I would prefer this first way to merge the two datasets together without
     # creating any duplicate column, however this didn't work with merfish tech,
     # having cell ids as only numbers, that is
     # probably why this is not well handled inside the following functions,
     # I opted for an rbind instead
-
     #train_df <- train_bad %>%
     #mutate(rn = data.table::rowid(cell_id)) %>%
     #full_join(train_good %>%
     #mutate(rn = data.table::rowid(cell_id))) %>%
     #select(-rn)
-
     train_good$is_a_bad_boy <- NULL
     train_df <- rbind(train_bad, train_good)
 
@@ -469,23 +443,17 @@ computeQScore <- function(spe, verbose=FALSE) {
     # and that you need to define nFolds manually in the function call if you
     # want reproducible results, because they are randomly chosen.
     ridge_cv <- cv.glmnet(model_matrix, train_df$qscore_train,
-                                  family = "binomial", alpha = 0, lambda=NULL)
-
+                                family = "binomial", alpha = 0, lambda=NULL)
     best_lambda <- ridge_cv$lambda.min
-
     # print("Model coefficients for every term used in the formula:")
     # print(round(predict(model, s = best_lambda, type="coefficients"),2))
-
     train_df$doom <- case_when(train_df$qscore_train==0 ~ "BAD",
-                               train_df$qscore_train==1 ~ "GOOD")
-
+                                train_df$qscore_train==1 ~ "GOOD")
     cd <- data.frame(colData(spe))
-
     full_matrix <- model.matrix(as.formula(model_formula), data = cd)
-
     cd$quality_score <- as.vector(predict(model, s = best_lambda,
-                                          newx = full_matrix,
-                                          type = "response"))
+                                        newx = full_matrix,
+                                        type = "response"))
     spe$quality_score <- cd$quality_score
 
     # column with information about which cells were used in the training

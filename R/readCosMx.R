@@ -120,7 +120,7 @@ readCosmxSPE <- function(dirname,
     if(length(grep("x_mm", colnames(fov_positions))!=0)){
         fov_positions <- fov_positions |>
             dplyr::mutate(x_global_px = x_mm/0.12028*10^3,
-                          y_global_px = (y_mm/0.12028*10^3) - 4256)
+                        y_global_px = (y_mm/0.12028*10^3) - 4256)
     }
 
     ## tracking if one of more fov is not present in the metadata file ##
@@ -135,7 +135,7 @@ readCosmxSPE <- function(dirname,
         colData = colData,
         spatialCoordsNames = coord_names,
         metadata=list(fov_positions=fov_positions, fov_dim=fov_dims,
-                      polygons=pol_file, technology="Nanostring_CosMx")
+                    polygons=pol_file, technology="Nanostring_CosMx")
         ## keep atomx versioning in metadata, if possible
     )
     # Polygons file has cellID instead of cell_ID and it distinguish better

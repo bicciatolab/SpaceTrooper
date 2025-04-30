@@ -57,15 +57,15 @@
 #'   keep_polygons = TRUE
 #' ))
 readXeniumSPE <- function(dirname,
-                          sample_name="sample01",
-                          type=c("HDF5", "sparse"),
-                          coord_names=c("x_centroid", "y_centroid"),
-                          boundaries_type=c("parquet", "csv"),
-                          compute_missing_metrics=TRUE, keep_polygons=FALSE,
-                          countsfilepattern="cell_feature_matrix",
-                          metadatafpattern="cells",
-                          polygonsfpattern="cell_boundaries",
-                          polygonsCol="polygons")
+                            sample_name="sample01",
+                            type=c("HDF5", "sparse"),
+                            coord_names=c("x_centroid", "y_centroid"),
+                            boundaries_type=c("parquet", "csv"),
+                            compute_missing_metrics=TRUE, keep_polygons=FALSE,
+                            countsfilepattern="cell_feature_matrix",
+                            metadatafpattern="cells",
+                            polygonsfpattern="cell_boundaries",
+                            polygonsCol="polygons")
 {
     stopifnot(file.exists(dirname))
     type <- match.arg(type)
@@ -89,8 +89,8 @@ readXeniumSPE <- function(dirname,
 
     metadata_file <- file.path(dirname, paste0(metadatafpattern, ".csv.gz"))
     pex <- paste0(polygonsfpattern, switch(boundaries_type,
-                                           parquet=".parquet",
-                                           csv=".csv.gz"))
+                                            parquet=".parquet",
+                                            csv=".csv.gz"))
     pol_file <- list.files(dirname, pex, full.names=TRUE)
     stopifnot(all(file.exists(c(metadata_file, pol_file))))
 

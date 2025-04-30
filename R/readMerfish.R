@@ -57,14 +57,14 @@
 #' )
 #' spe
 readMerfishSPE <- function(dirname,
-                           sample_name="sample01",
-                           compute_missing_metrics=TRUE, keep_polygons=FALSE,
-                           boundaries_type=c("HDF5", "parquet"),
-                           countmatfpattern = "cell_by_gene.csv",
-                           metadatafpattern = "cell_metadata.csv",
-                           polygonsfpattern = "cell_boundaries.parquet",
-                           coord_names = c("center_x", "center_y"),
-                           polygonsCol="polygons")
+                            sample_name="sample01",
+                            compute_missing_metrics=TRUE, keep_polygons=FALSE,
+                            boundaries_type=c("HDF5", "parquet"),
+                            countmatfpattern = "cell_by_gene.csv",
+                            metadatafpattern = "cell_metadata.csv",
+                            polygonsfpattern = "cell_boundaries.parquet",
+                            coord_names = c("center_x", "center_y"),
+                            polygonsCol="polygons")
 {
     countmat_file <- list.files(dirname, countmatfpattern, full.names=TRUE)
     metadata_file <- list.files(dirname, metadatafpattern, full.names=TRUE)
@@ -102,7 +102,7 @@ readMerfishSPE <- function(dirname,
     {
         message("Computing missing metrics, this could take a while...")
         cd <- computeMissingMetricsMerfish(pol_file, colData, boundaries_type,
-                                           keep_polygons, polygonsCol)
+                                            keep_polygons, polygonsCol)
     }
 
     spe <- SpatialExperiment::SpatialExperiment(

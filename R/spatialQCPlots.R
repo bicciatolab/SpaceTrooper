@@ -38,9 +38,8 @@ plotCellsFovs <- function(spe, sample_id=unique(spe$sample_id),
     x_coord <- spatialCoordsNames(spe)[1]
     y_coord <- spatialCoordsNames(spe)[2]
     ggp <- ggplot() +
-        geom_point(data=spd,
-                   mapping=aes(x=.data[[x_coord]],
-                                y=.data[[y_coord]]),
+        geom_point(data=spd, mapping=aes(x=.data[[x_coord]],
+                                        y=.data[[y_coord]]),
                     colour=point_col,
                     fill=point_col,
                     size=0.05, alpha=0.8) +
@@ -52,17 +51,15 @@ plotCellsFovs <- function(spe, sample_id=unique(spe$sample_id),
             ymax=metadata(spe)$fov_positions["y_global_px"][ , , drop=TRUE] +
                 metadata(spe)$fov_dim[["ydim"]],
             alpha=.2, color="black", linewidth=0.2) +
-        geom_text(aes(x=metadata(spe)$fov_positions["x_global_px"][ , ,
-                                                                    drop=TRUE] +
-                    metadata(spe)$fov_dim[["xdim"]]/2,
-                y=metadata(spe)$fov_positions["y_global_px"][ , , drop=TRUE] +
-                    metadata(spe)$fov_dim[["ydim"]]/2,
-                    label=metadata(spe)$fov_positions["fov"][ , , drop=TRUE]),
-              color=numbers_col, fontface="bold",
-              alpha=alpha_numbers) +
+        geom_text(aes(x=metadata(spe)$fov_positions["x_global_px"][,,drop=TRUE]+
+                        metadata(spe)$fov_dim[["xdim"]]/2,
+                    y=metadata(spe)$fov_positions["y_global_px"][,,drop=TRUE]+
+                        metadata(spe)$fov_dim[["ydim"]]/2,
+                    label=metadata(spe)$fov_positions["fov"][,,drop=TRUE]),
+                    color=numbers_col, fontface="bold", alpha=alpha_numbers) +
         ggtitle(sample_id) +
         .fov_image_theme(back.color="white", back.border="white",
-                         title.col="black") + ggplot2::coord_fixed()
+                        title.col="black") + ggplot2::coord_fixed()
     return(ggp)
 }
 
@@ -125,11 +122,11 @@ plotCentroids <- function(spe, colour_by=NULL, colour_log=FALSE,
     if(is.null(colour_by))
     {
         ggp <- ggplot(data.frame(spatialCoords(spe)),
-                      aes(x=.data[[spatialCoordsNames(spe)[1]]],
-                          y=.data[[spatialCoordsNames(spe)[2]]])) +
+                        aes(x=.data[[spatialCoordsNames(spe)[1]]],
+                            y=.data[[spatialCoordsNames(spe)[2]]])) +
             geom_point(colour=point_col,
-                       fill=point_col,
-                       size=size, alpha=alpha)+ggplot2::ggtitle(sample_id)+
+                        fill=point_col,
+                        size=size, alpha=alpha)+ggplot2::ggtitle(sample_id)+
             ggplot2::theme_bw()+ggplot2::coord_fixed()
     } else {
         if(colour_log)
@@ -141,15 +138,15 @@ plotCentroids <- function(spe, colour_by=NULL, colour_log=FALSE,
         }
         ## check if column variable is logical to impose our colors
         ggp <- ggplot(data.frame(colData(spe), spatialCoords(spe)),
-                      aes(x=.data[[spatialCoordsNames(spe)[1]]],
-                          y=.data[[spatialCoordsNames(spe)[2]]],
-                          colour = .data[[colour_by]],
-                          fill = .data[[colour_by]]),) +
+                    aes(x=.data[[spatialCoordsNames(spe)[1]]],
+                        y=.data[[spatialCoordsNames(spe)[2]]],
+                        colour=.data[[colour_by]],
+                        fill=.data[[colour_by]]),) +
             geom_point(size=size, alpha=alpha)
         if(isNegativeProbe)
         {
             ggp <- ggp + scale_color_gradient(low="white", high="red",
-                                              name=colour_by) +
+                                            name=colour_by) +
                 .negative_image_theme()
         } else if(all(!is.null(palette), (palette %in% names(colData(spe))))) {
             palette <- createPaletteFromColData(spe, palette_names=colour_by,
@@ -418,9 +415,9 @@ plotZoomFovsMap <- function(spe, fovs=NULL,
     spefovs <- spe[, spe$fov %in% fovs]
 
     map <- plotCellsFovs(spefovs, point_col=map_point_col,
-                         numbers_col=map_numbers_col,
-                         alpha_numbers=map_alpha_numbers,
-                         sample_id=NULL)
+                        numbers_col=map_numbers_col,
+                        alpha_numbers=map_alpha_numbers,
+                        sample_id=NULL)
 
     g2 <- plotPolygons(spefovs, sample_id=NULL, ...)
 
@@ -466,18 +463,16 @@ plotZoomFovsMap <- function(spe, fovs=NULL,
 #' example(spatialPerCellQC)
 #' p <- plotQScoreTerms(spe)
 #' print(p)
-plotQScoreTerms <- function(spe,
-                             sample_id=unique(spe$sample_id),
-                             size=0.05, alpha=0.8,
-                             aspect_ratio=1, custom = FALSE)
+plotQScoreTerms <- function(spe, sample_id=unique(spe$sample_id), size=0.05,
+                            alpha=0.8, aspect_ratio=1, custom = FALSE)
 {
     if(metadata(spe)$technology=="Nanostring_CosMx")
     {
         if(custom==TRUE){
             ggp <- scater::plotColData(spe, x=spatialCoordsNames(spe)[1],
-                                       y=spatialCoordsNames(spe)[2],
-                                       colour_by="cust_log2CountArea",
-                                       point_size=size, point_alpha=alpha)+
+                                        y=spatialCoordsNames(spe)[2],
+                                        colour_by="cust_log2CountArea",
+                                        point_size=size, point_alpha=alpha)+
                 ggplot2::ggtitle(sample_id)+ .centroid_image_theme() +
                 ggplot2::coord_fixed()
 
@@ -489,9 +484,9 @@ plotQScoreTerms <- function(spe,
                 ggplot2::coord_fixed()
         } else {
             ggp <- scater::plotColData(spe, x=spatialCoordsNames(spe)[1],
-                                       y=spatialCoordsNames(spe)[2],
-                                       colour_by="log2CountArea",
-                                       point_size=size, point_alpha=alpha)+
+                                        y=spatialCoordsNames(spe)[2],
+                                        colour_by="log2CountArea",
+                                        point_size=size, point_alpha=alpha)+
                 ggtitle(sample_id)+ .centroid_image_theme() + coord_fixed()
 
             ggp2 <- scater::plotColData(spe, x=spatialCoordsNames(spe)[1],
