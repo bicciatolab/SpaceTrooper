@@ -2,7 +2,7 @@
 cospath <- "/Users/inzirio/Downloads/CosMx_data/DBKero/CosMx_Breast/CosMx_data_Case2"
 # debug(readCosmxSPE)
 spe<- readCosmxSPE(cospath)
-f=c(32)
+f=c(16)
 # c=c(1:50)
 # gc<- 1:12
 
@@ -10,7 +10,7 @@ countmat_file <- list.files(cospath, "exprMat_file.csv", full.names=TRUE)
 countmat <- data.table::fread(countmat_file, showProgress=FALSE) # cell count matrix
 c1 <- countmat[countmat$fov%in%f,]
 # c1 <- c1[c1$cell_ID%in%c,1:12]
-write.csv(x=c1, file="/Users/inzirio/Library/CloudStorage/GoogleDrive-drighelli@gmail.com/My\ Drive/works/coding/SpaceTrooper/inst/extdata/CosMx_DBKero_Tiny/DBKero_exprMat_file32.csv", row.names=FALSE)
+write.csv(x=c1, file="/Users/inzirio/Library/CloudStorage/GoogleDrive-drighelli@gmail.com/My\ Drive/works/coding/SpaceTrooper/inst/extdata/CosMx_DBKero_Tiny/DBKero_exprMat_file16.csv", row.names=FALSE)
 
 # spe32 <- spe[,spe$fov==32]
 # spe32 <- spe32[1:22, 1:100]
@@ -23,18 +23,18 @@ metadata_file <- list.files(cospath, "metadata_file.csv", full.names=TRUE)
 metadata <- data.table::fread(metadata_file, showProgress=FALSE) # cell metadata
 m1 <- metadata[metadata$fov==f,]
 # m1 <- m1[m1$cell_ID%in%c,]
-write.csv(x=m1, file="/Users/inzirio/Library/CloudStorage/GoogleDrive-drighelli@gmail.com/My\ Drive/works/coding/SpaceTrooper/inst/extdata/CosMx_DBKero_Tiny/DBKero_metadata_file32.csv", row.names=FALSE)
+write.csv(x=m1, file="/Users/inzirio/Library/CloudStorage/GoogleDrive-drighelli@gmail.com/My\ Drive/works/coding/SpaceTrooper/inst/extdata/CosMx_DBKero_Tiny/DBKero_metadata_file16.csv", row.names=FALSE)
 
 fovpos_file <- list.files(cospath, "fov_positions_file.csv", full.names=TRUE)
 fov_positions <- as.data.frame(data.table::fread(fovpos_file, header=TRUE))
 f1 <- fov_positions[fov_positions$fov==f,]
-write.csv(x=f1, file="/Users/inzirio/Library/CloudStorage/GoogleDrive-drighelli@gmail.com/My\ Drive/works/coding/SpaceTrooper/inst/extdata/CosMx_DBKero_Tiny/DBKero_fov_positions_file.csv", row.names=FALSE)
+write.csv(x=f1, file="/Users/inzirio/Library/CloudStorage/GoogleDrive-drighelli@gmail.com/My\ Drive/works/coding/SpaceTrooper/inst/extdata/CosMx_DBKero_Tiny/DBKero_fov_positions_file16.csv", row.names=FALSE)
 
 pol_file <- metadata(spe)$polygons
 
-spat_obj <- fread(pol_file)
+spat_obj <- data.table::fread(pol_file)
 s1 <- spat_obj[spat_obj$fov==f, ]
-write.csv(x=s1, file="/Users/inzirio/Library/CloudStorage/GoogleDrive-drighelli@gmail.com/My\ Drive/works/coding/SpaceTrooper/inst/extdata/CosMx_DBKero_Tiny/DBKero-polygons32.csv", row.names=FALSE)
+write.csv(x=s1, file="/Users/inzirio/Library/CloudStorage/GoogleDrive-drighelli@gmail.com/My\ Drive/works/coding/SpaceTrooper/inst/extdata/CosMx_DBKero_Tiny/DBKero-polygons16.csv", row.names=FALSE)
 
 ## data creation for merscope
 

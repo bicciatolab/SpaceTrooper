@@ -38,4 +38,5 @@ This function reads polygon data specific to Xenium technology.
 \examples{
 example(readXeniumSPE)
 polygons <- readPolygonsXenium(metadata(spe)$polygons, type="parquet")
+polygons
 }

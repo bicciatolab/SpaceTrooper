@@ -1,8 +1,9 @@
-#' Plot cell centroids in their FoVs
-#'
-#' @title Plot cell centroids in FoVs
+#' plotCellsFovs
+#' @name plotCellsFovs
+#' @rdname plotCellsFovs
 #'
 #' @description
+#' Plot cell centroids in FoVs
 #' Creates a scatter plot with cell centroids arranged in their FoVs as an
 #' overlapping grid.
 #'
@@ -65,7 +66,8 @@ plotCellsFovs <- function(spe, sample_id=unique(spe$sample_id),
 }
 
 #' plotCentroids
-#'
+#' @name plotCentroids
+#' @rdname plotCentroids
 #' @description
 #' Plot Spatial Coordinates for a SpatialExperiment Object
 #' This function generates a ggplot of spatial coordinates from a
@@ -172,7 +174,9 @@ plotCentroids <- function(spe, colour_by=NULL, colour_log=FALSE,
 }
 
 
-#' plotMetricHists
+#' plotMetricHist
+#' @name plotMetricHist
+#' @rdname plotMetricHist
 #' @description Plot a Histogram for a Given Metric in a SpatialExperiment
 #' Object
 #'
@@ -236,90 +240,9 @@ plotMetricHist <- function(spe, metric, fill_color="#c0c8cf",
 }
 
 
-# plotPolygons_tmap
-#
-# @description
-# Plot Polygons from a SpatialExperiment Object.
-# This function generates a plot of polygons stored in a `SpatialExperiment`
-# object.
-#
-# @param spe A `SpatialExperiment` object containing spatial transcriptomics
-# data, including polygon data as an `sf` object.
-# @param colour_by An optional character string specifying the column in
-# `colData(spe)` to use for coloring the polygons. If `NULL`, all polygons
-# will be colored the same. Default is `NULL`.
-# @param sample_id A character string specifying the title of the plot.
-# Default is the unique sample ID from `spe`.
-# @param fill_alpha A numeric value specifying the transparency level of the
-# polygon fill. Default is `NA`.
-# @param palette A character vector specifying the colors to use for filling
-# the polygons when `colour_by` is a factor. Default is `NULL`.
-# @param border_col A character string specifying the color of the polygon
-# borders. Default is `NA`.
-# @param border_alpha A numeric value specifying the transparency level of the
-# polygon borders. Default is `NA`.
-# @param border_line_width A numeric value specifying the width of the polygon
-# borders. Default is `0.1`.
-#
-# @return A `tmap` plot object displaying the polygons.
-#
-# @importFrom tmap tm_shape tm_borders tm_layout tm_fill tm_polygons
-# @importFrom SummarizedExperiment colData
-# @export
-#
-# @examples
-#
-# plotPolygons_tmap <- function(spe, colour_by=NULL,sample_id=unique(spe$sample_id),
-#                     fill_alpha=NA, palette=NULL, border_col=NA, border_alpha=NA,
-#                     border_line_width=0.1, bg_color="black")
-# {
-#     stopifnot(is(spe, "SpatialExperiment"))
-#     stopifnot("polygons" %in% names(colData(spe)))
-#
-#     pols <- spe$polygons
-#     if (!is.null(colour_by))
-#     {
-#         stopifnot(colour_by %in% names(colData(spe)))
-#         if (is(spe[[colour_by]], "logical"))
-#         {
-#             sums <- sum(colData(spe)[[colour_by]])
-#             pols[[colour_by]] <- ifelse(colData(spe)[[colour_by]]==TRUE,
-#                                 paste0("TRUE (", sums,")"),
-#                                 paste0("FALSE (", dim(pols)[1]-sums,")"))
-#         } else {
-#             pols[[colour_by]] <- colData(spe)[[colour_by]]
-#         }
-#     }
-#     tmm <- tm_shape(pols)
-#
-#     if (is.null(colour_by))
-#     {
-#         colour_by="grey50"
-#         border_line_width=0.1
-#     }
-#     if(!is.null(palette)) if (palette %in% names(colData(spe)))
-#     {
-#         palette <- createPaletteFromColData(spe, palette_names=colour_by,
-#                                             palette_colors=palette)
-#         palette <- setNames(palette, NULL)
-#     }
-#     tmm <- tmm + tm_polygons(col=colour_by, alpha=fill_alpha, palette=palette,
-#                              border.col=border_col, border.alpha=border_alpha,
-#                              lwd=border_line_width)
-#
-#     tmm <- tmm + tm_layout(legend.outside=TRUE,
-#                             main.title.position=c("left", "top"),
-#                             main.title=sample_id,
-#                             main.title.fontface=2,
-#                             main.title.size=1,
-#                             inner.margins=c(0, 0, 0, 0),
-#                             outer.margins=c(0, 0, 0, 0),
-#                             bg.color=bg_color)
-#     return(tmm)
-# }
-
-
 #' plotPolygons
+#' @name plotPolygons
+#' @rdname plotPolygons
 #'
 #' @description Plot polygons from a `SpatialExperiment` object using ggplot2.
 #'
@@ -441,6 +364,8 @@ plotPolygons <- function(spe, colour_by="darkgrey", colour_log=FALSE,
 
 
 #' plotZoomFovsMap
+#' @name plotZoomFovsMap
+#' @rdname plotZoomFovsMap
 #' @description
 #'
 #' Plot Zoomed-in FOVs with Map and Polygons
@@ -509,9 +434,10 @@ plotZoomFovsMap <- function(spe, fovs=NULL,
 
     return(final_plot)
 }
-#' Plot quality‐score term contributions
-#'
-#' @title Plot quality score terms for SpatialExperiment
+
+#' plotQScoreTerms
+#' @name plotQScoreTerms
+#' @rdname plotQScoreTerms
 #'
 #' @description
 #' Plots the individual terms that combine into the quality score formula,
@@ -599,6 +525,8 @@ plotQScoreTerms <- function(spe,
 
 
 #' firstFilterPlot
+#' @name firstFilterPlot
+#' @rdname firstFilterPlot
 #' @description
 #'
 #' Plots the flagged cells identified with first filter, based on control count

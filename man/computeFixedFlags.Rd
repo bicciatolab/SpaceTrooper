@@ -19,7 +19,7 @@ control-to-total ratio to flag outliers. Default is `0.1`.}
 The `SpatialExperiment` object with added filter flags in `colData`.
 }
 \description{
-Compute Flagged cells using fixed thresholds for SpatialExperiment
+Compute Flagged cells using fixed thresholds for SpatialExperiment.
 
 This function calculates various flags to identify outliers in a
 `SpatialExperiment` object based on quality control metrics.

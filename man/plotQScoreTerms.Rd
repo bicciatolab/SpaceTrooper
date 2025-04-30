@@ -2,7 +2,7 @@
 % Please edit documentation in R/spatialQCPlots.R
 \name{plotQScoreTerms}
 \alias{plotQScoreTerms}
-\title{Plot quality score terms for SpatialExperiment}
+\title{plotQScoreTerms}
 \usage{
 plotQScoreTerms(
   spe,
@@ -35,9 +35,6 @@ A combined plot (via `cowplot::plot_grid`) showing spatial maps
 \description{
 Plots the individual terms that combine into the quality score formula,
 allowing assessment of each term’s impact on the final score.
-}
-\details{
-Plot quality‐score term contributions
 }
 \examples{
 example(readAndAddPolygonsToSPE)

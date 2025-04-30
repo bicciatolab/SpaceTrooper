@@ -1,5 +1,6 @@
-#' Perform per‐cell QC on a SpatialExperiment
-#'
+#' spatialPerCellQC
+#' @name spatialPerCellQC
+#' @rdname spatialPerCellQC
 #' @description
 #' Computes quality‐control metrics for each cell and adds them to `colData`.
 #'
@@ -101,8 +102,9 @@ spatialPerCellQC <- function(spe, micronConvFact=0.12, rmZeros=TRUE,
     return(spe)
 }
 
-#' Compute distance to FOV border for CosMx
-#'
+#' computeBorderDistanceCosMx
+#' @name computeBorderDistanceCosMx
+#' @rdname computeBorderDistanceCosMx
 #' @description
 #' Calculates the minimum distance of each cell to the field‐of‐view border
 #' and adds it to `colData`.
@@ -144,6 +146,8 @@ computeBorderDistanceCosMx <- function(spe,
 }
 
 #' computeSpatialOutlier
+#' @name computeSpatialOutlier
+#' @rdname computeSpatialOutlier
 #' @description
 #' Computes outliers based on the Area (in micron) of the experiment.
 #' It gives the possibility to choose between the medcouple (mc method argument)
@@ -269,8 +273,10 @@ computeSpatialOutlier <- function(spe, compute_by=NULL,
 }
 
 #' computeFixedFlags
+#' @name computeFixedFlags
+#' @rdname computeFixedFlags
 #' @description
-#' Compute Flagged cells using fixed thresholds for SpatialExperiment
+#' Compute Flagged cells using fixed thresholds for SpatialExperiment.
 #'
 #' This function calculates various flags to identify outliers in a
 #' `SpatialExperiment` object based on quality control metrics.
@@ -312,7 +318,8 @@ computeFixedFlags <- function(spe, total_threshold=0,
 }
 
 #' computeQScore
-#'
+#' @name computeQScore
+#' @rdname computeQScore
 #' @description
 #' Compute quality score and automatically define weights for quality score
 #' through glm training. This function computes quality score with a formula
@@ -504,7 +511,9 @@ computeQScore <- function(spe, verbose=FALSE) {
     return(spe)
 }
 
-#' computeQscoreFlags
+#' computeQScoreFlags
+#' @name computeQScoreFlags
+#' @rdname computeQScoreFlags
 #' @description
 #' Compute flagged cells based on a manually chosen threshold on quality score
 #'
@@ -524,9 +533,13 @@ computeQScore <- function(spe, verbose=FALSE) {
 #' @export
 #' @examples
 #' example(computeQScore)
-#' spe <- computeQscoreFlags(spe)
+#' spe <- computeQScoreFlags(spe)
+#' table(spe$is_qscore_outlier)
+#' # if fixed filters are defined we have an additional column
+#' spe <- computeFixedFlags(spe)
+#' spe <- computeQScoreFlags(spe)
 #' table(spe$fixed_qscore_out)
-computeQscoreFlags <- function(spe, qs_threshold=0.5, use_qs_quantiles=FALSE)
+computeQScoreFlags <- function(spe, qs_threshold=0.5, use_qs_quantiles=FALSE)
 {
     stopifnot(is(spe, "SpatialExperiment"))
     stopifnot("quality_score" %in% names(colData(spe)))
@@ -541,7 +554,10 @@ computeQscoreFlags <- function(spe, qs_threshold=0.5, use_qs_quantiles=FALSE)
             spe$is_qscore_outlier <- spe$quality_score < qs_threshold
 
     }
-    spe$fixed_qscore_out <- (spe$is_qscore_outlier & spe$fixed_filter_out)
 
+    if("fixed_filter_out" %in% names(colData(spe)))
+    {
+        spe$fixed_qscore_out <- (spe$is_qscore_outlier & spe$fixed_filter_out)
+    }
     return(spe)
 }

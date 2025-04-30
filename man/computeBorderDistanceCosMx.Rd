@@ -2,7 +2,7 @@
 % Please edit documentation in R/QC.R
 \name{computeBorderDistanceCosMx}
 \alias{computeBorderDistanceCosMx}
-\title{Compute distance to FOV border for CosMx}
+\title{computeBorderDistanceCosMx}
 \usage{
 computeBorderDistanceCosMx(
   spe,

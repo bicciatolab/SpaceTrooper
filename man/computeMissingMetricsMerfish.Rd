@@ -2,7 +2,7 @@
 % Please edit documentation in R/readMerfish.R
 \name{computeMissingMetricsMerfish}
 \alias{computeMissingMetricsMerfish}
-\title{Compute Missing Spatial Metrics for MERFISH}
+\title{computeMissingMetricsMerfish}
 \usage{
 computeMissingMetricsMerfish(
   pol_file,

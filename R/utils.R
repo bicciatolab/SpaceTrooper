@@ -1,5 +1,6 @@
 #' .getActiveGeometryName
-#'
+#' @name .getActiveGeometryName
+#' @rdname dot-getActiveGeometryName
 #' @param sf an sf object
 #'
 #' @return character with the name of the active geometry
@@ -15,7 +16,8 @@
 }
 
 #' .setActiveGeometry
-#'
+#' @name .setActiveGeometry
+#' @rdname dot-setActiveGeometry
 #' @param sf an sf object
 #' @param name character for the geometry to activate
 #'
@@ -32,7 +34,8 @@
 }
 
 #' .renameGeometry
-#'
+#' @name .renameGeometry
+#' @rdname dot-renameGeometry
 #' @description renames the `from` to `to` geometry of the `sf` object.
 #' If `activate` is `TRUE` it set as the active geometry the new geometry name.
 #' Default behaviour is to check if the renamed geometry is already active and
@@ -58,6 +61,10 @@
 }
 
 #' getFencesOutlier
+#' @name getFencesOutlier
+#' @rdname getFencesOutlier
+#' @description
+#'
 #' Retrieve Threshold (Fence) Values from a SpatialExperiment Object
 #'
 #' This function extracts the threshold values, also known as fences,
@@ -67,7 +74,9 @@
 #' data.
 #' @param fences_of A character string specifying the name of the column in
 #' `colData(spe)` from which to extract the fence values. This column should
-#' contain an `outlier.filter` object.
+#' contain an `outlier.filter` object (see `computeSpatialOutlier```).
+#' @param high_low character indicating which fence to get if "higher", "lower"
+#' or "both" (default is "both").
 #' @param decimal_round An optional integer specifying the number of decimal
 #' places to which the fence values should be rounded. If `NULL`, no rounding is
 #'  applied. Default is `NULL`.
@@ -78,7 +87,8 @@
 #' @importFrom SummarizedExperiment colData
 #' @export
 #' @examples
-#' #TBD
+#' example(computeSpatialOutlier)
+#' getFencesOutlier(spe, fences_of="log2CountArea_outlier_mc")
 getFencesOutlier <- function(spe, fences_of,
                     high_low=c("both", "lower", "higher"), decimal_round=NULL)
 {

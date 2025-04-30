@@ -2,7 +2,7 @@
 % Please edit documentation in R/readMerfish.R
 \name{readMerfishSPE}
 \alias{readMerfishSPE}
-\title{Read a MERFISH SpatialExperiment}
+\title{readMerfishSPE}
 \usage{
 readMerfishSPE(
   dirname,

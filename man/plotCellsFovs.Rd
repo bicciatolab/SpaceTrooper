@@ -2,7 +2,7 @@
 % Please edit documentation in R/spatialQCPlots.R
 \name{plotCellsFovs}
 \alias{plotCellsFovs}
-\title{Plot cell centroids in FoVs}
+\title{plotCellsFovs}
 \usage{
 plotCellsFovs(
   spe,
@@ -28,11 +28,9 @@ Default: `unique(spe$sample_id)`.}
 A `ggplot` object showing cell centroids and FoV boundaries.
 }
 \description{
+Plot cell centroids in FoVs
 Creates a scatter plot with cell centroids arranged in their FoVs as an
 overlapping grid.
-}
-\details{
-Plot cell centroids in their FoVs
 }
 \examples{
 example(readCosMx)

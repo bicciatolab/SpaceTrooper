@@ -2,11 +2,12 @@
 % Please edit documentation in R/QC.R
 \name{spatialPerCellQC}
 \alias{spatialPerCellQC}
-\title{Perform per‐cell QC on a SpatialExperiment}
+\title{spatialPerCellQC}
 \usage{
 spatialPerCellQC(
   spe,
   micronConvFact = 0.12,
+  rmZeros = TRUE,
   negProbList = c("NegPrb", "Negative", "SystemControl", "Ms IgG1", "Rb IgG",
     "NegControlProbe", "NegControlCodeword", "UnassignedCodeword", "Blank")
 )
@@ -16,6 +17,8 @@ spatialPerCellQC(
 
 \item{micronConvFact}{Numeric factor to convert pixels to microns. Default
 `0.12`.}
+
+\item{rmZeros}{logical for removing zero counts cells (default is TRUE).}
 
 \item{negProbList}{Character vector of patterns to identify negative probes.
 Defaults include:

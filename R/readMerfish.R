@@ -1,5 +1,6 @@
-#' Read a MERFISH SpatialExperiment
-#'
+#' readMerfishSPE
+#' @name readMerfishSPE
+#' @rdname readMerfishSPE
 #' @description
 #' `readMerfishSPE()` imports MERFISH outputs (counts, metadata, and optionally
 #' cell boundary polygons) from a directory and builds a SpatialExperiment
@@ -118,18 +119,19 @@ readMerfishSPE <- function(dirname,
 
 }
 
-#' Compute Missing Spatial Metrics for MERFISH
-#'
-#'@description
+#' computeMissingMetricsMerfish
+#' @name computeMissingMetricsMerfish
+#' @rdname computeMissingMetricsMerfish
+#' @description
 #' `computeMissingMetricsMerfish()` takes cell metadata and boundary
 #' polygons, calculates per‐cell area and aspect‐ratio, and optionally
 #' appends the raw polygon geometries.
 #'
-#'@param pol_file `character`
-#'  Path (or vector of paths) to polygon files (HDF5 or Parquet).
-#'@param coldata `DataFrame` or `data.frame`
-#'  Cell metadata with at least a `cell_id` column.
-#'@param boundaries_type `character(1)`
+#' @param pol_file `character`
+#' Path (or vector of paths) to polygon files (HDF5 or Parquet).
+#' @param coldata `DataFrame` or `data.frame`
+#' Cell metadata with at least a `cell_id` column.
+#' @param boundaries_type `character(1)`
 #'   One of `"HDF5"` or `"parquet"`—passed on to
 #'   `readPolygonsMerfish()`.
 #' @param keep_polygons `logical(1)`

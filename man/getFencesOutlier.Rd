@@ -2,8 +2,7 @@
 % Please edit documentation in R/utils.R
 \name{getFencesOutlier}
 \alias{getFencesOutlier}
-\title{getFencesOutlier
-Retrieve Threshold (Fence) Values from a SpatialExperiment Object}
+\title{getFencesOutlier}
 \usage{
 getFencesOutlier(
   spe,
@@ -18,7 +17,7 @@ data.}
 
 \item{fences_of}{A character string specifying the name of the column in
 `colData(spe)` from which to extract the fence values. This column should
-contain an `outlier.filter` object.}
+contain an `outlier.filter` object (see `computeSpatialOutlier```).}
 
 \item{high_low}{character indicating which fence to get if "higher", "lower"
 or "both" (default is "both").}
@@ -32,9 +31,12 @@ A numeric vector containing the lower and upper threshold values
 extracted from the specified column.
 }
 \description{
+Retrieve Threshold (Fence) Values from a SpatialExperiment Object
+
 This function extracts the threshold values, also known as fences,
 from a specified column in the `colData` of a `SpatialExperiment` object.
 }
 \examples{
-#TBD
+example(computeSpatialOutlier)
+getFencesOutlier(spe, fences_of="log2CountArea_outlier_mc")
 }

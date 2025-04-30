@@ -1,4 +1,6 @@
 #' .fov_image_theme
+#' @name .fov_image_theme
+#' @rdname dot-fov_image_theme
 #' @description
 #' internal function to setup the theme for the fov background on the whole
 #' image
@@ -29,6 +31,8 @@
 }
 
 #' .centroid_image_theme
+#' @name .centroid_image_theme
+#' @rdname dot-centroid_image_theme
 #' @description
 #' internal function to setup the theme for the centroid plot background
 #'
@@ -56,6 +60,8 @@
 
 
 #' .negative_image_theme
+#' @name .negative_image_theme
+#' @rdname dot-negative_image_theme
 #' @description
 #' internal function to setup the theme for the negative background for
 #' negative plots
@@ -86,6 +92,8 @@
 }
 
 #' .light_theme
+#' @name .light_theme
+#' @rdname dot-light_theme
 #' @description
 #' internal function to setup the white background theme for the First Filter plot
 #'
@@ -108,6 +116,8 @@
 }
 
 #' .dark_theme
+#' @name .dark_theme
+#' @rdname dot-dark_theme
 #' @description
 #' internal function to setup the black background theme for the First Filter plot
 #' #' @param fill_color color to fill the element_rect (default is "black")

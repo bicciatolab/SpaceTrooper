@@ -43,4 +43,5 @@ This function reads polygon data specific to CosMx technology.
 \examples{
 example(readCosmxSPE)
 polygons <- readPolygonsCosmx(metadata(spe)$polygons)
+polygons
 }

@@ -65,6 +65,9 @@ Creates a [`SpatialExperiment`] from an unzipped Xenium Output Bundle
 directory containing spatial gene expression data.
 }
 \details{
+readXeniumSPE
+
+
 Expects the unzipped bundle to contain an `outs/` folder with:
 - `cell_feature_matrix.h5` or `cell_feature_matrix/`
 - `cells.csv.gz`

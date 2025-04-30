@@ -2,7 +2,7 @@
 % Please edit documentation in R/polygons.R
 \name{.addPolygonsToCD}
 \alias{.addPolygonsToCD}
-\title{Attach sf polygons to a DataFrame of cell metadata}
+\title{.addPolygonsToCD}
 \usage{
 .addPolygonsToCD(cd, polygons, polygonsCol = "polygons")
 }

@@ -2,7 +2,7 @@
 % Please edit documentation in R/spatialQCPlots.R
 \name{plotMetricHist}
 \alias{plotMetricHist}
-\title{plotMetricHists}
+\title{plotMetricHist}
 \usage{
 plotMetricHist(
   spe,

@@ -1,3 +1,5 @@
+#' readXeniumSPE
+#' @name readXeniumSPE
 #' @rdname readXeniumSPE
 #' @title Load data from a 10x Genomics Xenium experiment
 #'
@@ -45,7 +47,7 @@
 #' @importFrom DropletUtils read10xCounts
 #' @importFrom data.table fread
 #' @importFrom SpatialExperiment SpatialExperiment
-#'
+#' @export
 #' @examples
 #' xepath <- system.file(
 #'   "extdata", "Xenium_small", package = "SpaceTrooper"
@@ -123,8 +125,10 @@ readXeniumSPE <- function(dirname,
 }
 
 #' computeMissingMetricsXenium
-#' @description
+#' @name computeMissingMetricsXenium
+#' @rdname computeMissingMetricsXenium
 #'
+#' @description
 #' Compute Missing Metrics for Xenium Data
 #'
 #' This function computes missing metrics, such as the aspect ratio, from

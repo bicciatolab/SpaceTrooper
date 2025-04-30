@@ -1,4 +1,6 @@
 #' readPolygons
+#' @name readPolygons
+#' @rdname readPolygons
 #' @description
 #'  Read and Validate Polygons from a File
 #'
@@ -111,6 +113,8 @@ readPolygons <- function(polygonsFile, type=c("csv", "parquet", "h5"),
 
 
 #' .checkPolygonsValidity
+#' @name .checkPolygonsValidity
+#' @rdname dot-checkPolygonsValidity
 #' @description checks validity on a geometry of `sf` object.
 #' It removes multipolygons when `keepMultiPol` is `FALSE`
 #'
@@ -199,6 +203,8 @@ readPolygons <- function(polygonsFile, type=c("csv", "parquet", "h5"),
 }
 
 #' readAndAddPolygonsToSPE
+#' @name readAndAddPolygonsToSPE
+#' @rdname readAndAddPolygonsToSPE
 #' @description Read and Add Polygons to a SpatialExperiment Object
 #'
 #' This function reads polygon boundary data based on the technology associated
@@ -256,8 +262,10 @@ readAndAddPolygonsToSPE <- function(spe, polygonsCol="polygons",
 
 
 
-#' Attach sf polygons to a DataFrame of cell metadata
-#'
+#' .addPolygonsToCD
+#' @name .addPolygonsToCD
+#' @rdname dot-addPolygonsToCD
+#' @description
 #' This function enriches a DataFrame (e.g., from colData) with matching polygon
 #' geometries.
 #'
@@ -305,7 +313,8 @@ readAndAddPolygonsToSPE <- function(spe, polygonsCol="polygons",
 
 
 #' addPolygonsToSPE
-#'
+#' @name addPolygonsToSPE
+#' @rdname addPolygonsToSPE
 #' @description This function adds polygon data to a `SpatialExperiment` object.
 #'
 #' @param spe A `SpatialExperiment` object to which polygons will be added.
@@ -340,8 +349,10 @@ addPolygonsToSPE <- function(spe, polygons, polygonsCol="polygons") {
 
 
 #' .createPolygons
-#'
-#' @description This internal function creates polygons from a spatial data object.
+#' @name .createPolygons
+#' @rdname dot-createPolygons
+#' @description This internal function creates polygons from a data.frame or
+#' similar object.
 #'
 #' @param spat_obj A data frame or similar object containing spatial data.
 #' @param x A character vector specifying the x-coordinates.
@@ -352,13 +363,13 @@ addPolygonsToSPE <- function(spe, polygons, polygonsCol="polygons") {
 #' @keywords internal
 #' @importFrom sfheaders sf_polygon
 #' @importFrom sf st_as_sf
-.createPolygons <- function(spat_obj, x=NULL, y=NULL, polygon_id=NULL, geometry="Geometry")
+.createPolygons <- function(spat_obj, x=NULL, y=NULL, polygon_id=NULL,
+                            geometry="Geometry")
 {
     if(all(!is.null(x), !is.null(y)))
     {
-        polygons <- sfheaders::sf_polygon(obj=spat_obj,
-                                      x=x, y=y,
-                                      polygon_id=polygon_id, keep=TRUE)
+        polygons <- sfheaders::sf_polygon(obj=spat_obj, x=x, y=y,
+                                    polygon_id=polygon_id, keep=TRUE)
     } else {
         polygons <- sf::st_as_sf(as.data.frame(spat_obj))
         ## check structure of polygons
@@ -376,7 +387,8 @@ addPolygonsToSPE <- function(spe, polygons, polygonsCol="polygons") {
 }
 
 #' readPolygonsCosmx
-#'
+#' @name readPolygonsCosmx
+#' @rdname readPolygonsCosmx
 #' @description This function reads polygon data specific to CosMx technology.
 #'
 #' @param polygonsFile A character string specifying the file path to the
@@ -396,6 +408,7 @@ addPolygonsToSPE <- function(spe, polygons, polygonsCol="polygons") {
 #' @examples
 #' example(readCosmxSPE)
 #' polygons <- readPolygonsCosmx(metadata(spe)$polygons)
+#' polygons
 readPolygonsCosmx <- function(polygonsFile, type=c("csv", "parquet"),
                               x="x_global_px",
                               y="y_global_px",
@@ -418,7 +431,8 @@ readPolygonsCosmx <- function(polygonsFile, type=c("csv", "parquet"),
 }
 
 #' readPolygonsXenium
-#'
+#' @name readPolygonsXenium
+#' @rdname readPolygonsXenium
 #' @description This function reads polygon data specific to Xenium technology.
 #'
 #' @param polygonsFile A character string specifying the file path to the
@@ -437,6 +451,7 @@ readPolygonsCosmx <- function(polygonsFile, type=c("csv", "parquet"),
 #' @examples
 #' example(readXeniumSPE)
 #' polygons <- readPolygonsXenium(metadata(spe)$polygons, type="parquet")
+#' polygons
 readPolygonsXenium <- function(polygonsFile, type=c("parquet", "csv"),
                    x="vertex_x", y="vertex_y", keepMultiPol=TRUE,
                    verbose=FALSE)
@@ -451,7 +466,8 @@ readPolygonsXenium <- function(polygonsFile, type=c("parquet", "csv"),
 }
 
 #' readPolygonsMerfish
-#'
+#' @name readPolygonsMerfish
+#' @rdname readPolygonsMerfish
 #' @description This function reads polygon data specific to MERFISH technology.
 #'
 #' @param polygons A character string specifying the folder containing the
@@ -518,7 +534,8 @@ readPolygonsMerfish <- function(polygons, type=c("parquet", "HDF5"),
     return(polygons)
 }
 #' computeCenterFromPolygons
-#'
+#' @name computeCenterFromPolygons
+#' @rdname computeCenterFromPolygons
 #' @description This function computes the center coordinates on x and y axis
 #' from polygon data and adds it to the `colData`. It is necessary only for Merfish.
 #'
@@ -551,7 +568,8 @@ computeCenterFromPolygons <- function(polygons, coldata)
 
 
 #' computeAreaFromPolygons
-#'
+#' @name computeAreaFromPolygons
+#' @rdname computeAreaFromPolygons
 #' @description This function computes the area from polygon data.
 #'
 #' @param polygons An `sf` object containing polygon data.
@@ -572,7 +590,8 @@ computeAreaFromPolygons <- function(polygons)
 
 
 #' computeAspectRatioFromPolygons
-#'
+#' @name computeAspectRatioFromPolygons
+#' @rdname computeAspectRatioFromPolygons
 #' @description This function computes the aspect ratio from polygon data.
 #'
 #' @param polygons An `sf` object containing polygon data.
@@ -601,7 +620,8 @@ computeAspectRatioFromPolygons <- function(polygons)
 }
 
 #' readh5polygons
-#'
+#' @name readh5polygons
+#' @rdname readh5polygons
 #' @description This function reads polygon data from an HDF5 file.
 #'
 #' @param pol_file A character string specifying the file path to the HDF5 polygon data.
