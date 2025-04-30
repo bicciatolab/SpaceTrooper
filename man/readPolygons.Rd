@@ -59,4 +59,5 @@ the data, as this part of the code is not implemented.
 \examples{
 example(readCosmxSPE)
 polygons <- readPolygons(metadata(spe)$polygons)
+polygons
 }

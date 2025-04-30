@@ -16,6 +16,7 @@ A `numeric` vector with the area information.
 This function computes the area from polygon data.
 }
 \examples{
-example(readPolygonsCosmx)
+example(readPolygonsMerfish)
 area <- computeAreaFromPolygons(polygons)
+area
 }

@@ -50,7 +50,7 @@ This function generates a histogram for a specified metric in a
 `SpatialExperiment` object.
 }
 \examples{
-example(readCosMx)
+example(readCosmxSPE)
 g <- plotMetricHist(spe, metric="Mean.DAPI")
 print(g)
 }

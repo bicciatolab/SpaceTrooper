@@ -36,10 +36,10 @@
 #' @importFrom arrow read_parquet
 #' @importFrom sf st_geometry
 #' @export
-#'
 #' @examples
 #' example(readCosmxSPE)
 #' polygons <- readPolygons(metadata(spe)$polygons)
+#' polygons
 readPolygons <- function(polygonsFile, type=c("csv", "parquet", "h5"),
                             x=c("x_global_px", "vertex_x"),
                             y=c("y_global_px", "vertex_y"),
@@ -51,10 +51,13 @@ readPolygons <- function(polygonsFile, type=c("csv", "parquet", "h5"),
 
     stopifnot(file.exists(polygonsFile))
     type <- match.arg(type)
+    x <- match.arg(x)
+    y <- match.arg(y)
     # type <- grep("csv", polygonsFile)
 
     if(type=="h5")
     {
+        stop("h5 support is momentarily disabled, please report an issue on GH")
         # polfiles <- list.files(polygonsFolder, pattern=hdf5pattern,
         #                        full.names=TRUE)
         # dfsfl <- lapply(seq_along(polfiles), function(i)
@@ -78,7 +81,8 @@ readPolygons <- function(polygonsFile, type=c("csv", "parquet", "h5"),
 
         polygons <- .createPolygons(spat_obj, x=x, y=y,
                                         polygon_id="cell_id")
-        polygons <- .renameGeometry(polygons, "geometry", "global") ## only for cosmx
+        ## only for cosmx
+        polygons <- .renameGeometry(polygons, "geometry", "global")
 
         if(all(c(xloc, yloc) %in% colnames(spat_obj)))
         {
@@ -417,7 +421,7 @@ readPolygonsCosmx <- function(polygonsFile, type=c("csv", "parquet"),
                               keepMultiPol=TRUE,
                               verbose=FALSE)
 {
-    type=match.arg(type)
+    type <- match.arg(type)
     polygons <- readPolygons(polygonsFile, type=type, x=x, y=y, xloc=xloc,
                     yloc=yloc, keepMultiPol=keepMultiPol, verbose=verbose)
     polygons <- sf::st_cast(polygons, "GEOMETRY")
@@ -491,7 +495,8 @@ readPolygonsXenium <- function(polygonsFile, type=c("parquet", "csv"),
 #'
 #' @examples
 #' example(readMerfishSPE)
-#' polygons <- readPolygonsXenium(metadata(spe)$polygons, type="parquet")
+#' polygons <- readPolygonsMerfish(metadata(spe)$polygons, type="parquet")
+#' polygons
 readPolygonsMerfish <- function(polygons, type=c("parquet", "HDF5"),
                                 keepMultiPol=TRUE, hdf5pattern="hdf5",
                                 z_lev=3L, zcolumn="ZIndex",
@@ -537,27 +542,33 @@ readPolygonsMerfish <- function(polygons, type=c("parquet", "HDF5"),
 #' @name computeCenterFromPolygons
 #' @rdname computeCenterFromPolygons
 #' @description This function computes the center coordinates on x and y axis
-#' from polygon data and adds it to the `colData`. It is necessary only for Merfish.
+#' from polygon data and adds it to the `colData`. It is necessary only for
+#' Merfish.
 #'
 #' @param polygons An `sf` object containing polygon data.
-#' @param coldata A `DataFrame` containing the `colData` to which center coordinates information will be added.
+#' @param coldata A `DataFrame` containing the `colData` to which center
+#' coordinates information will be added.
 #'
 #' @return A `DataFrame` with the added center information.
 #' @export
 #'
 #' @examples
-#' example(readPolygonsCosmx)
-#' coldata <- computeCenterFromPolygons(polygons, coldata)
+#' example(readPolygonsMerfish)
+#' coldata <- computeCenterFromPolygons(polygons, colData(spe))
+#' colData(spe) <- coldata
 computeCenterFromPolygons <- function(polygons, coldata)
 {
+    # this needs to be changed to be independent from coldata
     cd <- coldata
     # cd$Area <- NA
     centroid <- sf::st_centroid(polygons)
-    center_x <- lapply(centroid$geometry, function(x) ## get active name of geometry instead of global
+    ## get active name of geometry instead of global
+    center_x <- lapply(centroid$geometry, function(x)
     {
         x[1]
     })
-    center_y <- lapply(centroid$geometry, function(x) ## get active name of geometry instead of global
+    ## get active name of geometry instead of global
+    center_y <- lapply(centroid$geometry, function(x)
     {
         x[2]
     })
@@ -578,8 +589,9 @@ computeCenterFromPolygons <- function(polygons, coldata)
 #' @export
 #'
 #' @examples
-#' example(readPolygonsCosmx)
+#' example(readPolygonsMerfish)
 #' area <- computeAreaFromPolygons(polygons)
+#' area
 computeAreaFromPolygons <- function(polygons)
 {
     stopifnot(is(polygons, "sf"))
@@ -600,8 +612,9 @@ computeAreaFromPolygons <- function(polygons)
 #' @export
 #'
 #' @examples
-#' example(readPolygonsCosmx)
+#' example(readPolygonsMerfish)
 #' ar <- computeAspectRatioFromPolygons(polygons)
+#' ar
 computeAspectRatioFromPolygons <- function(polygons)
 {
     stopifnot(all(is(polygons, "sf"), ("is_multi" %in% colnames(polygons))))

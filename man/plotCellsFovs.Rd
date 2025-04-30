@@ -33,7 +33,7 @@ Creates a scatter plot with cell centroids arranged in their FoVs as an
 overlapping grid.
 }
 \examples{
-example(readCosMx)
+example(readCosmxSPE)
 g <- plotCellsFovs(spe)
 print(g)
 }

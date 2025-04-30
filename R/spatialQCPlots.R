@@ -18,10 +18,11 @@
 #'
 #' @importFrom ggplot2 ggplot aes annotate geom_point geom_text ggtitle
 #' coord_fixed
+#' @importFrom rlang .data
 #' @export
 #'
 #' @examples
-#' example(readCosMx)
+#' example(readCosmxSPE)
 #' g <- plotCellsFovs(spe)
 #' print(g)
 plotCellsFovs <- function(spe, sample_id=unique(spe$sample_id),
@@ -110,7 +111,7 @@ plotCellsFovs <- function(spe, sample_id=unique(spe$sample_id),
 #' @export
 #'
 #' @examples
-#' example(readCosMx)
+#' example(readCosmxSPE)
 #' g <- plotCentroids(spe, colour_by="Mean.DAPI")
 #' print(g)
 plotCentroids <- function(spe, colour_by=NULL, colour_log=FALSE,
@@ -209,7 +210,7 @@ plotCentroids <- function(spe, colour_by=NULL, colour_log=FALSE,
 #' @importFrom methods is
 #' @export
 #' @examples
-#' example(readCosMx)
+#' example(readCosmxSPE)
 #' g <- plotMetricHist(spe, metric="Mean.DAPI")
 #' print(g)
 plotMetricHist <- function(spe, metric, fill_color="#c0c8cf",

@@ -62,7 +62,7 @@ This function generates a ggplot of spatial coordinates from a
 column in `colData`.
 }
 \examples{
-example(readCosMx)
+example(readCosmxSPE)
 g <- plotCentroids(spe, colour_by="Mean.DAPI")
 print(g)
 }

@@ -149,12 +149,16 @@ readMerfishSPE <- function(dirname,
 #' @importFrom S4Vectors DataFrame
 #' @examples
 #' example(readMerfishSPE)
-#' spe <- computeMissingMetricsMerfish(spe)
+#' cd <- computeMissingMetricsMerfish(metadata(spe)$polygons, colData(spe),
+#'     boundaries_type="parquet")
+#' colData(spe) <- cd
+#' cd
 computeMissingMetricsMerfish <- function(pol_file, coldata,
-                                        boundaries_type=c("HDF5", "parquet"),
+                                        boundaries_type=c("parquet","HDF5"),
                                         keep_polygons=FALSE,
                                         polygonsCol="polygons")
 {
+    boundaries_type <- match.arg(boundaries_type)
     polygons <- readPolygonsMerfish(pol_file, type=boundaries_type)
     cd <- DataFrame(coldata)
     cd$um_area <- computeAreaFromPolygons(polygons)

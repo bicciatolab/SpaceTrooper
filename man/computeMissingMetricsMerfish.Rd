@@ -7,7 +7,7 @@
 computeMissingMetricsMerfish(
   pol_file,
   coldata,
-  boundaries_type = c("HDF5", "parquet"),
+  boundaries_type = c("parquet", "HDF5"),
   keep_polygons = FALSE,
   polygonsCol = "polygons"
 )
@@ -43,5 +43,8 @@ appends the raw polygon geometries.
 }
 \examples{
 example(readMerfishSPE)
-spe <- computeMissingMetricsMerfish(spe)
+cd <- computeMissingMetricsMerfish(metadata(spe)$polygons, colData(spe),
+    boundaries_type="parquet")
+colData(spe) <- cd
+cd
 }

@@ -23,6 +23,7 @@ is performed through ridge regression.
 }
 \examples{
 example(spatialPerCellQC)
+set.seed(1998)
 spe <- computeQScore(spe)
 summary(spe$training_status)
 summary(spe$quality_score)

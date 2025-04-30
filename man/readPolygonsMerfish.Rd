@@ -45,5 +45,6 @@ This function reads polygon data specific to MERFISH technology.
 }
 \examples{
 example(readMerfishSPE)
-polygons <- readPolygonsXenium(metadata(spe)$polygons, type="parquet")
+polygons <- readPolygonsMerfish(metadata(spe)$polygons, type="parquet")
+polygons
 }

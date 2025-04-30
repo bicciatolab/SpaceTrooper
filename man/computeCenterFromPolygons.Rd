@@ -9,16 +9,19 @@ computeCenterFromPolygons(polygons, coldata)
 \arguments{
 \item{polygons}{An `sf` object containing polygon data.}
 
-\item{coldata}{A `DataFrame` containing the `colData` to which center coordinates information will be added.}
+\item{coldata}{A `DataFrame` containing the `colData` to which center
+coordinates information will be added.}
 }
 \value{
 A `DataFrame` with the added center information.
 }
 \description{
 This function computes the center coordinates on x and y axis
-from polygon data and adds it to the `colData`. It is necessary only for Merfish.
+from polygon data and adds it to the `colData`. It is necessary only for
+Merfish.
 }
 \examples{
-example(readPolygonsCosmx)
-coldata <- computeCenterFromPolygons(polygons, coldata)
+example(readPolygonsMerfish)
+coldata <- computeCenterFromPolygons(polygons, colData(spe))
+colData(spe) <- coldata
 }

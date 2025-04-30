@@ -1,6 +1,7 @@
 #' readCosmxSPE
 #' @name readCosmxSPE
 #' @rdname readCosmxSPE
+#' @aliases readCosmxSPE
 #' @description
 #' Read and Construct a SpatialExperiment Object from CosMx Data
 #'

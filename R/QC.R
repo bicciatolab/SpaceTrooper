@@ -70,7 +70,7 @@ spatialPerCellQC <- function(spe, micronConvFact=0.12, rmZeros=TRUE,
         colnames(spnc) <- gsub("px", "um", spatialCoordsNames(spe))
         colData(spe) <- cbind.DataFrame(colData(spe), spnc)
         spe$Area_um <- spe$Area * (micronConvFact^2)
-        spe <- computeBorderDistanceCosMx(spe)
+        spe <- .computeBorderDistanceCosMx(spe)
     }
 
     # adding this line so that Area in Xenium has the same name as the others
@@ -84,9 +84,9 @@ spatialPerCellQC <- function(spe, micronConvFact=0.12, rmZeros=TRUE,
     {
         spe$log2AspectRatio <- log2(spe$AspectRatio)
     } else {
-        warning(paste0("Missing aspect ratio in colData...\n",
-                    "NB: This could lead to additional warnings or errors.\n",
-                    "Missing AspectRatio can be computed by loading polygons."))
+        warning("Missing aspect ratio in colData...\n",
+                "NB: This could lead to additional warnings or errors.\n",
+                "Missing AspectRatio can be computed by loading polygons.")
     }
     spe$ctrl_total_ratio <- spe$control_sum/spe$total
     spe$ctrl_total_ratio[which(is.na(spe$ctrl_total_ratio))] <- 0
@@ -102,9 +102,9 @@ spatialPerCellQC <- function(spe, micronConvFact=0.12, rmZeros=TRUE,
     return(spe)
 }
 
-#' computeBorderDistanceCosMx
-#' @name computeBorderDistanceCosMx
-#' @rdname computeBorderDistanceCosMx
+#' .computeBorderDistanceCosMx
+#' @name .computeBorderDistanceCosMx
+#' @rdname dot-computeBorderDistanceCosMx
 #' @description
 #' Calculates the minimum distance of each cell to the field‐of‐view border
 #' and adds it to `colData`.
@@ -114,25 +114,22 @@ spatialPerCellQC <- function(spe, micronConvFact=0.12, rmZeros=TRUE,
 #' @param ywindim Height of FOV in y (default from `metadata(spe)$fov_dim`).
 #'
 #' @return A `SpatialExperiment` object with `dist_border` columns in
-#'   `colData`.
+#' `colData`.
 #'
 #' @importFrom dplyr left_join
 #' @importFrom SummarizedExperiment colData
-#' @export
-#' @examples
-#' example(readCosmxSPE)
-#' spe <- computeBorderDistanceCosMx(spe)
-computeBorderDistanceCosMx <- function(spe,
-                                       xwindim=metadata(spe)$fov_dim[["xdim"]],
-                                       ywindim=metadata(spe)$fov_dim[["ydim"]])
+#' @keywords internal
+.computeBorderDistanceCosMx <- function(spe,
+                                    xwindim=metadata(spe)$fov_dim[["xdim"]],
+                                    ywindim=metadata(spe)$fov_dim[["ydim"]])
 {
     stopifnot(is(spe, "SpatialExperiment"))
 
-    cd <- colData(spe)
-    cdf <- left_join(as.data.frame(cd), metadata(spe)$fov_positions, by="fov")
-    spcn <- spatialCoordsNames(spe)
-    fovpn <- colnames(metadata(spe)$fov_positions)[colnames(
-        metadata(spe)$fov_positions)%in%c("x_global_px", "y_global_px")]
+        cd <- colData(spe)
+        cdf <- left_join(as.data.frame(cd), metadata(spe)$fov_positions, by="fov")
+        spcn <- spatialCoordsNames(spe)
+        fovpn <- colnames(metadata(spe)$fov_positions)[colnames(
+            metadata(spe)$fov_positions)%in%c("x_global_px", "y_global_px")]
 
     cd$dist_border_x <- pmin(cdf[,spcn[1]] - cdf[,fovpn[1]],
                              (cdf[,fovpn[1]] + xwindim) - cdf[,spcn[1]])
@@ -336,6 +333,7 @@ computeFixedFlags <- function(spe, total_threshold=0,
 #' @importFrom glmnet glmnet cv.glmnet
 #' @examples
 #' example(spatialPerCellQC)
+#' set.seed(1998)
 #' spe <- computeQScore(spe)
 #' summary(spe$training_status)
 #' summary(spe$quality_score)
@@ -426,8 +424,7 @@ computeQScore <- function(spe, verbose=FALSE) {
 
     train_bad <- train_bad |> distinct(cell_id, .keep_all = TRUE)
 
-    if(verbose) message(paste0("Chosen low quality examples: ",
-                        dim(train_bad)[1]))
+    if(verbose) message("Chosen low quality examples: ", dim(train_bad)[1])
 
     # good example duplicates removal without any warning to the user
 
@@ -437,8 +434,7 @@ computeQScore <- function(spe, verbose=FALSE) {
     train_good <- train_good[sample(rownames(train_good), dim(train_bad)[1],
                                 replace=FALSE),]
 
-    if(verbose) message(paste0("Chosen good quality examples: ",
-                            dim(train_good)[1]))
+    if(verbose) message("Chosen good quality examples: ", dim(train_good)[1])
 
     # merge into same training dataset
 
@@ -463,11 +459,11 @@ computeQScore <- function(spe, verbose=FALSE) {
 
     model_matrix <- model.matrix(as.formula(model_formula), data = train_df)
 
-    set.seed(1998)
+    # set.seed(1998)
     model <- glmnet(x = model_matrix, y = train_df$qscore_train,
                             family = "binomial", lambda = NULL, alpha=0)
     ## include training into a .trainModel function
-    set.seed(1998)
+    # set.seed(1998)
     #https://stackoverflow.com/questions/34677526/set-seed-with-cv-glmnet-paralleled-gives-different-results-in-r
     # it says that if cv.glmnet is run in different days, results will differ
     # and that you need to define nFolds manually in the function call if you
@@ -477,8 +473,8 @@ computeQScore <- function(spe, verbose=FALSE) {
 
     best_lambda <- ridge_cv$lambda.min
 
-    print("Model coefficients for every term used in the formula:")
-    print(round(predict(model, s = best_lambda, type="coefficients"),2))
+    # print("Model coefficients for every term used in the formula:")
+    # print(round(predict(model, s = best_lambda, type="coefficients"),2))
 
     train_df$doom <- case_when(train_df$qscore_train==0 ~ "BAD",
                                train_df$qscore_train==1 ~ "GOOD")
