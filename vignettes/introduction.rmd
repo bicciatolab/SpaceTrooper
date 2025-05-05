@@ -167,9 +167,10 @@ statistics on a specified metric (`compute_by` argument). It can also use
 `scuttle::isOutlier` for asymmetric distributions. The `method` argument
 supports "mc", "scuttle", or "both".
 
-This outlier detection approach can be used to decide if and which cells can be discarded on a singular metric.
+This outlier detection approach can be used to decide if and which cells can be 
+discarded on a singular metric.
 
-```{r cosmx-analysis-outlier}
+```{r cosmx-analysis-outlier, warning=FALSE}
 # Identify spatial outliers based on cell area (Area_um)
 spe <- computeSpatialOutlier(spe, compute_by="Area_um", method="both")
 
@@ -215,7 +216,8 @@ thresholds for various metrics. Currently, the function considers:
 
 * **Flag Score (`fs_threshold`)**: Cells with scores below this threshold
     (default 0.5) are flagged for exclusion. This value can be used to indicate 
-    the quantile for the filtering when setting the `use_fs_quantiles` argument to `TRUE`.
+    the quantile for the filtering when setting the `use_fs_quantiles` argument 
+    to `TRUE`.
     
 * **Flag Score Quantiles (`use_fs_quantiles`)**: Option to filter based on
     quantiles (default `FALSE`).
@@ -228,7 +230,7 @@ thresholds for various metrics. Currently, the function considers:
 
 ```{r cosmx-analysis-score2}
 # Compute flags to identify cells for filtering
-spe <- computeQscoreFlags(spe, qs_threshold=0.5)
+spe <- computeQScoreFlags(spe, qs_threshold=0.5)
 names(colData(spe))
 ```
 
@@ -254,20 +256,15 @@ Once the polygons are stored in an `sf` object within `colData`, you can
 visualize them using functions based on the `tmap` library.
 
 ```{r plot-polygons-fov-1}
-# Subset the SPE to include only specified FOVs
-spe1112 <- spe[,spe$fov %in% c(11:12)]
-
 # Plot the polygons of the selected cells
-plotPolygons(spe1112, bg_color="white")
-
-
+plotPolygons(spe, bg_color="white")
 
 # Plot polygons colored by cell area
-plotPolygons(spe1112, colour_by="log2AspectRatio")
-plotPolygons(spe1112, colour_by="Area_um")
+plotPolygons(spe, colour_by="log2AspectRatio")
+plotPolygons(spe, colour_by="Area_um")
 
-plotPolygons(spe1112, colour_by="flag_score", palette="viridis")
-plotPolygons(spe1112, colour_by="is_fscore_outlier")
+plotPolygons(spe, colour_by="quality_score", palette="viridis")
+plotPolygons(spe, colour_by="is_qscore_outlier")
 ```
 
 # Fov Zoom and Map
@@ -277,11 +274,9 @@ a zoom-in of selected FoVs, colored by the `colour_by` argument. You can also
 toggle between `tmap` and `ggplot2` for visualization (this is a
 work-in-progress).
 
-```{r, eval=FALSE}
-## not working in vignette compilation
-plotZoomFovsMap(spe, fovs=c(16:19), colour_by="flag_score")
-plotZoomFovsMap(spe, fovs=c(16:19), colour_by="is_fscore_outlier", 
-                useggplot=FALSE)
+```{r}
+plotZoomFovsMap(spe, fovs=16, colour_by="quality_score")
+plotZoomFovsMap(spe, fovs=16, colour_by="is_qscore_outlier")
 ```
 
 # Conclusion
@@ -298,42 +293,6 @@ Main steps shown are:
 * visualization: 
     + centroids: with ggplot2
     + polygons: sf + tmap
-
-# Pending
-
-## Other Features 
-
-We released several functions for polygon handling, `sf` object manipulation,
-and palette creation. These will be improved and generalized in future versions.
-
-More vignettes to come:
-
-* Polygons handling
-
-* sf object accessory functions
-
-* palette creation from colData (work-in-progress)
-
-## More to come
-
-Interoperability:
-
-* within R: SpatialFeatureExperiment support 
-
-* outside R: spatialData Python class I/O
-
-
-Visualization:
-
-* more plots:
-
-    + interactive plots with polygons
-    
-    + metrics violin plot
-    
-    + metrics scatter plot
-    
-    + multiple metrics polygons visualization
 
 # Session Information
 
