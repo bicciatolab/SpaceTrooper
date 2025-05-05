@@ -92,10 +92,12 @@ metrics can be computed without them. Polygons can be loaded later if needed.
 library(SpaceTrooper)
 
 # Reload CosMx data with sample name and without polygons
-cosmxFolder <- "~/Downloads/CosMx_data/DBKero/CosMx_Breast/CosMx_data_Case2/"
+cosmxFolder <- system.file(file.path("extdata", "CosMx_DBKero_Tiny"), 
+                        package="SpaceTrooper")
 spe <- readCosmxSPE(cosmxFolder, sample_name="DBKero_CosMx")
 ## a custom function for the workshop
-source(system.file("scripts/labelsfunct.R", package="SpaceTrooper"))
+source(system.file(file.path("scripts", "labelsfunct.R"), 
+                    package="SpaceTrooper"))
 spe <- addLabelsDBKero(spe)
 
 spe
