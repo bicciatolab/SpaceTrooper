@@ -376,9 +376,10 @@ computeQScore <- function(spe, verbose=FALSE) {
                     (log2AspectRatio_outlier_sc == "LOW" & dist_border < 50) |
                     log2CountArea_outlier_train == "LOW") |>
             mutate(qscore_train = 0)
-        # train_bad <- (spe$log2AspectRatio_outlier_sc == "HIGH" & spe$dist_border < 50) |
-        #     (spe$log2AspectRatio_outlier_sc == "LOW" & spe$dist_border < 50) |
-        #     spe$log2CountArea_outlier_train == "LOW"
+        # train_bad <- (spe$log2AspectRatio_outlier_sc == "HIGH" &
+        #    spe$dist_border < 50) |
+        #    (spe$log2AspectRatio_outlier_sc == "LOW" & spe$dist_border < 50) |
+        #    spe$log2CountArea_outlier_train == "LOW"
             train_good <- data.frame(colData(spe)) |>
             filter((log2AspectRatio > quantile(log2AspectRatio, probs = 0.25) &
                     log2AspectRatio < quantile(log2AspectRatio, probs = 0.75) &
@@ -440,7 +441,8 @@ computeQScore <- function(spe, verbose=FALSE) {
                             family = "binomial", lambda = NULL, alpha=0)
     ## include training into a .trainModel function
     # set.seed(1998)
-    #https://stackoverflow.com/questions/34677526/set-seed-with-cv-glmnet-paralleled-gives-different-results-in-r
+    #https://stackoverflow.com/questions/34677526/set-seed-with-cv-glmnet-
+    #paralleled-gives-different-results-in-r
     # it says that if cv.glmnet is run in different days, results will differ
     # and that you need to define nFolds manually in the function call if you
     # want reproducible results, because they are randomly chosen.
