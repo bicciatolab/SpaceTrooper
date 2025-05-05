@@ -132,13 +132,13 @@ spatialPerCellQC <- function(spe, micronConvFact=0.12, rmZeros=TRUE,
         fovpn <- colnames(metadata(spe)$fov_positions)[colnames(
             metadata(spe)$fov_positions)%in%c("x_global_px", "y_global_px")]
 
-    cd$dist_border_x <- pmin(cdf[,spcn[1]] - cdf[,fovpn[1]],
+    cd$dist_border_vert <- pmin(cdf[,spcn[1]] - cdf[,fovpn[1]],
                             (cdf[,fovpn[1]] + xwindim) - cdf[,spcn[1]])
 
-    cd$dist_border_y <- pmin(cdf[,spcn[2]] - cdf[,fovpn[2]],
+    cd$dist_border_hor <- pmin(cdf[,spcn[2]] - cdf[,fovpn[2]],
                             (cdf[,fovpn[2]] + ywindim) - cdf[,spcn[2]])
 
-    cd$dist_border <- pmin(cd$dist_border_x, cd$dist_border_y)
+    cd$dist_border <- pmin(cd$dist_border_vert, cd$dist_border_hor)
     colData(spe) <- cd
     return(spe)
 }
@@ -270,26 +270,28 @@ computeSpatialOutlier <- function(spe, compute_by=NULL,
     return(spe)
 }
 
-#' computeFixedFlags
-#' @name computeFixedFlags
-#' @rdname computeFixedFlags
+#' computeThresholdFlags
+#' @name computeThresholdFlags
+#' @rdname computeThresholdFlags
 #' @description
 #' Compute Flagged cells using fixed thresholds for SpatialExperiment.
 #'
-#' This function calculates various flags to identify outliers in a
-#' `SpatialExperiment` object based on quality control metrics.
+#' This function calculates flagged cells only for total counts and control on
+#' total probe counts ratio using fixed thresholds for a `SpatialExperiment`
+#' object.
 #'
 #' @param spe A `SpatialExperiment` object with spatial transcriptomics data.
 #' @param total_threshold A numeric value for the threshold of total counts to
-#' identify cells with zero counts. Default is `0`.
+#' identify cells with low counts. Default is `0`.
 #' @param ctrl_tot_ratio_threshold A numeric value for the threshold of
-#' control-to-total ratio to flag outliers. Default is `0.1`.
+#' control-to-total ratio to flag cells over a certain threshold. Default is
+#' `0.1`.
 #'
 #' @return The `SpatialExperiment` object with added filter flags in `colData`.
 #'
-#' @details The function flags cells based on zero counts, control-to-total
-#' ratio, and `quality_score` to identify potential outliers. It also combines
-#' these flags into a single filter flag.
+#' @details The function flags cells basing on zero counts and control-to-total
+#' ratio to identify junk cells.
+#' It also combines these flags into a single filter flag.
 #'
 #' @importFrom SummarizedExperiment colData
 #' @export
@@ -298,7 +300,7 @@ computeSpatialOutlier <- function(spe, compute_by=NULL,
 #' spe <- spatialPerCellQC(spe)
 #' spe <- computeFixedFlags(spe)
 #' table(spe$fixed_filter_out)
-computeFixedFlags <- function(spe, total_threshold=0,
+computeThresholdFlags <- function(spe, total_threshold=0,
                             ctrl_tot_ratio_threshold=0.1)
 {
     stopifnot(is(spe, "SpatialExperiment"))
@@ -310,7 +312,7 @@ computeFixedFlags <- function(spe, total_threshold=0,
     spe$is_ctrl_tot_outlier <- ifelse(spe$ctrl_total_ratio >
                                         ctrl_tot_ratio_threshold, TRUE, FALSE)
 
-    spe$fixed_filter_out <- (spe$is_ctrl_tot_outlier &
+    spe$threshold_flags <- (spe$is_ctrl_tot_outlier &
                                 spe$is_zero_counts)
     return(spe)
 }
@@ -321,7 +323,16 @@ computeFixedFlags <- function(spe, total_threshold=0,
 #' @description
 #' Compute quality score and automatically define weights for quality score
 #' through glm training. This function computes quality score with a formula
-#' that depends on the technology.
+#' that depends on the technology. For CosMx datasets, the formula is defined
+#' as follows:
+#' quality score ~ log2CountArea + I(abs(log2AspectRatio) *
+#' as.numeric(dist_border<50 px )) + log2CountArea:I(abs(log2AspectRatio) *
+#' as.numeric(dist_border<50))")
+#'
+#' For Xenium and Merscope datasets:
+#' quality score ~ log2CountArea + I(abs(log2AspectRatio) *
+#' as.numeric(dist_border<50 px ))
+#'
 #' To automatically define the formula coefficient weights, model training
 #' is performed through ridge regression.
 #'
