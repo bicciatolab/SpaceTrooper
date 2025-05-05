@@ -57,71 +57,47 @@
 #'   dirname = xepath,
 #'   keep_polygons = TRUE
 #' ))
-readXeniumSPE <- function(dirname,
-                            sample_name="sample01",
-                            type=c("HDF5", "sparse"),
-                            coord_names=c("x_centroid", "y_centroid"),
-                            boundaries_type=c("parquet", "csv"),
-                            compute_missing_metrics=TRUE, keep_polygons=FALSE,
-                            countsfilepattern="cell_feature_matrix",
-                            metadatafpattern="cells",
-                            polygonsfpattern="cell_boundaries",
-                            polygonsCol="polygons")
-{
+readXeniumSPE <- function(dirname, sample_name="sample01",
+    type=c("HDF5", "sparse"), coord_names=c("x_centroid", "y_centroid"),
+    boundaries_type=c("parquet", "csv"), compute_missing_metrics=TRUE,
+    keep_polygons=FALSE, countsfilepattern="cell_feature_matrix",
+    metadatafpattern="cells", polygonsfpattern="cell_boundaries",
+    polygonsCol="polygons") {
     stopifnot(file.exists(dirname))
     type <- match.arg(type)
     boundaries_type <- match.arg(boundaries_type)
-
-    # add "outs/" directory if not already included
-    if(basename(dirname) != "outs")
-    {
+    if(basename(dirname) != "outs") { # add "outs/" dir if not already included
         dirbkup <- dirname
         dirname <- file.path(dirname, "outs")
-        if (!file.exists(dirname))
-        {
+        if (!file.exists(dirname)) {
             dirname <- dirbkup
         } else {
             warning("automatically detected/added outs dir in the 10x filepath")
         }
     }
-
     cfm <- paste0(countsfilepattern, switch(type, HDF5=".h5", ""))
     counts <- file.path(dirname, cfm)
-
     metadata_file <- file.path(dirname, paste0(metadatafpattern, ".csv.gz"))
-    pex <- paste0(polygonsfpattern, switch(boundaries_type,
-                                            parquet=".parquet",
-                                            csv=".csv.gz"))
+    pex <- paste0(polygonsfpattern, switch(boundaries_type, parquet=".parquet",
+                                                            csv=".csv.gz"))
     pol_file <- list.files(dirname, pex, full.names=TRUE)
     stopifnot(all(file.exists(c(metadata_file, pol_file))))
-
-    # Count matrix + rowData
     sce <- DropletUtils::read10xCounts(counts, col.names=TRUE)
-
-    # Spatial and colData
     cd <- DataFrame(fread(metadata_file, header=TRUE))
     rownames(cd) <- cd$cell_id
-
-    if ( dim(sce)[2] != dim(cd)[1] )
-    {
+    if ( dim(sce)[2] != dim(cd)[1] ) {
         sce <- sce[, colnames(sce) %in% rownames(cd)]
         cd <- cd[rownames(cd) %in% colnames(sce), ]
     }
-    if (compute_missing_metrics)
-    {
+    if (compute_missing_metrics) {
         message("Computing missing metrics, this could take some time...")
         cd <- computeMissingMetricsXenium(pol_file, cd, keep_polygons,
                                             polygonsCol)
     }
-    # construct 'SpatialExperiment'
-    spe <- SpatialExperiment::SpatialExperiment(
-        sample_id=sample_name,
-        assays = assays(sce),
-        rowData = rowData(sce),
-        colData = cd,
+    spe <- SpatialExperiment::SpatialExperiment(sample_id=sample_name,
+        assays = assays(sce), rowData = rowData(sce), colData = cd,
         spatialCoordsNames = coord_names,
-        metadata=list(polygons=pol_file, technology="10X_Xenium")
-    )
+        metadata=list(polygons=pol_file, technology="10X_Xenium"))
     return(spe)
 }
 
