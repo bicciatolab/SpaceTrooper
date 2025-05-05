@@ -90,7 +90,7 @@ metrics can be computed without them. Polygons can be loaded later if needed.
 
 ```{r cosmx-analysis}
 library(SpaceTrooper)
-
+library(SingleCellExperiment)
 # Reload CosMx data with sample name and without polygons
 cosmxFolder <- system.file(file.path("extdata", "CosMx_DBKero_Tiny"), 
                         package="SpaceTrooper")
