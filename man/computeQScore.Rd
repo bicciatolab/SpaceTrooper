@@ -18,6 +18,19 @@ The `SpatialExperiment` object with added quality score in `colData`.
 Compute quality score and automatically define weights for quality score
 through glm training. This function computes quality score with a formula
 that depends on the technology.
+}
+\details{
+For CosMx datasets, the Quality Score formula is defined as follows:
+
+quality score ~ count density - aspect ratio - interaction term
+
+count density is total counts-to-area ratio, aspect ratio represents
+border effect typical of CosMx datasets and the last one is the
+interaction term of the previous two terms.
+
+For Xenium and Merscope datasets, quality score depends solely on count
+density, as no border effect has been observed for these two technologies.
+
 To automatically define the formula coefficient weights, model training
 is performed through ridge regression.
 }
