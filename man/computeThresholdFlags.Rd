@@ -34,6 +34,6 @@ It also combines these flags into a single filter flag.
 \examples{
 example(readCosmxSPE)
 spe <- spatialPerCellQC(spe)
-spe <- computeFixedFlags(spe)
-table(spe$fixed_filter_out)
+spe <- computeThresholdFlags(spe)
+table(spe$threshold_flags)
 }

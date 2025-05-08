@@ -185,11 +185,8 @@ createPaletteFromColData <- function(spe, palette_names, palette_colors)
 #' @rdname firstFlagPalette
 #' @description
 #' neon color palette for firstFlagPlot
-#' @param
-#' @param
 #'
 #' @return a palette for firstFlagPlot
-#' @importFrom
 #' @keywords internal
 firstFlagPalette <- c(
     "unflagged" = "#7f7f7f",
