@@ -281,19 +281,15 @@ computeFixedFlags <- function(spe, total_threshold=0,
 #' summary(spe$training_status)
 #' summary(spe$quality_score)
 computeQScore <- function(spe, verbose=FALSE) {
-
     stopifnot(is(spe, "SpatialExperiment"))
-
     spe_temp <- computeSpatialOutlier(spe[,spe$total>0],
                         compute_by="log2CountArea", method="both")
-
     if(attr(spe_temp$log2CountArea_outlier_mc, "thresholds")[1] <
         min(spe_temp$log2CountArea)) {
             low_thr <- quantile(spe$log2CountArea, probs = 0.01)
     } else {
         low_thr <- attr(spe_temp$log2CountArea_outlier_mc, "thresholds")[1]
     }
-
     high_thr <- attr(spe_temp$log2CountArea_outlier_mc, "thresholds")[2]
     spe$log2CountArea_outlier_train <- case_when(spe$total==0 ~ "NO",
         spe$log2CountArea<low_thr ~ "LOW",spe$log2CountArea>high_thr ~ "HIGH",
@@ -327,7 +323,7 @@ computeQScore <- function(spe, verbose=FALSE) {
         train_good <- data.frame(colData(spe)) |>
             filter((log2CountArea > quantile(log2CountArea, probs = 0.90) &
                     log2CountArea < quantile(log2CountArea, probs = 0.99))) |>
-            mutate(qscore_train=1, is_a_bad_boy=cell_id%in%train_bad$cell_id)
+            mutate(qscore_train=1, is_a_bad_boy=cell_id %in% train_bad$cell_id)
         model_formula <- "~log2CountArea" # xen and merf
     }
     train_bad <- train_bad |> distinct(cell_id, .keep_all = TRUE)
@@ -342,17 +338,17 @@ computeQScore <- function(spe, verbose=FALSE) {
     train_df <- train_df |> distinct(cell_id, .keep_all = TRUE)
     model_matrix <- model.matrix(as.formula(model_formula), data = train_df)
     # set.seed(1998)
-    model <- glmnet(x = model_matrix, y = train_df$qscore_train,
-                            family = "binomial", lambda = NULL, alpha=0)
+    model <- glmnet(x=model_matrix, y=train_df$qscore_train,
+                            family="binomial", lambda=NULL, alpha=0)
     # set.seed(1998)
     ridge_cv <- cv.glmnet(model_matrix, train_df$qscore_train,
-                                family = "binomial", alpha = 0, lambda=NULL)
+                                family="binomial", alpha=0, lambda=NULL)
     best_lambda <- ridge_cv$lambda.min
     train_df$doom <- case_when(train_df$qscore_train==0 ~ "BAD",
                                 train_df$qscore_train==1 ~ "GOOD")
     cd <- data.frame(colData(spe))
     full_matrix <- model.matrix(as.formula(model_formula), data = cd)
-    cd$quality_score <- as.vector(predict(model, s = best_lambda,
+    cd$quality_score <- as.vector(predict(model, s=best_lambda,
                                         newx = full_matrix,
                                         type = "response"))
     spe$quality_score <- cd$quality_score

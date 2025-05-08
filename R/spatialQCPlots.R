@@ -489,26 +489,20 @@ plotQScoreTerms <- function(spe, sample_id=unique(spe$sample_id), size=0.05,
 #' p <- firstFilterPlot(spe, fov=16, theme="dark")
 #' print(p)
 firstFilterPlot <- function(spe, fov=unique(spe$fov), theme=c("light", "dark"),
-                        custom=FALSE)
-{
+                        custom=FALSE) {
     # Check for required flags
     if (!"is_zero_counts" %in% names(colData(spe)) ||
         !"is_ctrl_tot_outlier" %in% names(colData(spe))) {
             stop("Fixed thresholds flag cells not found.\n",
                 "Did you run computeFixedFlags()?")
     }
-
     spe <- computeSpatialOutlier(spe, compute_by="Area_um", method="both")
     spe <- computeSpatialOutlier(spe, compute_by="Mean.DAPI", method="both")
-
-
     # Assign fixed flags colors
     spe$polygons$fixed_flags_color <- case_when(
         spe$is_zero_counts == TRUE             ~ "0 counts",
-        spe$is_ctrl_tot_outlier == TRUE        ~
-            "ctrl/total ratio > 0.1",
-        TRUE                                    ~ "unflagged"
-    )
+        spe$is_ctrl_tot_outlier == TRUE        ~ "ctrl/total ratio > 0.1",
+        TRUE                                   ~ "unflagged")
 
     if(any(spe$polygons$fixed_flags_color!="unflagged")==FALSE){
         warning("No 0 counts cells or control/total ratio > 0.1 were found")
