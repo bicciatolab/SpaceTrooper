@@ -41,8 +41,5 @@ example(readAndAddPolygonsToSPE)
 spe <- spatialPerCellQC(spe)
 spe <- computeFixedFlags(spe)
 p <- firstFilterPlot(spe, fov=16, theme="dark")
-\dontrun{
 print(p)
-}
-
 }

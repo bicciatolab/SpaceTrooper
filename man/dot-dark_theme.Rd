@@ -13,7 +13,8 @@
 a ggplot2 theme object
 }
 \description{
-internal function to setup the black background theme for the First Filter plot
+internal function to setup the black background theme for the First Filter
+plot
 #' @param fill_color color to fill the element_rect (default is "black")
 }
 \keyword{internal}

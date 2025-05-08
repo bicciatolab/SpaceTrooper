@@ -99,22 +99,17 @@ spatialPerCellQC <- function(spe, micronConvFact=0.12, rmZeros=TRUE,negProbList=
 #' @keywords internal
 .computeBorderDistanceCosMx <- function(spe,
                                     xwindim=metadata(spe)$fov_dim[["xdim"]],
-                                    ywindim=metadata(spe)$fov_dim[["ydim"]])
-{
+                                    ywindim=metadata(spe)$fov_dim[["ydim"]]) {
     stopifnot(is(spe, "SpatialExperiment"))
-
-        cd <- colData(spe)
-        cdf <- left_join(as.data.frame(cd), metadata(spe)$fov_positions, by="fov")
-        spcn <- spatialCoordsNames(spe)
-        fovpn <- colnames(metadata(spe)$fov_positions)[colnames(
-            metadata(spe)$fov_positions)%in%c("x_global_px", "y_global_px")]
-
+    cd <- colData(spe)
+    cdf <- left_join(as.data.frame(cd),metadata(spe)$fov_positions,by="fov")
+    spcn <- spatialCoordsNames(spe)
+    fovpn <- colnames(metadata(spe)$fov_positions)[colnames(
+        metadata(spe)$fov_positions) %in% c("x_global_px", "y_global_px")]
     cd$dist_border_x <- pmin(cdf[,spcn[1]] - cdf[,fovpn[1]],
                             (cdf[,fovpn[1]] + xwindim) - cdf[,spcn[1]])
-
     cd$dist_border_y <- pmin(cdf[,spcn[2]] - cdf[,fovpn[2]],
                             (cdf[,fovpn[2]] + ywindim) - cdf[,spcn[2]])
-
     cd$dist_border <- pmin(cd$dist_border_x, cd$dist_border_y)
     colData(spe) <- cd
     return(spe)
@@ -286,14 +281,19 @@ computeFixedFlags <- function(spe, total_threshold=0,
 #' summary(spe$training_status)
 #' summary(spe$quality_score)
 computeQScore <- function(spe, verbose=FALSE) {
+
+    stopifnot(is(spe, "SpatialExperiment"))
+
     spe_temp <- computeSpatialOutlier(spe[,spe$total>0],
                         compute_by="log2CountArea", method="both")
+
     if(attr(spe_temp$log2CountArea_outlier_mc, "thresholds")[1] <
-        min(spe_temp$log2CountArea)){
+        min(spe_temp$log2CountArea)) {
             low_thr <- quantile(spe$log2CountArea, probs = 0.01)
-    } else{
+    } else {
         low_thr <- attr(spe_temp$log2CountArea_outlier_mc, "thresholds")[1]
     }
+
     high_thr <- attr(spe_temp$log2CountArea_outlier_mc, "thresholds")[2]
     spe$log2CountArea_outlier_train <- case_when(spe$total==0 ~ "NO",
         spe$log2CountArea<low_thr ~ "LOW",spe$log2CountArea>high_thr ~ "HIGH",

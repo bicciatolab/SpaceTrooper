@@ -10,6 +10,7 @@
 a ggplot2 theme object
 }
 \description{
-internal function to setup the white background theme for the First Filter plot
+internal function to setup the white background theme for the First Filter
+plot
 }
 \keyword{internal}

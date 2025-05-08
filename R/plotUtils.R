@@ -96,13 +96,15 @@
 #' @name .light_theme
 #' @rdname dot-light_theme
 #' @description
-#' internal function to setup the white background theme for the First Filter plot
+#' internal function to setup the white background theme for the First Filter
+#' plot
 #'
 #' @return a ggplot2 theme object
 #' @importFrom ggplot2 theme element_blank element_rect
 #' @keywords internal
 .light_theme <- function(fill_color="white", fore_color="black"){
-    theme(panel.border=element_rect(color = fore_color, fill = NA, linewidth = 0.1),
+    theme(panel.border=element_rect(color = fore_color, fill = NA,
+        linewidth = 0.1),
         panel.background=element_rect(fill=fill_color, color=NA),
         plot.background=element_rect(fill=fill_color, color=NA),
         axis.line=element_blank(),
@@ -120,7 +122,8 @@
 #' @name .dark_theme
 #' @rdname dot-dark_theme
 #' @description
-#' internal function to setup the black background theme for the First Filter plot
+#' internal function to setup the black background theme for the First Filter
+#' plot
 #' #' @param fill_color color to fill the element_rect (default is "black")
 #' @param fore_color color for all the other elements (default is "white")
 #'
@@ -130,7 +133,7 @@
 .dark_theme <- function(fill_color="black", fore_color="white") {
     theme(panel.background=element_rect(fill=fill_color, color=NA),
         plot.background=element_rect(fill=fill_color, color=NA),
-        panel.border=element_rect(color = fore_color, fill = NA, linewidth = 0.1),
+        panel.border=element_rect(color = fore_color, fill = NA, linewidth=0.1),
         title=element_text(color=fore_color),
         axis.line=element_blank(),
         axis.title.x=element_blank(),

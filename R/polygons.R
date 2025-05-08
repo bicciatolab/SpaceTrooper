@@ -2,11 +2,11 @@
 #' @name readPolygons
 #' @rdname readPolygons
 #' @description
-#'  Read and Validate Polygons from a File
+#' Read and Validate Polygons from a File
 #'
-#' This function reads polygon data from a specified file, validates the polygons,
-#' and returns them as an `sf` object. It supports multiple file formats and can
-#' handle both global and local coordinates.
+#' This function reads polygon data from a specified file, validates the
+#' polygons, and returns them as an `sf` object. It supports multiple file
+#' formats and can handle both global and local coordinates.
 #'
 #' @param polygonsFile A character string specifying the path to the polygon
 #' file.
@@ -173,7 +173,7 @@ readPolygons <- function(polygonsFile, type=c("csv", "parquet", "h5"),
 #' spe <- readAndAddPolygonsToSPE(spe)
 #' colData(spe)
 readAndAddPolygonsToSPE <- function(spe, polygonsCol="polygons",
-                    keepMultiPol=TRUE, boundaries_type=c("csv", "HDF5", "parquet"))
+    keepMultiPol=TRUE, boundaries_type=c("csv", "HDF5", "parquet"))
 {
     boundaries_type <- match.arg(boundaries_type)
     stopifnot("technology" %in% names(metadata(spe)))
@@ -447,8 +447,8 @@ readPolygonsMerfish <- function(polygons, type=c("parquet", "HDF5"),
         {
             poll <- readh5polygons(pol_file=polfiles[i])
             df <- data.frame(cell_id=paste0("f", i-1, "_c", poll$ids),
-                            cell_ID=poll$ids,
-                            fov=i-1, geometry=sf::st_sfc(poll$g)) ## geometry can be a simple column
+                cell_ID=poll$ids, fov=i-1,
+                geometry=sf::st_sfc(poll$g)) ## geometry can be a simple column
             dfsf <- sf::st_sf(df)
         })
         polygons <- do.call(rbind, dfsfl)
@@ -556,10 +556,12 @@ computeAspectRatioFromPolygons <- function(polygons)
     aspRatL <- numeric(nrow(polygons))
     if(any(polygons$is_multi)) {
         aspRatL[which(polygons$is_multi)] <- NA
-        warning("Found ", sum(polygons$is_multi), " multi-poligons: returning NA aspect ratio for them.")
+        warning("Found ", sum(polygons$is_multi),
+            " multi-poligons: returning NA aspect ratio for them.")
     }
-    aspRatL[!polygons$is_multi] <- lapply(polygons$global[!polygons$is_multi], function(x) {
-        (max(x[[1]][, 2]) - min(x[[1]][, 2]))/(max(x[[1]][, 1]) -
+    aspRatL[!polygons$is_multi] <- lapply(polygons$global[!polygons$is_multi],
+        function(x) {
+            (max(x[[1]][, 2]) - min(x[[1]][, 2]))/(max(x[[1]][, 1]) -
                                                     min(x[[1]][, 1]))
     })
     names(aspRatL) <- polygons$cell_id
@@ -572,9 +574,10 @@ computeAspectRatioFromPolygons <- function(polygons)
 #' @rdname readh5polygons
 #' @description This function reads polygon data from an HDF5 file.
 #'
-#' @param pol_file A character string specifying the file path to the HDF5 polygon data.
+#' @param pol_file A character string specifying the file path to the HDF5
+#' polygon data.
 #'
-#' @return A list containing the polygon geometries and their associated cell IDs.
+#' @return A list containing the polygon geometries and their associated cell_id
 #' @author Lambda Moses
 #' @importFrom rhdf5 h5dump
 #' @importFrom sf st_polygon

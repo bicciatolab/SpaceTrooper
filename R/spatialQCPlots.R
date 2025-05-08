@@ -487,10 +487,7 @@ plotQScoreTerms <- function(spe, sample_id=unique(spe$sample_id), size=0.05,
 #' spe <- spatialPerCellQC(spe)
 #' spe <- computeFixedFlags(spe)
 #' p <- firstFilterPlot(spe, fov=16, theme="dark")
-#' \dontrun{
 #' print(p)
-#' }
-#'
 firstFilterPlot <- function(spe, fov=unique(spe$fov), theme=c("light", "dark"),
                         custom=FALSE)
 {
