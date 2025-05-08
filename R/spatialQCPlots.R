@@ -521,13 +521,13 @@ plotQScoreTerms <- function(spe, sample_id=unique(spe$sample_id), size=0.05,
 
 
 
-#' firstFilterPlot
-#' @name firstFilterPlot
-#' @rdname firstFilterPlot
+#' firstFlagPlot
+#' @name firstFlagPlot
+#' @rdname firstFlagPlot
 #' @description
 #'
-#' Plots the flagged cells identified with first filter, based on control count
-#' on total count ratio, area in um and DAPI signal.
+#' Plots the flagged cells identified in first flagging step, based on control-
+#' to total count ratio, area in um and logged aspect ratio.
 #'
 #' This function generates a plot that shows selected (FOVs)
 #' within a `SpatialExperiment` object, with cells flagged in different colors
@@ -555,219 +555,63 @@ plotQScoreTerms <- function(spe, sample_id=unique(spe$sample_id), size=0.05,
 #' example(readAndAddPolygonsToSPE)
 #' spe <- spatialPerCellQC(spe)
 #' spe <- computeFixedFlags(spe)
-#' p <- firstFilterPlot(spe, fov=16, theme="dark")
+#' p <- firstFlagPlot(spe, fov=16, theme="dark")
 #' \dontrun{
 #' print(p)
 #' }
 #'
-firstFilterPlot <- function(spe, fov=unique(spe$fov), theme=c("light", "dark"),
-                        custom=FALSE)
+firstFlagPlot <- function(spe, fov=unique(spe$fov), theme=c("light", "dark"))
 {
     # Check for required flags
     if (!"is_zero_counts" %in% names(colData(spe)) ||
         !"is_ctrl_tot_outlier" %in% names(colData(spe))) {
-            stop("Fixed thresholds flag cells not found.\n",
-                "Did you run computeFixedFlags()?")
+        stop("Fixed thresholds flagged cells not found./n",
+             "Did you run computeThresholdFlags()?")
     }
-
     spe <- computeSpatialOutlier(spe, compute_by="Area_um", method="both")
-    spe <- computeSpatialOutlier(spe, compute_by="Mean.DAPI", method="both")
-
-
-    # Assign fixed flags colors
-    spe$polygons$fixed_flags_color <- case_when(
-        spe$is_zero_counts == TRUE             ~ "0 counts",
-        spe$is_ctrl_tot_outlier == TRUE        ~
-            "ctrl/total ratio > 0.1",
-        TRUE                                    ~ "unflagged"
-    )
-
-    if(any(spe$polygons$fixed_flags_color!="unflagged")==FALSE){
-        warning("No 0 counts cells or control/total ratio > 0.1 were found")
+    spe <- computeSpatialOutlier(spe, compute_by="log2AspectRatio", method="both")
+    if(all(spe$is_ctrl_tot_outlier==FALSE)|
+       all(spe$log2AspectRatio_outlier_sc=="NO")|
+       all(spe$Area_um_outlier_mc=="NO")){
+        warning("Some required variable flagged cells were not found")
     }
+    spe$collapsed_color <- case_when(spe$is_ctrl_tot_outlier == TRUE ~
+                                         "ctrl/total ratio > 0.1",
+                                     spe$Area_um_outlier_mc == "HIGH" ~ "> area um higher thr.",
+                                     spe$Area_um_outlier_mc == "LOW" ~ "< area um lower thr.",
+                                     spe$log2AspectRatio_outlier_sc == "HIGH"  ~
+                                         "> logged aspect ratio higher thr.",
+                                     spe$log2AspectRatio_outlier_sc == "LOW"~
+                                         "< logged aspect ratio lower thr.", TRUE ~ "unflagged")
 
-    if (any(spe$Mean.DAPI_outlier_mc=="HIGH",
-            spe$Mean.DAPI_outlier_mc=="LOW",
-            spe$Mean.Area_um_outlier_mc=="HIGH",
-            spe$Mean.Area_um_outlier_mc=="LOW")==FALSE){
-        warning("No outliers were found for Area in um and DAPI signal")
-    }
-
-    # Assign DAPI outlier colors
-    spe$polygons$dapi_outlier_color <- dplyr::case_when(
-        spe$Mean.DAPI > round(
-            attr(spe$Mean.DAPI_outlier_mc, "thresholds")[2], 2
-        )                                     ~ "> DAPI higher thr.",
-        spe$Mean.DAPI < round(
-            attr(spe$Mean.DAPI_outlier_mc, "thresholds")[1], 2
-        )                                     ~ "< DAPI lower thr.",
-        TRUE                                   ~ "unflagged"
-    )
-
-    # Define palette
-    outlier_palette <- c(
-        "unflagged"                  = "#c0c8cf",
-        "ctrl/total ratio > 0.1"     = "magenta",
-        "< area um lower thr."       = "darkturquoise",
-        "> area um higher thr."      = "red",
-        "< DAPI lower thr."          = "purple",
-        "> DAPI higher thr."         = "greenyellow"
-    )
-
-    # Custom vs default area flags
-    if (custom) {
-        stopifnot(
-            "cust_Area_um_outlier_mc" %in% names(colData(spe))
-        )
-
-        spe$polygons$area_outlier_color <- dplyr::case_when(
-            spe$cust_Area_um > round(
-                attr(
-                    spe$cust_Area_um_outlier_mc,
-                    "thresholds"
-                )[2], 2
-            )                                 ~ "> area um higher thr.",
-            spe$cust_Area_um < round(
-                attr(
-                    spe$cust_Area_um_outlier_mc,
-                    "thresholds"
-                )[1], 2
-            )                                 ~ "< area um lower thr.",
-            TRUE                               ~ "unflagged"
-        )
-
-        spe$polygons$collapsed_color <- dplyr::case_when(
-            spe$is_ctrl_tot_outlier == TRUE         ~
-                "ctrl/total ratio > 0.1",
-            spe$cust_Area_um > round(
-                attr(
-                    spe$cust_Area_um_outlier_mc,
-                    "thresholds"
-                )[2], 2
-            )                                        ~ "> area um higher thr.",
-            spe$cust_Area_um < round(
-                attr(
-                    spe$cust_Area_um_outlier_mc,
-                    "thresholds"
-                )[1], 2
-            )                                        ~ "< area um lower thr.",
-            spe$Mean.DAPI > round(
-                attr(spe$Mean.DAPI_outlier_mc, "thresholds")[2], 2
-            )                                        ~ "> DAPI higher thr.",
-            spe$Mean.DAPI < round(
-                attr(spe$Mean.DAPI_outlier_mc, "thresholds")[1], 2
-            )                                        ~ "< DAPI lower thr.",
-            TRUE                                      ~ "unflagged"
-        )
-    } else {
-        spe$polygons$area_outlier_color <- dplyr::case_when(
-            spe$Area_um > round(
-                attr(spe$Area_um_outlier_mc, "thresholds")[2], 2
-            )                                 ~ "> area um higher thr.",
-            spe$Area_um < round(
-                attr(spe$Area_um_outlier_mc, "thresholds")[1], 2
-            )                                 ~ "< area um lower thr.",
-            TRUE                               ~ "unflagged"
-        )
-
-        spe$polygons$collapsed_color <- case_when(
-            spe$is_ctrl_tot_outlier == TRUE         ~
-                "ctrl/total ratio > 0.1",
-            spe$Area_um > round(
-                attr(spe$Area_um_outlier_mc, "thresholds")[2], 2
-            )                                        ~ "> area um higher thr.",
-            spe$Area_um < round(
-                attr(spe$Area_um_outlier_mc, "thresholds")[1], 2
-            )                                        ~ "< area um lower thr.",
-            spe$Mean.DAPI > round(
-                attr(spe$Mean.DAPI_outlier_mc, "thresholds")[2], 2
-            )                                        ~ "> DAPI higher thr.",
-            spe$Mean.DAPI < round(
-                attr(spe$Mean.DAPI_outlier_mc, "thresholds")[1], 2
-            )                                        ~ "< DAPI lower thr.",
-            TRUE                                      ~ "unflagged"
-        )
-    }
-
-    # Plot first filter flags
-    ggp1 <- ggplot2::ggplot() +
-        ggplot2::geom_sf(
-            data       = spe$polygons[spe$polygons$fov %in% fov, ],
-            mapping    = ggplot2::aes(
-                fill  = fixed_flags_color,
-                color = fixed_flags_color
-            ),
-            lwd        = 0,
-            show.legend = "polygon"
-        ) +
-        ggplot2::scale_fill_manual(values = outlier_palette) +
-        ggplot2::scale_color_manual(values = outlier_palette)
-
-    # Plot area flags
-    ggp2 <- ggplot2::ggplot() +
-        ggplot2::geom_sf(
-            data       = spe$polygons[spe$polygons$fov %in% fov, ],
-            mapping    = ggplot2::aes(
-                fill  = area_outlier_color,
-                color = area_outlier_color
-            ),
-            lwd        = 0,
-            show.legend = "polygon"
-        ) +
-        ggplot2::scale_fill_manual(values = outlier_palette) +
-        ggplot2::scale_color_manual(values = outlier_palette)
-
-    # Plot DAPI flags
-    ggp3 <- ggplot2::ggplot() +
-        ggplot2::geom_sf(
-            data       = spe$polygons[spe$polygons$fov %in% fov, ],
-            mapping    = ggplot2::aes(
-                fill  = dapi_outlier_color,
-                color = dapi_outlier_color
-            ),
-            lwd        = 0,
-            show.legend = "polygon"
-        ) +
-        ggplot2::scale_fill_manual(values = outlier_palette) +
-        ggplot2::scale_color_manual(values = outlier_palette)
-
-    # Legend panel
-    legp <- ggplot2::ggplot() +
-        ggplot2::geom_sf(
-            data       = spe$polygons[spe$polygons$fov %in% fov, ],
-            mapping    = ggplot2::aes(
-                fill  = collapsed_color,
-                color = collapsed_color
-            ),
-            lwd        = 0,
-            show.legend = "polygon"
-        ) +
-        ggplot2::scale_fill_manual(values = outlier_palette) +
-        ggplot2::scale_color_manual(values = outlier_palette) +
-        ggplot2::theme(legend.title = element_blank())
+    spe$collapsed_color <- factor(spe$collapsed_color,
+                                  levels = names(firstFlagPalette))
 
     plot_func <- if (theme[1] == "light") .light_theme else .dark_theme
-
-    ggp1 <- ggp1 + plot_func() +
+    ggp1 <- plotPolygons(spe[,spe$fov%in%fov], colour_by = "collapsed_color") +
+        ggplot2::scale_fill_manual(values = firstFlagPalette[2]) +
+        ggplot2::scale_color_manual(values = firstFlagPalette[2]) +
+        plot_func() +
         ggplot2::ggtitle("Control counts ratio") +
         ggplot2::theme(legend.position = "none")
-    ggp2 <- ggp2 + plot_func() +
+    ggp2 <- plotPolygons(spe[,spe$fov%in%fov], colour_by = "collapsed_color") +
+        ggplot2::scale_fill_manual(values = firstFlagPalette[c(3,4)]) +
+        ggplot2::scale_color_manual(values = firstFlagPalette[c(3,4)])+
+        plot_func() +
         ggplot2::ggtitle("Area in um") +
         ggplot2::theme(legend.position = "none")
-    ggp3 <- ggp3 + plot_func() +
-        ggplot2::ggtitle("Mean DAPI") +
+    ggp3 <- plotPolygons(spe[,spe$fov%in%fov], colour_by = "collapsed_color") +
+        ggplot2::scale_fill_manual(values = firstFlagPalette[c(5,6)]) +
+        ggplot2::scale_color_manual(values = firstFlagPalette[c(5,6)])  +
+        plot_func() +
+        ggplot2::ggtitle("Logged aspect ratio") +
         ggplot2::theme(legend.position = "none")
-    legp <- legp + plot_func()
-
+    legp <- plotPolygons(spe[,spe$fov%in%fov], colour_by = "collapsed_color") +
+        ggplot2::scale_fill_manual(values = firstFlagPalette) +
+        ggplot2::scale_color_manual(values = firstFlagPalette) +
+        ggplot2::theme(legend.title = element_blank()) + plot_func()
     ggp4 <- cowplot::get_legend(legp)
-    final <- cowplot::plot_grid(ggp1, ggp2, ggp3, ggp4, ncol = 2)
-
-    if (theme[1] == "dark") {
-        final <- final + ggplot2::theme(
-            panel.background = element_rect(fill = "black")
-        )
-    }
-
+    final <- cowplot::plot_grid(ggp1, ggp2, ggp3, ggp4, ncol = 2) + plot_func()
     return(final)
 }
 

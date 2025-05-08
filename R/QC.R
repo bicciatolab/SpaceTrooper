@@ -298,8 +298,8 @@ computeSpatialOutlier <- function(spe, compute_by=NULL,
 #' @examples
 #' example(readCosmxSPE)
 #' spe <- spatialPerCellQC(spe)
-#' spe <- computeFixedFlags(spe)
-#' table(spe$fixed_filter_out)
+#' spe <- computeThresholdFlags(spe)
+#' table(spe$threshold_flags)
 computeThresholdFlags <- function(spe, total_threshold=0,
                             ctrl_tot_ratio_threshold=0.1)
 {
@@ -519,9 +519,9 @@ computeQScore <- function(spe, verbose=FALSE) {
 #' spe <- computeQScoreFlags(spe)
 #' table(spe$is_qscore_outlier)
 #' # if fixed filters are defined we have an additional column
-#' spe <- computeFixedFlags(spe)
+#' spe <- computeThresholdFlags(spe)
 #' spe <- computeQScoreFlags(spe)
-#' table(spe$fixed_qscore_out)
+#' table(spe$threshold_qscore_flags)
 computeQScoreFlags <- function(spe, qs_threshold=0.5, use_qs_quantiles=FALSE)
 {
     stopifnot(is(spe, "SpatialExperiment"))
@@ -529,18 +529,18 @@ computeQScoreFlags <- function(spe, qs_threshold=0.5, use_qs_quantiles=FALSE)
 
     if(use_qs_quantiles)
     {
-            spe$is_qscore_opt_outlier <- ifelse(spe$quality_score <
+            spe$is_qscore_flags <- ifelse(spe$quality_score <
                                             quantile(spe$quality_score,
                                                     probs=qs_threshold),
                                             TRUE, FALSE)
     } else {
-            spe$is_qscore_outlier <- spe$quality_score < qs_threshold
+            spe$is_qscore_flags <- spe$quality_score < qs_threshold
 
     }
 
-    if("fixed_filter_out" %in% names(colData(spe)))
+    if("threshold_flags" %in% names(colData(spe)))
     {
-        spe$fixed_qscore_out <- (spe$is_qscore_outlier & spe$fixed_filter_out)
+        spe$threshold_qscore_flags <- (spe$is_qscore_flags & spe$threshold_flags)
     }
     return(spe)
 }

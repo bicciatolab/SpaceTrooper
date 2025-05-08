@@ -179,3 +179,24 @@ createPaletteFromColData <- function(spe, palette_names, palette_colors)
     names(newpal) <- rownames(tb)[which(tb!=0, arr.ind=TRUE)[,1]]
     return(newpal)
 }
+
+#' firstFlagPalette
+#' @name firstFlagPalette
+#' @rdname firstFlagPalette
+#' @description
+#' neon color palette for firstFlagPlot
+#' @param
+#' @param
+#'
+#' @return a palette for firstFlagPlot
+#' @importFrom
+#' @keywords internal
+firstFlagPalette <- c(
+    "unflagged" = "#7f7f7f",
+    "ctrl/total ratio > 0.1"     = "magenta",
+    "< area um lower thr."       = "darkturquoise",
+    "> area um higher thr."      = "red",
+    "< logged aspect ratio lower thr."  = "purple",
+    "> logged aspect ratio higher thr." = "greenyellow"
+)
+
