@@ -142,7 +142,9 @@ plotCentroids <- function(spe, colour_by=NULL, colour_log=FALSE,
                         y=.data[[spatialCoordsNames(spe)[2]]],
                         colour=.data[[colour_by]],
                         fill=.data[[colour_by]]),) +
-            geom_point(size=size, alpha=alpha)
+            geom_point(size=size, alpha=alpha) +
+            scale_color_viridis_c() +
+            scale_fill_viridis_c() + coord_fixed()
         if(isNegativeProbe)
         {
             ggp <- ggp + scale_color_gradient(low="white", high="red",
