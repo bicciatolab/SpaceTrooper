@@ -76,7 +76,7 @@ readCosmxSPE <- function(dirname, sample_name="sample01",
     fov_positions <- as.data.frame(data.table::fread(fovpos_file, header=TRUE))
     fovcidx <- grep("FOV", colnames(fov_positions)) # works also with older vers
     if(length(fovcidx)!=0) colnames(fov_positions)[fovcidx] <- "fov"
-    fovcrdx <- grep("[X|Y|Z]", colnames(fovpos))
+    fovcrdx <- grep("[X|Y|Z]", colnames(fov_positions))
     if(length(fovcrdx)!=0) colnames(fov_positions)[fovcrdx] <-
         tolower(colnames(fov_positions)[fovcrdx])
     fovccdx <- grep("[x|y]_px", colnames(fov_positions))
