@@ -7,10 +7,11 @@
 readh5polygons(pol_file)
 }
 \arguments{
-\item{pol_file}{A character string specifying the file path to the HDF5 polygon data.}
+\item{pol_file}{A character string specifying the file path to the HDF5
+polygon data.}
 }
 \value{
-A list containing the polygon geometries and their associated cell IDs.
+A list containing the polygon geometries and their associated cell_id
 }
 \description{
 This function reads polygon data from an HDF5 file.
