@@ -280,16 +280,19 @@ computeFixedFlags <- function(spe, total_threshold=0,
 #' spe <- computeQScore(spe)
 #' summary(spe$training_status)
 #' summary(spe$quality_score)
-computeQScore <- function(spe, verbose=FALSE) {
+computeQScore <- function(spe, best_lambda=NULL, verbose=FALSE) {
     stopifnot(is(spe, "SpatialExperiment"))
+
     spe_temp <- computeSpatialOutlier(spe[,spe$total>0],
                         compute_by="log2CountArea", method="both")
+
     if(attr(spe_temp$log2CountArea_outlier_mc, "thresholds")[1] <
         min(spe_temp$log2CountArea)) {
             low_thr <- quantile(spe$log2CountArea, probs = 0.01)
     } else {
         low_thr <- attr(spe_temp$log2CountArea_outlier_mc, "thresholds")[1]
     }
+
     high_thr <- attr(spe_temp$log2CountArea_outlier_mc, "thresholds")[2]
     spe$log2CountArea_outlier_train <- case_when(spe$total==0 ~ "NO",
         spe$log2CountArea<low_thr ~ "LOW",spe$log2CountArea>high_thr ~ "HIGH",
@@ -330,6 +333,7 @@ computeQScore <- function(spe, verbose=FALSE) {
     if(verbose) message("Chosen low quality examples: ", dim(train_bad)[1])
     train_good <- train_good |> distinct(cell_id, .keep_all = TRUE)
     train_good <- train_good[!train_good$is_a_bad_boy,]
+    # set.seed(1998)
     train_good <- train_good[sample(rownames(train_good), dim(train_bad)[1],
                                 replace=FALSE),]
     if(verbose) message("Chosen good quality examples: ", dim(train_good)[1])
@@ -359,6 +363,153 @@ computeQScore <- function(spe, verbose=FALSE) {
         TRUE ~ train_identity)
     return(spe)
 }
+
+### set.seed()
+computeLambda <- function(technology, train_df) {
+    model_formula <- .getModelFormula(technology)
+    model_matrix <- model.matrix(as.formula(model_formula), data=train_df)
+    ridge_cv <- cv.glmnet(model_matrix, train_df$qscore_train,
+                          family="binomial", alpha=0, lambda=NULL)
+    best_lambda <- ridge_cv$lambda.min
+    return(best_lambda)
+}
+
+
+computeQScoreMods <- function(spe, best_lambda=NULL, verbose=FALSE) {
+    stopifnot(is(spe, "SpatialExperiment"))
+
+    train_df <- computeTrainDF(spe, verbose)
+    model_formula <- .getModelFormula(metadata(spe)$technology)
+    model_matrix <- model.matrix(as.formula(model_formula), data=train_df)
+
+    # set.seed(1998)
+    model <- trainModel(model_matrix, train_df)
+    # set.seed(1998)
+    if(is.null(best_lambda)) {
+        best_lambda <- computeLambda(metadata(spe)$technology,
+                                train_df)
+    }
+    # ridge_cv <- cv.glmnet(model_matrix, train_df$qscore_train,
+    #                       family="binomial", alpha=0, lambda=NULL)
+
+    # best_lambda <- ridge_cv$lambda.min
+    # train_df$doom <- case_when(train_df$qscore_train==0 ~ "BAD",
+    #                            train_df$qscore_train==1 ~ "GOOD")
+    cd <- data.frame(colData(spe))
+    full_matrix <- model.matrix(as.formula(model_formula), data = cd)
+    cd$quality_score <- as.vector(predict(model, s=best_lambda,
+                                          newx = full_matrix,
+                                          type = "response"))
+    spe$quality_score <- cd$quality_score
+    train_identity <- rep("TEST", dim(spe)[2])
+    train_bad <- train_df$cell_id[train_df$qscore_train==0]
+    train_good <- train_df$cell_id[train_df$qscore_train==1]
+    spe$training_status <- dplyr::case_when(
+        spe$cell_id %in% train_bad ~ "BAD",
+        spe$cell_id %in% train_good ~ "GOOD",
+        TRUE ~ train_identity)
+    return(spe)
+}
+
+
+trainModel <- function(model_matrix, train_df)
+{
+    model <- glmnet(x=model_matrix, y=train_df$qscore_train,
+                    family="binomial", lambda=NULL, alpha=0)
+    return(model)
+}
+
+computeTrainDF <- function(spe, verbose=FALSE)
+{
+    spe_temp <- computeSpatialOutlier(spe[,spe$total>0],
+        compute_by="log2CountArea", method="both")
+
+    if(getFencesOutlier(spe_temp, "log2CountArea_outlier_mc", "lower") <
+        min(spe_temp$log2CountArea)) {
+            low_thr <- quantile(spe$log2CountArea, probs = 0.01)
+    } else {
+        low_thr <- getFencesOutlier(spe_temp, "log2CountArea_outlier_mc",
+                                    "lower")
+    }
+
+    high_thr <- getFencesOutlier(spe_temp, "log2CountArea_outlier_mc", "higher")
+    # no-hit if zero counts cells
+    spe$log2CountArea_outlier_train <- case_when(spe$total==0 ~ "NO",
+        spe$log2CountArea<low_thr ~ "LOW",spe$log2CountArea>high_thr ~ "HIGH",
+        TRUE ~ "NO")
+
+    attr(spe$log2CountArea_outlier_train, "thresholds") <-
+        getFencesOutlier(spe_temp, "log2CountArea_outlier_mc")
+    attr(spe$log2CountArea_outlier_train, "thresholds")[1] <- low_thr
+
+    if(metadata(spe)$technology == "Nanostring_CosMx") {
+        ts <- .computeCosmxTrainSet(spe)
+    }
+    if(any(metadata(spe)$technology %in% c("10X_Xenium", "Vizgen_MERFISH"))) {
+        ts <- .computeXenMerTrainSet(spe)
+    }
+
+    train_bad <- ts$bad
+    train_good <- ts$good
+    train_bad <- train_bad |> distinct(cell_id, .keep_all = TRUE)
+
+    if(verbose) message("Chosen low quality examples: ", dim(train_bad)[1])
+
+    train_good <- train_good |> distinct(cell_id, .keep_all = TRUE)
+    train_good <- train_good[!train_good$is_a_bad_boy,]
+    # set.seed(1998) # <<<<<<<<<<<<<<<<<<<<<<<<<<<
+    train_good <- train_good[sample(rownames(train_good), dim(train_bad)[1],
+                                    replace=FALSE),]
+    if(verbose) message("Chosen good quality examples: ", dim(train_good)[1])
+
+    train_good$is_a_bad_boy <- NULL
+    train_df <- rbind(train_bad, train_good)
+    train_df <- train_df |> distinct(cell_id, .keep_all = TRUE)
+    return(train_df)
+}
+
+.getModelFormula <- function(technology)
+{
+    model_formula <- "~log2CountArea" # xen and merf
+    if(technology == "Nanostring_CosMx") {
+        model_formula <- paste0("~ log2CountArea + I(abs(log2AspectRatio) ",
+                                "* as.numeric(dist_border<50)) + ",
+                                " log2CountArea:I(abs(log2AspectRatio)",
+                                "* as.numeric(dist_border<50))") #for cosmx
+    }
+    return(model_formula)
+}
+
+.computeXenMerTrainSet <- function(spe)
+{
+    train_bad <- data.frame(colData(spe)) |>
+        filter(log2CountArea_outlier_train=="LOW") |> mutate(qscore_train=0)
+    train_good <- data.frame(colData(spe)) |>
+        filter((log2CountArea > quantile(log2CountArea, probs = 0.90) &
+                    log2CountArea < quantile(log2CountArea, probs = 0.99))) |>
+        mutate(qscore_train=1, is_a_bad_boy=cell_id %in% train_bad$cell_id)
+    return(list(bad=train_bad, good=train_good))
+}
+
+.computeCosmxTrainSet <- function(spe)
+{
+    spe <- computeSpatialOutlier(spe, "log2AspectRatio", "scuttle")
+    train_bad <- data.frame(colData(spe)) |>
+        filter((log2AspectRatio_outlier_sc == "HIGH" & dist_border < 50) |
+                (log2AspectRatio_outlier_sc == "LOW" & dist_border < 50) |
+                log2CountArea_outlier_train == "LOW") |>
+        mutate(qscore_train = 0)
+
+    train_good <- data.frame(colData(spe)) |>
+        filter((log2AspectRatio > quantile(log2AspectRatio, probs = 0.25) &
+                    log2AspectRatio < quantile(log2AspectRatio, probs = 0.75) &
+                    dist_border > 50) |
+                    (log2CountArea > quantile(log2CountArea, probs = 0.90) &
+                    log2CountArea < quantile(log2CountArea, probs = 0.99))) |>
+        mutate(qscore_train=1, is_a_bad_boy=cell_id %in% train_bad$cell_id)
+    return(list(bad=train_bad, good=train_good))
+}
+
 
 #' computeQScoreFlags
 #' @name computeQScoreFlags

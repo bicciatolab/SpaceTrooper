@@ -44,9 +44,11 @@ Imports:
 Suggests:
     knitr,
     rmarkdown,
-    BiocStyle
+    BiocStyle,
+    testthat (>= 3.0.0)
 biocViews: QualityControl, Spatial
 RoxygenNote: 7.3.2
 VignetteBuilder: knitr
 BugReports: https://github.com/drighelli/SpaceTrooper/issues
 URL: https://github.com/drighelli/SpaceTrooper
+Config/testthat/edition: 3

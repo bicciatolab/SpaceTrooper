@@ -110,3 +110,4 @@ getFencesOutlier <- function(spe, fences_of,
     )
     return(fences)
 }
+

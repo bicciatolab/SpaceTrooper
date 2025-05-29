@@ -4,7 +4,7 @@
 \alias{computeQScore}
 \title{computeQScore}
 \usage{
-computeQScore(spe, verbose = FALSE)
+computeQScore(spe, best_lambda = NULL, verbose = FALSE)
 }
 \arguments{
 \item{spe}{A `SpatialExperiment` object with spatial transcriptomics data.}
