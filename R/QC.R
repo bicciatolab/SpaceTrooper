@@ -364,7 +364,51 @@ computeQScore <- function(spe, best_lambda=NULL, verbose=FALSE) {
     return(spe)
 }
 
-### set.seed()
+#' computeLambda
+#' @description
+#' Compute Optimal Ridge Regularization Parameter (λ) via Cross-Validation
+#'
+#' \code{computeLambda} performs ridge (L2) logistic regression with
+#' cross-validation to identify the optimal regularization parameter
+#' \eqn{λ} for a binary response.
+#'
+#' @param technology  \[character\]
+#'   The name of the experimental technology. Passed to
+#'   \code{.getModelFormula()} to retrieve the corresponding model formula.
+#'
+#' @param train_df  \[data.frame\]
+#'   A data frame for training that must include:
+#'   \describe{
+#'     \item{Predictor columns}{All columns referenced in the formula returned by \code{.getModelFormula()}.}
+#'     \item{\code{qscore_train}}{A binary (0/1) response vector to be modeled.}
+#'   }
+#'
+#' @return
+#' \[numeric\]
+#'   The value of \eqn{λ} (i.e., \code{lambda.min}) from
+#'   \code{\link[glmnet]{cv.glmnet}} that minimizes the cross-validation error.
+#'
+#' @details
+#' Internally, the function:
+#' \enumerate{
+#'   \item Calls \code{.getModelFormula(technology)} to obtain a model formula
+#'   as text,
+#'   \item Constructs the design matrix via \code{model.matrix()},
+#'   \item Runs ridge logistic regression cross-validation using
+#'         \code{\link[glmnet]{cv.glmnet}} with \code{alpha = 0},
+#'   \item Extracts and returns \code{ridge_cv$lambda.min}.
+#' }
+#'
+#' @examples
+#' example(spatialPerCellQC)
+#' withr::with_seed(1998, train_df <- computeTrainDF(spe))
+#' best_lambda <- computeLambda(metadata(spe)$technolgy, train_df)
+#' print(best_lambda)
+#'
+#' @seealso
+#' \code{\link[glmnet]{cv.glmnet}}
+#'
+#' @export
 computeLambda <- function(technology, train_df) {
     model_formula <- .getModelFormula(technology)
     model_matrix <- model.matrix(as.formula(model_formula), data=train_df)
@@ -374,27 +418,17 @@ computeLambda <- function(technology, train_df) {
     return(best_lambda)
 }
 
-
 computeQScoreMods <- function(spe, best_lambda=NULL, verbose=FALSE) {
     stopifnot(is(spe, "SpatialExperiment"))
 
     train_df <- computeTrainDF(spe, verbose)
     model_formula <- .getModelFormula(metadata(spe)$technology)
     model_matrix <- model.matrix(as.formula(model_formula), data=train_df)
-
-    # set.seed(1998)
     model <- trainModel(model_matrix, train_df)
-    # set.seed(1998)
     if(is.null(best_lambda)) {
         best_lambda <- computeLambda(metadata(spe)$technology,
                                 train_df)
     }
-    # ridge_cv <- cv.glmnet(model_matrix, train_df$qscore_train,
-    #                       family="binomial", alpha=0, lambda=NULL)
-
-    # best_lambda <- ridge_cv$lambda.min
-    # train_df$doom <- case_when(train_df$qscore_train==0 ~ "BAD",
-    #                            train_df$qscore_train==1 ~ "GOOD")
     cd <- data.frame(colData(spe))
     full_matrix <- model.matrix(as.formula(model_formula), data = cd)
     cd$quality_score <- as.vector(predict(model, s=best_lambda,
@@ -433,7 +467,6 @@ computeTrainDF <- function(spe, verbose=FALSE)
     }
 
     high_thr <- getFencesOutlier(spe_temp, "log2CountArea_outlier_mc", "higher")
-    # no-hit if zero counts cells
     spe$log2CountArea_outlier_train <- case_when(spe$total==0 ~ "NO",
         spe$log2CountArea<low_thr ~ "LOW",spe$log2CountArea>high_thr ~ "HIGH",
         TRUE ~ "NO")
@@ -448,7 +481,6 @@ computeTrainDF <- function(spe, verbose=FALSE)
     if(any(metadata(spe)$technology %in% c("10X_Xenium", "Vizgen_MERFISH"))) {
         ts <- .computeXenMerTrainSet(spe)
     }
-
     train_bad <- ts$bad
     train_good <- ts$good
     train_bad <- train_bad |> distinct(cell_id, .keep_all = TRUE)
@@ -457,7 +489,7 @@ computeTrainDF <- function(spe, verbose=FALSE)
 
     train_good <- train_good |> distinct(cell_id, .keep_all = TRUE)
     train_good <- train_good[!train_good$is_a_bad_boy,]
-    # set.seed(1998) # <<<<<<<<<<<<<<<<<<<<<<<<<<<
+    # set.seed(1998) # not needed if run is encapsulated in with_seed funct
     train_good <- train_good[sample(rownames(train_good), dim(train_bad)[1],
                                     replace=FALSE),]
     if(verbose) message("Chosen good quality examples: ", dim(train_good)[1])
