@@ -445,7 +445,31 @@ computeQScoreMods <- function(spe, best_lambda=NULL, verbose=FALSE) {
     return(spe)
 }
 
-
+#' Fit a Ridge Logistic Regression Model
+#'
+#' \code{trainModel} fits an L2-regularized (ridge) logistic regression
+#' using \pkg{glmnet}, given a design matrix and a training data frame.
+#'
+#' @param model_matrix \[matrix\]
+#'   The design matrix of predictors (e.g. from \code{model.matrix()}).
+#'
+#' @param train_df \[data.frame\]
+#'   A data frame containing at least the response column
+#'   \code{qscore_train}, coded as 0/1.
+#'
+#' @return
+#' A \code{\link[glmnet]{glmnet}} model object fitted with
+#' \code{family="binomial"}, \code{alpha=0} (ridge), and a sequence of
+#' \eqn{λ} values.
+#'
+#' @examples
+#' example(computeTrainDF)
+#' model_formula <- .getModelFormula(metadata(spe)$technology)
+#' model_matrix <- model.matrix(as.formula(model_formula), data=train_df)
+#' fit <- trainModel(model_matrix, train_df)
+#' coef(fit, s = 0.01)
+#'
+#' @export
 trainModel <- function(model_matrix, train_df)
 {
     model <- glmnet(x=model_matrix, y=train_df$qscore_train,
@@ -453,6 +477,46 @@ trainModel <- function(model_matrix, train_df)
     return(model)
 }
 
+#' Build a Balanced Training Data Frame from a SpatialExperiment
+#'
+#' \code{computeTrainDF} takes a \linkS4class{SpatialExperiment} object,
+#' flags spatial outliers on “log2CountArea”, then assembles a
+#' balanced training set of “good” vs “bad” cells for subsequent model fitting.
+#'
+#' @param spe \linkS4class{SpatialExperiment}
+#'   A SpatialExperiment containing at least:
+#'   \itemize{
+#'     \item assay(s) with nonzero \code{total} counts,
+#'     \item \code{colData(spe)} columns including \code{log2CountArea}, \code{dist_border}, etc.,
+#'     \item \code{metadata(spe)$technology} indicating the platform.
+#'   }
+#'
+#' @param verbose \[logical(1)\] (default \code{FALSE})
+#'   If \code{TRUE}, prints the number of “bad” and “good” cells selected.
+#'
+#' @return
+#' A \code{data.frame} with one row per cell, including:
+#' \itemize{
+#'   \item \code{qscore_train} (0/1) indicating “bad” vs “good”,
+#'   \item relevant \code{colData} columns used for modeling.
+#' }
+#'
+#' @details
+#' Internally the function:
+#' \enumerate{
+#'   \item Filters out zero-count cells,
+#'   \item Calls \code{computeSpatialOutlier()} on “log2CountArea” to get fences,
+#'   \item Labels cells as “LOW”/“HIGH” outliers or “NO”,
+#'   \item Delegates to either \code{.computeCosmxTrainSet()} or \code{.computeXenMerTrainSet()} based on \code{metadata(spe)$technology},
+#'   \item Deduplicates and down-samples “good” cells to match the number of “bad” cells.
+#' }
+#'
+#' @examples
+#' example(readCosmxSPE)
+#' df_train <- computeTrainDF(sce, verbose = TRUE)
+#' table(df_train$qscore_train)
+#'
+#' @export
 computeTrainDF <- function(spe, verbose=FALSE)
 {
     spe_temp <- computeSpatialOutlier(spe[,spe$total>0],
@@ -500,6 +564,14 @@ computeTrainDF <- function(spe, verbose=FALSE)
     return(train_df)
 }
 
+#' @title Internal: Model Formula Printer
+#' @description
+#' Returns the right‐hand side of a model formula string based on technology.
+#' @param technology \[character\]
+#'   Technology name to decide which predictors to include.
+#' @return \[character\]
+#'   A one‐sided formula as a string (e.g. "~ log2CountArea + ...").
+#' @keywords internal
 .getModelFormula <- function(technology)
 {
     model_formula <- "~log2CountArea" # xen and merf
@@ -512,6 +584,15 @@ computeTrainDF <- function(spe, verbose=FALSE)
     return(model_formula)
 }
 
+#' @title Internal: Build Training Set for Xenium & MERFISH
+#' @description
+#' Splits a SpatialExperiment into “bad” vs “good” cells based on
+#' pre-computed outlier labels on log2CountArea.
+#' @param spe \linkS4class{SpatialExperiment}
+#' @return
+#' A list with elements \code{bad} and \code{good}, each a data.frame
+#' with \code{qscore_train} and (for “good”) an \code{is_a_bad_boy} flag.
+#' @keywords internal
 .computeXenMerTrainSet <- function(spe)
 {
     train_bad <- data.frame(colData(spe)) |>
@@ -523,6 +604,15 @@ computeTrainDF <- function(spe, verbose=FALSE)
     return(list(bad=train_bad, good=train_good))
 }
 
+#' @title Internal: Build Training Set for CosMx
+#' @description
+#' Splits a SpatialExperiment into “bad” vs “good” cells based on
+#' outliers in aspect ratio near tissue border or low count area.
+#' @param spe \linkS4class{SpatialExperiment}
+#' @return
+#' A list with elements \code{bad} and \code{good}, each a data.frame
+#' with \code{qscore_train} and (for “good”) an \code{is_a_bad_boy} flag.
+#' @keywords internal
 .computeCosmxTrainSet <- function(spe)
 {
     spe <- computeSpatialOutlier(spe, "log2AspectRatio", "scuttle")
