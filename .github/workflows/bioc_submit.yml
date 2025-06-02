@@ -12,7 +12,7 @@ env:
 jobs:
   check:
     runs-on: ubuntu-latest
-    container: bioconductor/bioconductor_docker:RELEASE_3_21
+    container: bioconductor/bioconductor_docker:RELEASE_3_20
 
     steps:
       - name: Checkout Repository
