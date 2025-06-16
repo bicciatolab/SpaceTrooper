@@ -132,13 +132,17 @@ plotCentroids <- function(spe, colour_by=NULL, colour_log=FALSE,
             colour_by <- paste0("log(", colour_byo, ")")
             colData(spe)[[colour_by]] <- log1p(colData(spe)[[colour_byo]])
         }
-        ## check if column variable is logical to impose our colors
         ggp <- ggplot(data.frame(colData(spe), spatialCoords(spe)),
                     aes(x=.data[[spatialCoordsNames(spe)[1]]],
                         y=.data[[spatialCoordsNames(spe)[2]]],
                         colour=.data[[colour_by]],
                         fill=.data[[colour_by]])) +
-            geom_point(size=size, alpha=alpha)
+            geom_point(size=size, alpha=alpha) + coord_fixed()
+        if(!is(spe[[colour_by]], "factor")) {
+            ggp <- ggp + ggplot2::scale_colour_viridis_c() +
+                ggplot2::scale_fill_viridis_c() + coord_fixed()
+        }
+
         if(isNegativeProbe) {
             ggp <- ggp + scale_color_gradient(low="white", high="red",
                 name=colour_by) + .negative_image_theme()
@@ -471,7 +475,8 @@ plotQScoreTerms <- function(spe, sample_id=unique(spe$sample_id), size=0.05,
     color
 }
 
-.make_outlier_plot <- function(polygons, fov, fillvar, pal, title=NULL, leg=FALSE) {
+.make_outlier_plot <- function(polygons, fov, fillvar, pal, title=NULL,
+                            leg=FALSE) {
     p <- ggplot2::ggplot() +
         ggplot2::geom_sf(
             data = polygons[polygons$fov %in% fov, ],
@@ -518,18 +523,16 @@ plotQScoreTerms <- function(spe, sample_id=unique(spe$sample_id), size=0.05,
 #'
 #' example(readAndAddPolygonsToSPE)
 #' spe <- spatialPerCellQC(spe)
-#' spe <- computeFixedFlags(spe)
+#' spe <- computeThresholdFlags(spe)
 #' p <- qcFlagPlots(spe, fov=16, theme="dark")
 #' print(p)
 qcFlagPlots <- function(spe, fov=unique(spe$fov),
                             theme=c("light","dark"), custom=FALSE) {
-
-    if (!all(c("is_zero_counts", "is_ctrl_tot_outlier") %in% names(colData(spe))))
+    if (!all(c("is_zero_counts", "is_ctrl_tot_outlier") %in%
+            <names(colData(spe))))
         stop("Fixed thresholds flag cells not found. Run computeFixedFlags().")
-
     spe <- computeSpatialOutlier(spe, compute_by="Area_um", method="both")
     spe <- computeSpatialOutlier(spe, compute_by="Mean.DAPI", method="both")
-
     spe$polygons$fixed_flags_color <- dplyr::case_when(
         spe$is_zero_counts ~ "0 counts",
         spe$is_ctrl_tot_outlier ~ "ctrl/total ratio > 0.1",
@@ -537,40 +540,38 @@ qcFlagPlots <- function(spe, fov=unique(spe$fov),
     )
     if(all(spe$polygons$fixed_flags_color=="unflagged"))
         warning("No 0 counts or control/total ratio > 0.1 found")
-
     dapi_col <- .assign_outlier_color(spe$Mean.DAPI, spe$Mean.DAPI_outlier_mc,
-                                     "> DAPI higher thr.", "< DAPI lower thr.")
+                                    "> DAPI higher thr.", "< DAPI lower thr.")
     spe$polygons$dapi_outlier_color <- dapi_col
-
     area_vals <- if (custom) spe$cust_Area_um else spe$Area_um
-    area_mc   <- if (custom) spe$cust_Area_um_outlier_mc else spe$Area_um_outlier_mc
+    area_mc   <- if (custom) spe$cust_Area_um_outlier_mc else
+        spe$Area_um_outlier_mc
     area_col  <- .assign_outlier_color(area_vals, area_mc,
-                                      "> area um higher thr.", "< area um lower thr.")
+        "> area um higher thr.", "< area um lower thr.")
     spe$polygons$area_outlier_color <- area_col
-
     spe$polygons$collapsed_color <-
         .assign_collapsed_color(spe$is_ctrl_tot_outlier, area_col, dapi_col)
-
     outlier_palette <- c(
         "unflagged"="#c0c8cf", "ctrl/total ratio > 0.1"="magenta",
         "< area um lower thr."="darkturquoise", "> area um higher thr."="red",
         "< DAPI lower thr."="purple", "> DAPI higher thr."="greenyellow"
     )
-
     plot_func <- if(theme[1]=="light") .light_theme else .dark_theme
     ggp1 <- .make_outlier_plot(spe$polygons, fov, "fixed_flags_color",
-                              outlier_palette, "Control counts ratio") + plot_func()
+                            outlier_palette, "Control counts ratio") +
+        plot_func()
     ggp2 <- .make_outlier_plot(spe$polygons, fov, "area_outlier_color",
-                              outlier_palette, "Area in um") + plot_func()
+                            outlier_palette, "Area in um") + plot_func()
     ggp3 <- .make_outlier_plot(spe$polygons, fov, "dapi_outlier_color",
-                              outlier_palette, "Mean DAPI") + plot_func()
+                            outlier_palette, "Mean DAPI") + plot_func()
     legp <- .make_outlier_plot(spe$polygons, fov, "collapsed_color",
-                              outlier_palette, leg=TRUE) + plot_func() +
+                            outlier_palette, leg=TRUE) + plot_func() +
         ggplot2::theme(legend.title=element_blank())
     ggp4 <- cowplot::get_legend(legp)
     final <- cowplot::plot_grid(ggp1, ggp2, ggp3, ggp4, ncol=2)
     if(theme[1]=="dark")
-        final <- final + ggplot2::theme(panel.background=element_rect(fill="black"))
+        final <- final +
+            ggplot2::theme(panel.background=element_rect(fill="black"))
     final
 }
 

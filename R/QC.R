@@ -211,35 +211,37 @@ computeSpatialOutlier <- function(spe, compute_by=NULL,
     return(spe)
 }
 
-#' computeFixedFlags
-#' @name computeFixedFlags
-#' @rdname computeFixedFlags
+#' computeThresholdFlags
+#' @name computeThresholdFlags
+#' @rdname computeThresholdFlags
 #' @description
 #' Compute Flagged cells using fixed thresholds for SpatialExperiment.
 #'
-#' This function calculates various flags to identify outliers in a
-#' `SpatialExperiment` object based on quality control metrics.
+#' This function calculates flagged cells only for total counts and control on
+#' total probe counts ratio using fixed thresholds for a `SpatialExperiment`
+#' object.
 #'
 #' @param spe A `SpatialExperiment` object with spatial transcriptomics data.
 #' @param total_threshold A numeric value for the threshold of total counts to
-#' identify cells with zero counts. Default is `0`.
+#' identify cells with low counts. Default is `0`.
 #' @param ctrl_tot_ratio_threshold A numeric value for the threshold of
-#' control-to-total ratio to flag outliers. Default is `0.1`.
+#' control-to-total ratio to flag cells over a certain threshold. Default is
+#' `0.1`.
 #'
 #' @return The `SpatialExperiment` object with added filter flags in `colData`.
 #'
-#' @details The function flags cells based on zero counts, control-to-total
-#' ratio, and `quality_score` to identify potential outliers. It also combines
-#' these flags into a single filter flag.
+#' @details The function flags cells basing on zero counts and control-to-total
+#' ratio to identify junk cells.
+#' It also combines these flags into a single filter flag.
 #'
 #' @importFrom SummarizedExperiment colData
 #' @export
 #' @examples
 #' example(readCosmxSPE)
 #' spe <- spatialPerCellQC(spe)
-#' spe <- computeFixedFlags(spe)
-#' table(spe$fixed_filter_out)
-computeFixedFlags <- function(spe, total_threshold=0,
+#' spe <- computeThresholdFlags(spe)
+#' table(spe$threshold_flags)
+computeThresholdFlags <- function(spe, total_threshold=0,
                             ctrl_tot_ratio_threshold=0.1)
 {
     stopifnot(is(spe, "SpatialExperiment"))
@@ -251,7 +253,7 @@ computeFixedFlags <- function(spe, total_threshold=0,
     spe$is_ctrl_tot_outlier <- ifelse(spe$ctrl_total_ratio >
                                         ctrl_tot_ratio_threshold, TRUE, FALSE)
 
-    spe$fixed_filter_out <- (spe$is_ctrl_tot_outlier &
+    spe$threshold_flags <- (spe$is_ctrl_tot_outlier &
                                 spe$is_zero_counts)
     return(spe)
 }
@@ -319,6 +321,19 @@ computeLambda <- function(technology, train_df) {
 #' Compute quality score and automatically define weights for quality score
 #' through glm training. This function computes quality score with a formula
 #' that depends on the technology.
+#'
+#' @details
+#' For CosMx datasets, the Quality Score formula is defined as follows:
+#'
+#' quality score ~ count density - aspect ratio - interaction term
+#'
+#' count density is total counts-to-area ratio, aspect ratio represents
+#' border effect typical of CosMx datasets and the last one is the
+#' interaction term of the previous two terms.
+#'
+#' For Xenium and Merscope datasets, quality score depends solely on count
+#' density, as no border effect has been observed for these two technologies.
+#'
 #' To automatically define the formula coefficient weights, model training
 #' is performed through ridge regression.
 #'
@@ -584,26 +599,25 @@ getModelFormula <- function(technology)
 #' spe <- computeQScoreFlags(spe)
 #' table(spe$is_qscore_outlier)
 #' # if fixed filters are defined we have an additional column
-#' spe <- computeFixedFlags(spe)
+#' spe <- computeThresholdFlags(spe)
 #' spe <- computeQScoreFlags(spe)
-#' table(spe$fixed_qscore_out)
-computeQScoreFlags <- function(spe, qs_threshold=0.5, use_qs_quantiles=FALSE)
-{
+#' table(spe$threshold_qscore_flags)
+computeQScoreFlags <- function(spe, qs_threshold=0.5, use_qs_quantiles=FALSE) {
     stopifnot(is(spe, "SpatialExperiment"))
     stopifnot("quality_score" %in% names(colData(spe)))
 
     if(use_qs_quantiles) {
-        spe$is_qscore_opt_outlier <- ifelse(spe$quality_score <
-            quantile(spe$quality_score, probs=qs_threshold),
+        spe$is_qscore_flags <- ifelse(
+            spe$quality_score < quantile(spe$quality_score, probs=qs_threshold),
             TRUE, FALSE)
     } else {
-        spe$is_qscore_outlier <- spe$quality_score < qs_threshold
+        spe$is_qscore_flags <- spe$quality_score < qs_threshold
 
     }
 
-    if("fixed_filter_out" %in% names(colData(spe)))
-    {
-        spe$fixed_qscore_out <- (spe$is_qscore_outlier & spe$fixed_filter_out)
+    if("threshold_flags" %in% names(colData(spe))) {
+        spe$threshold_qscore_flags <- (spe$is_qscore_flags &
+                                        spe$threshold_flags)
     }
     return(spe)
 }

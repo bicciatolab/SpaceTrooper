@@ -15,5 +15,6 @@ utils::globalVariables(c(
     "fov",
     "x_mm",
     "y_mm",
-    ".data"
+    ".data",
+    "fov_name"
 ))

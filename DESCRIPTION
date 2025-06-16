@@ -46,7 +46,8 @@ Suggests:
     rmarkdown,
     BiocStyle,
     testthat (>= 3.0.0),
-    withr
+    withr,
+    viridis
 biocViews: QualityControl, Spatial
 RoxygenNote: 7.3.2
 VignetteBuilder: knitr

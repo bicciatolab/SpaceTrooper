@@ -39,7 +39,7 @@ over a light or dark layout chosen by the user.
 
 example(readAndAddPolygonsToSPE)
 spe <- spatialPerCellQC(spe)
-spe <- computeFixedFlags(spe)
+spe <- computeThresholdFlags(spe)
 p <- qcFlagPlots(spe, fov=16, theme="dark")
 print(p)
 }

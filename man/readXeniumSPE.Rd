@@ -15,7 +15,9 @@ readXeniumSPE(
   countsfilepattern = "cell_feature_matrix",
   metadatafpattern = "cells",
   polygonsfpattern = "cell_boundaries",
-  polygonsCol = "polygons"
+  polygonsCol = "polygons",
+  txpattern = "transcripts",
+  add_FOVs = FALSE
 )
 }
 \arguments{
@@ -55,6 +57,16 @@ Pattern to locate the cell boundaries file. Default:
 \item{polygonsCol}{`character(1)`
 Name of the polygons column to add to `colData`. Default:
 `"polygons"`.}
+
+\item{txpattern}{`character(1)`
+Pattern (base filename, without extension) to locate the transcript file
+(usually a `.parquet` file) from which to extract Field-Of-View (FOV)
+information for each cell. Default: `"transcripts"`.}
+
+\item{add_FOVs}{`logical(1)`
+If `TRUE`, extract Field-Of-View (FOV) information from the transcript file
+(as located by `txpattern`) and append it to cell metadata (`colData`).
+Default: `FALSE`.}
 }
 \value{
 A [`SpatialExperiment`] object with assays, `colData`, spatial
