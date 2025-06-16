@@ -529,7 +529,7 @@ plotQScoreTerms <- function(spe, sample_id=unique(spe$sample_id), size=0.05,
 qcFlagPlots <- function(spe, fov=unique(spe$fov),
                             theme=c("light","dark"), custom=FALSE) {
     if (!all(c("is_zero_counts", "is_ctrl_tot_outlier") %in%
-            <names(colData(spe))))
+            names(colData(spe))))
         stop("Fixed thresholds flag cells not found. Run computeFixedFlags().")
     spe <- computeSpatialOutlier(spe, compute_by="Area_um", method="both")
     spe <- computeSpatialOutlier(spe, compute_by="Mean.DAPI", method="both")
