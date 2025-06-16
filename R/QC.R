@@ -173,12 +173,12 @@ computeSpatialOutlier <- function(spe, compute_by=NULL,
     cdcol <- cd[[compute_by]]
     mcfl<-scuttlefl<-FALSE
     switch(method, both={ mcfl<-scuttlefl<-TRUE },
-            mc={ mcfl<-TRUE }, scuttle={ scuttlefl<-TRUE },
+            mc={ mcfl<-TRUE }, scuttle={ scuttlefl <- TRUE },
             {stop("Method is not one of allowed methods")} )
     if (mcfl) {
         skw <- e1071::skewness(cdcol, na.rm = TRUE) # NAs arise problems
         if (skw>-1 & skw<1) warning("Distribution is symmetric: ",
-                "mc is for asymmetric distributions. Use scater instead.")
+                "mc is for asymmetric distributions. Use scuttle instead.")
         mcval <- robustbase::mc(cdcol, doScale=mcDoScale, na.rm=TRUE)
         if ( any( (mcval <= -0.6), (mcval >= 0.6) ) )
             stop("mc is: ",round(mcval, digits=4),"outliers reqs not satisfied")
