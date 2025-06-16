@@ -256,113 +256,6 @@ computeFixedFlags <- function(spe, total_threshold=0,
     return(spe)
 }
 
-#' computeQScore
-#' @name computeQScore
-#' @rdname computeQScore
-#' @description
-#' Compute quality score and automatically define weights for quality score
-#' through glm training. This function computes quality score with a formula
-#' that depends on the technology.
-#' To automatically define the formula coefficient weights, model training
-#' is performed through ridge regression.
-#'
-#' @param spe A `SpatialExperiment` object with spatial transcriptomics data.
-#' @param verbose logical for having a verbose output. Default is FALSE.
-#'
-#' @return The `SpatialExperiment` object with added quality score in `colData`.
-#' @export
-#' @importFrom dplyr case_when filter mutate distinct
-#' @importFrom glmnet glmnet cv.glmnet
-#' @importFrom stats as.formula model.matrix predict quantile
-#' @examples
-#' example(spatialPerCellQC)
-#' set.seed(1998)
-#' spe <- computeQScore(spe)
-#' summary(spe$training_status)
-#' summary(spe$quality_score)
-computeQScore <- function(spe, best_lambda=NULL, verbose=FALSE) {
-    stopifnot(is(spe, "SpatialExperiment"))
-
-    spe_temp <- computeSpatialOutlier(spe[,spe$total>0],
-                        compute_by="log2CountArea", method="both")
-
-    if(attr(spe_temp$log2CountArea_outlier_mc, "thresholds")[1] <
-        min(spe_temp$log2CountArea)) {
-            low_thr <- quantile(spe$log2CountArea, probs = 0.01)
-    } else {
-        low_thr <- attr(spe_temp$log2CountArea_outlier_mc, "thresholds")[1]
-    }
-
-    high_thr <- attr(spe_temp$log2CountArea_outlier_mc, "thresholds")[2]
-    spe$log2CountArea_outlier_train <- case_when(spe$total==0 ~ "NO",
-        spe$log2CountArea<low_thr ~ "LOW",spe$log2CountArea>high_thr ~ "HIGH",
-        TRUE ~ "NO")
-    attr(spe$log2CountArea_outlier_train, "thresholds") <-
-        attr(spe_temp$log2CountArea_outlier_mc, "thresholds")
-    attr(spe$log2CountArea_outlier_train, "thresholds")[1] <- low_thr
-    if(metadata(spe)$technology == "Nanostring_CosMx") {
-        spe <- computeSpatialOutlier(spe, compute_by="log2AspectRatio",
-                                        method="scuttle")
-        train_bad <- data.frame(colData(spe)) |>
-            filter((log2AspectRatio_outlier_sc == "HIGH" & dist_border < 50) |
-                    (log2AspectRatio_outlier_sc == "LOW" & dist_border < 50) |
-                    log2CountArea_outlier_train == "LOW") |>
-            mutate(qscore_train = 0)
-            train_good <- data.frame(colData(spe)) |>
-            filter((log2AspectRatio > quantile(log2AspectRatio, probs = 0.25) &
-                    log2AspectRatio < quantile(log2AspectRatio, probs = 0.75) &
-                    dist_border > 50) |
-                    (log2CountArea > quantile(log2CountArea, probs = 0.90) &
-                    log2CountArea < quantile(log2CountArea, probs = 0.99))) |>
-            mutate(qscore_train=1, is_a_bad_boy=cell_id%in%train_bad$cell_id)
-        model_formula <- paste0("~ log2CountArea + I(abs(log2AspectRatio) ",
-            "* as.numeric(dist_border<50)) + ",
-            " log2CountArea:I(abs(log2AspectRatio)",
-            "* as.numeric(dist_border<50))") #for cosmx
-    }
-    if(any(metadata(spe)$technology %in% c("10X_Xenium", "Vizgen_MERFISH"))) {
-        train_bad <- data.frame(colData(spe)) |>
-            filter(log2CountArea_outlier_train=="LOW") |> mutate(qscore_train=0)
-        train_good <- data.frame(colData(spe)) |>
-            filter((log2CountArea > quantile(log2CountArea, probs = 0.90) &
-                    log2CountArea < quantile(log2CountArea, probs = 0.99))) |>
-            mutate(qscore_train=1, is_a_bad_boy=cell_id %in% train_bad$cell_id)
-        model_formula <- "~log2CountArea" # xen and merf
-    }
-    train_bad <- train_bad |> distinct(cell_id, .keep_all = TRUE)
-    if(verbose) message("Chosen low quality examples: ", dim(train_bad)[1])
-    train_good <- train_good |> distinct(cell_id, .keep_all = TRUE)
-    train_good <- train_good[!train_good$is_a_bad_boy,]
-    # set.seed(1998)
-    train_good <- train_good[sample(rownames(train_good), dim(train_bad)[1],
-                                replace=FALSE),]
-    if(verbose) message("Chosen good quality examples: ", dim(train_good)[1])
-    train_good$is_a_bad_boy <- NULL
-    train_df <- rbind(train_bad, train_good)
-    train_df <- train_df |> distinct(cell_id, .keep_all = TRUE)
-    model_matrix <- model.matrix(as.formula(model_formula), data = train_df)
-    # set.seed(1998)
-    model <- glmnet(x=model_matrix, y=train_df$qscore_train,
-                            family="binomial", lambda=NULL, alpha=0)
-    # set.seed(1998)
-    ridge_cv <- cv.glmnet(model_matrix, train_df$qscore_train,
-                                family="binomial", alpha=0, lambda=NULL)
-    best_lambda <- ridge_cv$lambda.min
-    train_df$doom <- case_when(train_df$qscore_train==0 ~ "BAD",
-                                train_df$qscore_train==1 ~ "GOOD")
-    cd <- data.frame(colData(spe))
-    full_matrix <- model.matrix(as.formula(model_formula), data = cd)
-    cd$quality_score <- as.vector(predict(model, s=best_lambda,
-                                        newx = full_matrix,
-                                        type = "response"))
-    spe$quality_score <- cd$quality_score
-    train_identity <- rep("TEST", dim(spe)[2])
-    spe$training_status <- dplyr::case_when(
-        spe$cell_id%in%train_bad$cell_id ~ "BAD",
-        spe$cell_id%in%train_good$cell_id ~ "GOOD",
-        TRUE ~ train_identity)
-    return(spe)
-}
 
 #' computeLambda
 #' @description
@@ -419,7 +312,32 @@ computeLambda <- function(technology, train_df) {
     return(best_lambda)
 }
 
-computeQScoreMods <- function(spe, best_lambda=NULL, verbose=FALSE) {
+#' computeQScore
+#' @name computeQScore
+#' @rdname computeQScore
+#' @description
+#' Compute quality score and automatically define weights for quality score
+#' through glm training. This function computes quality score with a formula
+#' that depends on the technology.
+#' To automatically define the formula coefficient weights, model training
+#' is performed through ridge regression.
+#'
+#' @param spe A `SpatialExperiment` object with spatial transcriptomics data.
+#' @param verbose logical for having a verbose output. Default is FALSE.
+#'
+#' @return The `SpatialExperiment` object with added quality score in `colData`.
+#' @export
+#' @importFrom dplyr case_when filter mutate distinct
+#' @importFrom glmnet glmnet cv.glmnet
+#' @importFrom stats as.formula model.matrix predict quantile
+#' @examples
+#' example(spatialPerCellQC)
+#' set.seed(1998)
+#' spe <- computeQScore(spe)
+#' summary(spe$training_status)
+#' summary(spe$quality_score)
+
+computeQScore <- function(spe, best_lambda=NULL, verbose=FALSE) {
     stopifnot(is(spe, "SpatialExperiment"))
 
     train_df <- computeTrainDF(spe, verbose)
