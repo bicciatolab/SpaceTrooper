@@ -267,13 +267,13 @@ computeFixedFlags <- function(spe, total_threshold=0,
 #'
 #' @param technology  \[character\]
 #'   The name of the experimental technology. Passed to
-#'   \code{.getModelFormula()} to retrieve the corresponding model formula.
+#'   \code{getModelFormula()} to retrieve the corresponding model formula.
 #'
 #' @param train_df  \[data.frame\]
 #'   A data frame for training that must include:
 #'   \describe{
 #'     \item{Predictor columns}{All columns referenced in the formula returned
-#'     by \code{.getModelFormula()}.}
+#'     by \code{getModelFormula()}.}
 #'     \item{\code{qscore_train}}{A binary (0/1) response vector to be modeled.}
 #'   }
 #'
@@ -285,7 +285,7 @@ computeFixedFlags <- function(spe, total_threshold=0,
 #' @details
 #' Internally, the function:
 #' \enumerate{
-#'   \item Calls \code{.getModelFormula(technology)} to obtain a model formula
+#'   \item Calls \code{getModelFormula(technology)} to obtain a model formula
 #'   as text,
 #'   \item Constructs the design matrix via \code{model.matrix()},
 #'   \item Runs ridge logistic regression cross-validation using
@@ -304,7 +304,7 @@ computeFixedFlags <- function(spe, total_threshold=0,
 #'
 #' @export
 computeLambda <- function(technology, train_df) {
-    model_formula <- .getModelFormula(technology)
+    model_formula <- getModelFormula(technology)
     model_matrix <- model.matrix(as.formula(model_formula), data=train_df)
     ridge_cv <- cv.glmnet(model_matrix, train_df$qscore_train,
                         family="binomial", alpha=0, lambda=NULL)
@@ -341,7 +341,7 @@ computeQScore <- function(spe, best_lambda=NULL, verbose=FALSE) {
     stopifnot(is(spe, "SpatialExperiment"))
 
     train_df <- computeTrainDF(spe, verbose)
-    model_formula <- .getModelFormula(metadata(spe)$technology)
+    model_formula <- getModelFormula(metadata(spe)$technology)
     model_matrix <- model.matrix(as.formula(model_formula), data=train_df)
     model <- trainModel(model_matrix, train_df)
     if(is.null(best_lambda)) {
@@ -383,9 +383,9 @@ computeQScore <- function(spe, best_lambda=NULL, verbose=FALSE) {
 #'
 #' @examples
 #' example(computeTrainDF)
-#' model_formula <- .getModelFormula(metadata(spe)$technology)
-#' model_matrix <- model.matrix(as.formula(model_formula), data=train_df)
-#' fit <- trainModel(model_matrix, train_df)
+#' model_formula <- getModelFormula(metadata(spe)$technology)
+#' model_matrix <- model.matrix(as.formula(model_formula), data=df_train)
+#' fit <- trainModel(model_matrix, df_train)
 #' coef(fit, s = 0.01)
 #'
 #' @export
@@ -435,7 +435,7 @@ trainModel <- function(model_matrix, train_df)
 #' }
 #'
 #' @examples
-#' example(readCosmxSPE)
+#' example(spatialPerCellQC)
 #' df_train <- computeTrainDF(spe, verbose = TRUE)
 #' table(df_train$qscore_train)
 #'
@@ -494,8 +494,11 @@ computeTrainDF <- function(spe, verbose=FALSE)
 #'   Technology name to decide which predictors to include.
 #' @return \[character\]
 #'   A one‐sided formula as a string (e.g. "~ log2CountArea + ...").
-#' @keywords internal
-.getModelFormula <- function(technology)
+#' @export
+#' @examples
+#' example(spatialPerCellQC)
+#' getModelFormula(metadata(spe)$technology)
+getModelFormula <- function(technology)
 {
     model_formula <- "~log2CountArea" # xen and merf
     if(technology == "Nanostring_CosMx") {

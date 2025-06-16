@@ -45,7 +45,7 @@ Internally the function:
 }
 }
 \examples{
-example(readCosmxSPE)
+example(spatialPerCellQC)
 df_train <- computeTrainDF(spe, verbose = TRUE)
 table(df_train$qscore_train)
 

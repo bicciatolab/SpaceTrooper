@@ -9,13 +9,13 @@ computeLambda(technology, train_df)
 \arguments{
 \item{technology}{\[character\]
 The name of the experimental technology. Passed to
-\code{.getModelFormula()} to retrieve the corresponding model formula.}
+\code{getModelFormula()} to retrieve the corresponding model formula.}
 
 \item{train_df}{\[data.frame\]
 A data frame for training that must include:
 \describe{
   \item{Predictor columns}{All columns referenced in the formula returned
-  by \code{.getModelFormula()}.}
+  by \code{getModelFormula()}.}
   \item{\code{qscore_train}}{A binary (0/1) response vector to be modeled.}
 }}
 }
@@ -34,7 +34,7 @@ cross-validation to identify the optimal regularization parameter
 \details{
 Internally, the function:
 \enumerate{
-  \item Calls \code{.getModelFormula(technology)} to obtain a model formula
+  \item Calls \code{getModelFormula(technology)} to obtain a model formula
   as text,
   \item Constructs the design matrix via \code{model.matrix()},
   \item Runs ridge logistic regression cross-validation using

@@ -50,11 +50,13 @@ readCosmxSPE <- function(dirname, sample_name="sample01",
     countmatfpattern="exprMat_file.csv", metadatafpattern="metadata_file.csv",
     polygonsfpattern="polygons.csv", fovposfpattern="fov_positions_file.csv",
     fov_dims=c(xdim=4256, ydim=4256)) {
+
     stopifnot(all(names(fov_dims) == c("xdim", "ydim"), file.exists(dirname)))
     countmat_file <- list.files(dirname, countmatfpattern, full.names=TRUE)
     metadata_file <- list.files(dirname, metadatafpattern, full.names=TRUE)
     fovpos_file <- list.files(dirname, fovposfpattern, full.names=TRUE)
     pol_file <- list.files(dirname, polygonsfpattern, full.names=TRUE)#parquet?
+
     countmat <- data.table::fread(countmat_file, showProgress=FALSE)
     metadata <- data.table::fread(metadata_file, showProgress=FALSE)
     counts <- merge(countmat, metadata[, c("fov", "cell_ID")], sort = FALSE)
@@ -64,14 +66,17 @@ readCosmxSPE <- function(dirname, sample_name="sample01",
     counts <- t(as.matrix(counts)) #### faster when it comes to big numbers
     rownames(counts) <- features
     colnames(counts) <- cn
+
+    # TODO: rowData (does not exist) read tx file with readSparseCSV sparseArray
     colData <- DataFrame(merge(metadata, countmat[, c("fov", "cell_ID")],
-                                sort=FALSE))
+                                sort = FALSE))
     rn <- paste0("f", colData$fov, "_c", colData$cell_ID)
     rownames(colData) <- rn
     if(length(grep("cell_id", colnames(colData)))!=0)
         warning("Overwriting existing cell_id column in colData")
     colData$cell_id <- rn
     colData <- colData[,c(1,2,dim(colData)[2], 3:(dim(colData)[2]-1))]
+
     fov_positions <- as.data.frame(data.table::fread(fovpos_file, header=TRUE))
     fovcidx <- grep("FOV", colnames(fov_positions)) # works also with older vers
     if(length(fovcidx)!=0) colnames(fov_positions)[fovcidx] <- "fov"
@@ -81,10 +86,12 @@ readCosmxSPE <- function(dirname, sample_name="sample01",
     fovccdx <- grep("[x|y]_px", colnames(fov_positions))
     if(length(fovccdx)!=0) colnames(fov_positions)[fovccdx] <-
         gsub("_px", "_global_px", colnames(fov_positions)[fovccdx])
+
     if(length(grep("x_mm", colnames(fov_positions))!=0)) {
         fov_positions <- fov_positions |>
             dplyr::mutate(x_global_px = x_mm/0.12028*10^3,
-                        y_global_px = (y_mm/0.12028*10^3) - 4256)}
+                        y_global_px = (y_mm/0.12028*10^3) - 4256)
+    }
     idx <- fov_positions$fov %in% unique(metadata$fov)
     fov_positions <- fov_positions[idx,]
     fov_positions <- fov_positions[order(fov_positions$fov),]
