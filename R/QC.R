@@ -30,7 +30,7 @@
 #' example(readCosmxSPE)
 #' spe <- spatialPerCellQC(spe)
 spatialPerCellQC <- function(spe, micronConvFact=0.12, rmZeros=TRUE,negProbList=
-    c("NegPrb", "Negative", "SystemControl", "Ms IgG1", "Rb IgG",
+    c("NegPrb", "Negative", "SystemControl", "Ms IgG1", "Rb IgG", "BLANK_",
     "NegControlProbe", "NegControlCodeword", "UnassignedCodeword", "Blank")) {
     stopifnot(is(object=spe, "SpatialExperiment"))
     idxlist <- lapply(negProbList, function(ng) {
