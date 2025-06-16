@@ -46,7 +46,7 @@ Internally the function:
 }
 \examples{
 example(readCosmxSPE)
-df_train <- computeTrainDF(sce, verbose = TRUE)
+df_train <- computeTrainDF(spe, verbose = TRUE)
 table(df_train$qscore_train)
 
 }
