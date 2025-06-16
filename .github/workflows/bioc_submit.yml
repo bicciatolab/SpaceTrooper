@@ -19,13 +19,18 @@ jobs:
   check:
     runs-on: ubuntu-latest
     container: bioconductor/bioconductor_docker:RELEASE_3_21
-
+    
+  native-check:
+    name: Bioc Build & Check (macOS & Windows)
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [macos-latest, windows-latest]
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
         with:
           ref: ${{ env.BIOC_RELEASE }}
-
       - name: Copy .github and _pkgdown.yml
         run: |
           git config --global --add safe.directory /__w/${{ github.event.repository.name }}/${{ github.event.repository.name }}
@@ -38,7 +43,7 @@ jobs:
           BiocManager::install(c("covr", "BiocCheck"))
           saveRDS(remotes::dev_package_deps(dependencies = TRUE), ".github/depends.Rds", version = 2)
         shell: Rscript {0}
-
+        
       - name: Cache R packages
         uses: actions/cache@v4
         with:
@@ -66,5 +71,4 @@ jobs:
             `quit-with-status` = TRUE, `no-check-bioc-help` = TRUE
           )
         shell: Rscript {0}
-
 

@@ -29,7 +29,7 @@ example(computeQScore)
 spe <- computeQScoreFlags(spe)
 table(spe$is_qscore_outlier)
 # if fixed filters are defined we have an additional column
-spe <- computeFixedFlags(spe)
+spe <- computeThresholdFlags(spe)
 spe <- computeQScoreFlags(spe)
-table(spe$fixed_qscore_out)
+table(spe$threshold_qscore_flags)
 }

@@ -15,7 +15,9 @@ readXeniumSPE(
   countsfilepattern = "cell_feature_matrix",
   metadatafpattern = "cells",
   polygonsfpattern = "cell_boundaries",
-  polygonsCol = "polygons"
+  polygonsCol = "polygons",
+  txpattern = "transcripts",
+  add_FOVs = TRUE
 )
 }
 \arguments{

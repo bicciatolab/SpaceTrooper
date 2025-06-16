@@ -62,7 +62,8 @@ readXeniumSPE <- function(dirname, sample_name="sample01",
     boundaries_type=c("parquet", "csv"), compute_missing_metrics=TRUE,
     keep_polygons=FALSE, countsfilepattern="cell_feature_matrix",
     metadatafpattern="cells", polygonsfpattern="cell_boundaries",
-    polygonsCol="polygons") {
+    polygonsCol="polygons", txpattern = "transcripts", 
+    add_FOVs = TRUE) {
     stopifnot(file.exists(dirname))
     type <- match.arg(type)
     boundaries_type <- match.arg(boundaries_type)
@@ -92,7 +93,10 @@ readXeniumSPE <- function(dirname, sample_name="sample01",
     if (compute_missing_metrics) {
         message("Computing missing metrics, this could take some time...")
         cd <- computeMissingMetricsXenium(pol_file, cd, keep_polygons,
-                                            polygonsCol)
+                                          polygonsCol)
+    }
+    if (add_FOVs){
+        cd <- addFovFromTx(txpattern, cd)
     }
     spe <- SpatialExperiment::SpatialExperiment(sample_id=sample_name,
         assays = assays(sce), rowData = rowData(sce), colData = cd,
@@ -143,6 +147,50 @@ computeMissingMetricsXenium <- function(pol_file, coldata, keep_polygons=FALSE,
     cd <- coldata
     cd$AspectRatio <- computeAspectRatioFromPolygons(polygons)
     if(keep_polygons) cd <- .addPolygonsToCD(cd, polygons, polygonsCol)
+    return(cd)
+}
+
+#' addFovFromTx
+#' @name addFovFromTx
+#' @rdname addFovFromTx
+#'
+#' @description
+#' Add FOV information from transcript file to cell metadata.
+#'
+#' This function retrieves FOV information from transcript file and appends
+#' the data to the resulting `colData`.
+#'
+#' @param txpattern A character string specifying the pattern to look for in the
+#' directory to find the transcript file, only parquet file is supported.
+#' data.
+#' @param coldata A `DataFrame` containing the `colData` for the Xenium dataset.
+#'
+#' @return A `DataFrame` containing the updated `colData` with FOV information.
+#'
+#' @details The function reads the transcript file then groups it by cell_id
+#' and merges the FOV information to the cell metadata in `colData`. Only
+#' parquet file is supported for this operation
+#'
+#' @importFrom S4Vectors cbind.DataFrame
+#' @importFrom arrow read_parquet
+#' @importFrom dplyr group_by select distinct left_join
+#' @export
+#'
+#' @examples
+#' example(readXeniumSPE)
+#' colData(spe) <- addFovFromTx("transcripts.parquet", colData(spe))
+addFovFromTx <- function(txpattern, coldata){
+    tx_file <- file.path(dirname, paste0(txpattern, ".parquet"))
+    stopifnot(file.exists(tx_file))
+    df <- data.frame(coldata)
+    tx <- arrow::read_parquet(tx_file)
+    if (!"fov_name" %in% colnames(tx)) {
+        stop("No fov_name column was found in tx file. \r\n",
+             "Rerun readXeniumSPE without adding FOV information.")}
+    g_tx <- group_by(tx, cell_id) |> select(cell_id, fov = fov_name) |>
+        distinct(cell_id, .keep_all = TRUE)
+    df <- left_join(df, g_tx, by="cell_id")
+    cd$fov <- df$fov
     return(cd)
 }
 
