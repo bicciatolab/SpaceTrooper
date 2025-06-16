@@ -64,9 +64,8 @@ readCosmxSPE <- function(dirname, sample_name="sample01",
     counts <- t(as.matrix(counts)) #### faster when it comes to big numbers
     rownames(counts) <- features
     colnames(counts) <- cn
-    # TODO: rowData (does not exist) read tx file with readSparseCSV sparseArray
-    colData <- DataFrame(merge(metadata, countmat[, c("fov", "cell_ID")],,
-                                sort = FALSE))
+    colData <- DataFrame(merge(metadata, countmat[, c("fov", "cell_ID")],
+                                sort=FALSE))
     rn <- paste0("f", colData$fov, "_c", colData$cell_ID)
     rownames(colData) <- rn
     if(length(grep("cell_id", colnames(colData)))!=0)
@@ -85,8 +84,7 @@ readCosmxSPE <- function(dirname, sample_name="sample01",
     if(length(grep("x_mm", colnames(fov_positions))!=0)) {
         fov_positions <- fov_positions |>
             dplyr::mutate(x_global_px = x_mm/0.12028*10^3,
-                        y_global_px = (y_mm/0.12028*10^3) - 4256)
-    }
+                        y_global_px = (y_mm/0.12028*10^3) - 4256)}
     idx <- fov_positions$fov %in% unique(metadata$fov)
     fov_positions <- fov_positions[idx,]
     fov_positions <- fov_positions[order(fov_positions$fov),]

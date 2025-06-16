@@ -379,7 +379,8 @@ computeQScore <- function(spe, best_lambda=NULL, verbose=FALSE) {
 #' @param train_df  \[data.frame\]
 #'   A data frame for training that must include:
 #'   \describe{
-#'     \item{Predictor columns}{All columns referenced in the formula returned by \code{.getModelFormula()}.}
+#'     \item{Predictor columns}{All columns referenced in the formula returned
+#'     by \code{.getModelFormula()}.}
 #'     \item{\code{qscore_train}}{A binary (0/1) response vector to be modeled.}
 #'   }
 #'
@@ -413,7 +414,7 @@ computeLambda <- function(technology, train_df) {
     model_formula <- .getModelFormula(technology)
     model_matrix <- model.matrix(as.formula(model_formula), data=train_df)
     ridge_cv <- cv.glmnet(model_matrix, train_df$qscore_train,
-                          family="binomial", alpha=0, lambda=NULL)
+                        family="binomial", alpha=0, lambda=NULL)
     best_lambda <- ridge_cv$lambda.min
     return(best_lambda)
 }
@@ -432,8 +433,8 @@ computeQScoreMods <- function(spe, best_lambda=NULL, verbose=FALSE) {
     cd <- data.frame(colData(spe))
     full_matrix <- model.matrix(as.formula(model_formula), data = cd)
     cd$quality_score <- as.vector(predict(model, s=best_lambda,
-                                          newx = full_matrix,
-                                          type = "response"))
+                                        newx = full_matrix,
+                                        type = "response"))
     spe$quality_score <- cd$quality_score
     train_identity <- rep("TEST", dim(spe)[2])
     train_bad <- train_df$cell_id[train_df$qscore_train==0]
@@ -487,7 +488,8 @@ trainModel <- function(model_matrix, train_df)
 #'   A SpatialExperiment containing at least:
 #'   \itemize{
 #'     \item assay(s) with nonzero \code{total} counts,
-#'     \item \code{colData(spe)} columns including \code{log2CountArea}, \code{dist_border}, etc.,
+#'     \item \code{colData(spe)} columns including \code{log2CountArea},
+#'     \code{dist_border}, etc.,
 #'     \item \code{metadata(spe)$technology} indicating the platform.
 #'   }
 #'
@@ -504,11 +506,14 @@ trainModel <- function(model_matrix, train_df)
 #' @details
 #' Internally the function:
 #' \enumerate{
-#'   \item Filters out zero-count cells,
-#'   \item Calls \code{computeSpatialOutlier()} on “log2CountArea” to get fences,
-#'   \item Labels cells as “LOW”/“HIGH” outliers or “NO”,
-#'   \item Delegates to either \code{.computeCosmxTrainSet()} or \code{.computeXenMerTrainSet()} based on \code{metadata(spe)$technology},
-#'   \item Deduplicates and down-samples “good” cells to match the number of “bad” cells.
+#'    \item Filters out zero-count cells,
+#'    \item Calls \code{computeSpatialOutlier()} on “log2CountArea” to get
+#'    fences,
+#'    \item Labels cells as “LOW”/“HIGH” outliers or “NO”,
+#'    \item Delegates to either \code{.computeCosmxTrainSet()} or
+#'    \code{.computeXenMerTrainSet()} based on \code{metadata(spe)$technology},
+#'    \item Deduplicates and down-samples “good” cells to match the number of
+#'    “bad” cells.
 #' }
 #'
 #' @examples
