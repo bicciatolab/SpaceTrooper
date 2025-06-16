@@ -14,7 +14,8 @@ The name of the experimental technology. Passed to
 \item{train_df}{\[data.frame\]
 A data frame for training that must include:
 \describe{
-  \item{Predictor columns}{All columns referenced in the formula returned by \code{.getModelFormula()}.}
+  \item{Predictor columns}{All columns referenced in the formula returned
+  by \code{.getModelFormula()}.}
   \item{\code{qscore_train}}{A binary (0/1) response vector to be modeled.}
 }}
 }
@@ -44,7 +45,7 @@ Internally, the function:
 \examples{
 example(spatialPerCellQC)
 withr::with_seed(1998, train_df <- computeTrainDF(spe))
-best_lambda <- computeLambda(metadata(spe)$technolgy, train_df)
+best_lambda <- computeLambda(metadata(spe)$technology, train_df)
 print(best_lambda)
 
 }

@@ -296,7 +296,7 @@ computeFixedFlags <- function(spe, total_threshold=0,
 #' @examples
 #' example(spatialPerCellQC)
 #' withr::with_seed(1998, train_df <- computeTrainDF(spe))
-#' best_lambda <- computeLambda(metadata(spe)$technolgy, train_df)
+#' best_lambda <- computeLambda(metadata(spe)$technology, train_df)
 #' print(best_lambda)
 #'
 #' @seealso
@@ -324,6 +324,7 @@ computeLambda <- function(technology, train_df) {
 #'
 #' @param spe A `SpatialExperiment` object with spatial transcriptomics data.
 #' @param verbose logical for having a verbose output. Default is FALSE.
+#' @param best_lambda the best lambda typically computed using `computeLambda`.
 #'
 #' @return The `SpatialExperiment` object with added quality score in `colData`.
 #' @export
@@ -336,7 +337,6 @@ computeLambda <- function(technology, train_df) {
 #' spe <- computeQScore(spe)
 #' summary(spe$training_status)
 #' summary(spe$quality_score)
-
 computeQScore <- function(spe, best_lambda=NULL, verbose=FALSE) {
     stopifnot(is(spe, "SpatialExperiment"))
 
@@ -589,14 +589,12 @@ computeQScoreFlags <- function(spe, qs_threshold=0.5, use_qs_quantiles=FALSE)
     stopifnot(is(spe, "SpatialExperiment"))
     stopifnot("quality_score" %in% names(colData(spe)))
 
-    if(use_qs_quantiles)
-    {
-            spe$is_qscore_opt_outlier <- ifelse(spe$quality_score <
-                                            quantile(spe$quality_score,
-                                                    probs=qs_threshold),
-                                            TRUE, FALSE)
+    if(use_qs_quantiles) {
+        spe$is_qscore_opt_outlier <- ifelse(spe$quality_score <
+            quantile(spe$quality_score, probs=qs_threshold),
+            TRUE, FALSE)
     } else {
-            spe$is_qscore_outlier <- spe$quality_score < qs_threshold
+        spe$is_qscore_outlier <- spe$quality_score < qs_threshold
 
     }
 

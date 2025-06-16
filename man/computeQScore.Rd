@@ -9,6 +9,8 @@ computeQScore(spe, best_lambda = NULL, verbose = FALSE)
 \arguments{
 \item{spe}{A `SpatialExperiment` object with spatial transcriptomics data.}
 
+\item{best_lambda}{the best lambda typically computed using `computeLambda`.}
+
 \item{verbose}{logical for having a verbose output. Default is FALSE.}
 }
 \value{

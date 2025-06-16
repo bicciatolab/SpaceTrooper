@@ -11,7 +11,8 @@ computeTrainDF(spe, verbose = FALSE)
 A SpatialExperiment containing at least:
 \itemize{
   \item assay(s) with nonzero \code{total} counts,
-  \item \code{colData(spe)} columns including \code{log2CountArea}, \code{dist_border}, etc.,
+  \item \code{colData(spe)} columns including \code{log2CountArea},
+  \code{dist_border}, etc.,
   \item \code{metadata(spe)$technology} indicating the platform.
 }}
 
@@ -33,11 +34,14 @@ balanced training set of “good” vs “bad” cells for subsequent model fitt
 \details{
 Internally the function:
 \enumerate{
-  \item Filters out zero-count cells,
-  \item Calls \code{computeSpatialOutlier()} on “log2CountArea” to get fences,
-  \item Labels cells as “LOW”/“HIGH” outliers or “NO”,
-  \item Delegates to either \code{.computeCosmxTrainSet()} or \code{.computeXenMerTrainSet()} based on \code{metadata(spe)$technology},
-  \item Deduplicates and down-samples “good” cells to match the number of “bad” cells.
+   \item Filters out zero-count cells,
+   \item Calls \code{computeSpatialOutlier()} on “log2CountArea” to get
+   fences,
+   \item Labels cells as “LOW”/“HIGH” outliers or “NO”,
+   \item Delegates to either \code{.computeCosmxTrainSet()} or
+   \code{.computeXenMerTrainSet()} based on \code{metadata(spe)$technology},
+   \item Deduplicates and down-samples “good” cells to match the number of
+   “bad” cells.
 }
 }
 \examples{
