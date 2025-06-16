@@ -49,12 +49,10 @@ We suggest to use the `keep_polygons` argument for technologies like
 **Xenium** and **Merfish/Merscope** because we already load the polygons to 
 compute missing metrics in these cases.
 
-Eventually, I/O functions will be Pull Requested into the `SpatialExperimentIO`
-Bioconductor package, to discuss with the authors.
-
-Additionally, we are developing compatibility with the
-`SpatialFeatureExperiment` class and Python's `spatialData` class for
-cross-language support.
+Note that when loading data with `readXeniumSPE` in HDF5 format, this creates a 
+`DelayedArray` count assay in the `SpatialExperiment`, which could lead to some 
+issues in downstream analysis, in case this data structure is not supported
+by the used package.
 
 ```{r load-data, eval=FALSE}
 # Load the SpaceTrooper library
