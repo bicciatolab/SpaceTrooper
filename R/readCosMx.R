@@ -45,101 +45,56 @@
 #' cospath <- system.file(file.path("extdata", "CosMx_DBKero_Tiny"),
 #'    package="SpaceTrooper")
 #' spe <- readCosmxSPE(cospath, sample_name="DBKero_Tiny")
-readCosmxSPE <- function(dirname,
-                        sample_name="sample01",
-                        coord_names=c("CenterX_global_px", "CenterY_global_px"),
-                        countmatfpattern="exprMat_file.csv",
-                        metadatafpattern="metadata_file.csv",
-                        polygonsfpattern="polygons.csv",
-                        fovposfpattern="fov_positions_file.csv",
-                        fov_dims=c(xdim=4256, ydim=4256))
-## for old fovs consider dimensions 5472 x 3648 pixels.
-{
+readCosmxSPE <- function(dirname, sample_name="sample01",
+    coord_names=c("CenterX_global_px", "CenterY_global_px"),
+    countmatfpattern="exprMat_file.csv", metadatafpattern="metadata_file.csv",
+    polygonsfpattern="polygons.csv", fovposfpattern="fov_positions_file.csv",
+    fov_dims=c(xdim=4256, ydim=4256)) {
     stopifnot(all(names(fov_dims) == c("xdim", "ydim"), file.exists(dirname)))
     countmat_file <- list.files(dirname, countmatfpattern, full.names=TRUE)
     metadata_file <- list.files(dirname, metadatafpattern, full.names=TRUE)
     fovpos_file <- list.files(dirname, fovposfpattern, full.names=TRUE)
-    #check if parquet
-    pol_file <- list.files(dirname, polygonsfpattern, full.names=TRUE)
-
-    # stopifnot(all(file.exists(countmat_file), file.exists(metadata_file),
-    #               file.exists(fovpos_file), file.exists(pol_file)))
-
-    # Read in
-    # cell count matrix
+    pol_file <- list.files(dirname, polygonsfpattern, full.names=TRUE)#parquet?
     countmat <- data.table::fread(countmat_file, showProgress=FALSE)
-    # cell metadata
     metadata <- data.table::fread(metadata_file, showProgress=FALSE)
-
-    # Count matrix
     counts <- merge(countmat, metadata[, c("fov", "cell_ID")], sort = FALSE)
     cn <- paste0("f", counts$fov, "_c", counts$cell_ID)
     counts <- subset(counts, select = -c(fov, cell_ID))
-
-    # cell_codes <- rownames(counts)
     features <- colnames(counts)
     counts <- t(as.matrix(counts)) #### faster when it comes to big numbers
-
     rownames(counts) <- features
     colnames(counts) <- cn
-
-    # rowData (does not exist)
-    # To be associated to the tx file
-    # use readSparseCSV sparseArray from harve pege
-
-    # colData
-    colData <- DataFrame(merge(metadata, countmat[, c("fov", "cell_ID")], ,
-                            sort = FALSE))
+    # TODO: rowData (does not exist) read tx file with readSparseCSV sparseArray
+    colData <- DataFrame(merge(metadata, countmat[, c("fov", "cell_ID")],,
+                                sort = FALSE))
     rn <- paste0("f", colData$fov, "_c", colData$cell_ID)
     rownames(colData) <- rn
-
     if(length(grep("cell_id", colnames(colData)))!=0)
         warning("Overwriting existing cell_id column in colData")
-
     colData$cell_id <- rn
     colData <- colData[,c(1,2,dim(colData)[2], 3:(dim(colData)[2]-1))]
-    ## multiply spatial coordinates in micron multiplying by 0.18 and store
-    ## two additional columns depends by technology version
-
     fov_positions <- as.data.frame(data.table::fread(fovpos_file, header=TRUE))
-
-    ## patch for let this work also with older versions of CosMx fov position
-    ## output file
-    fovcidx <- grep("FOV", colnames(fov_positions))
+    fovcidx <- grep("FOV", colnames(fov_positions)) # works also with older vers
     if(length(fovcidx)!=0) colnames(fov_positions)[fovcidx] <- "fov"
-    fovcrdx <- grep("[X|Y|Z]", colnames(fov_positions))
-    if(length(fovcrdx)!=0)
-        colnames(fov_positions)[fovcrdx] <-
-            tolower(colnames(fov_positions)[fovcrdx])
+    fovcrdx <- grep("[X|Y|Z]", colnames(fovpos))
+    if(length(fovcrdx)!=0) colnames(fov_positions)[fovcrdx] <-
+        tolower(colnames(fov_positions)[fovcrdx])
     fovccdx <- grep("[x|y]_px", colnames(fov_positions))
-    if(length(fovccdx)!=0)
-    {
-        colnames(fov_positions)[fovccdx] <- gsub("_px", "_global_px",
-                                            colnames(fov_positions)[fovccdx])
-    }
-    if(length(grep("x_mm", colnames(fov_positions))!=0)){
+    if(length(fovccdx)!=0) colnames(fov_positions)[fovccdx] <-
+        gsub("_px", "_global_px", colnames(fov_positions)[fovccdx])
+    if(length(grep("x_mm", colnames(fov_positions))!=0)) {
         fov_positions <- fov_positions |>
             dplyr::mutate(x_global_px = x_mm/0.12028*10^3,
                         y_global_px = (y_mm/0.12028*10^3) - 4256)
     }
-
-    ## tracking if one of more fov is not present in the metadata file ##
     idx <- fov_positions$fov %in% unique(metadata$fov)
     fov_positions <- fov_positions[idx,]
     fov_positions <- fov_positions[order(fov_positions$fov),]
-    ####
-    spe <- SpatialExperiment::SpatialExperiment(
-        sample_id=sample_name,
-        assays = list(counts = counts),
-        # rowData = rowData,
-        colData = colData,
-        spatialCoordsNames = coord_names,
+    spe <- SpatialExperiment::SpatialExperiment(sample_id=sample_name,
+        assays=list(counts=counts), colData=colData,
+        spatialCoordsNames=coord_names,
         metadata=list(fov_positions=fov_positions, fov_dim=fov_dims,
-                    polygons=pol_file, technology="Nanostring_CosMx")
-        ## keep atomx versioning in metadata, if possible
-    )
-    # Polygons file has cellID instead of cell_ID and it distinguish better
-    # when compared to our cell_id
+                    polygons=pol_file, technology="Nanostring_CosMx"))
     names(colData(spe))[names(colData(spe))=="cell_ID"] <- "cellID"
     return(spe)
 }
