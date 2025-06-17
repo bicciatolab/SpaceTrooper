@@ -160,8 +160,8 @@ computeMissingMetricsXenium <- function(pol_file, coldata, keep_polygons=FALSE,
 }
 
 #' .addFovFromTx
-#' @name .addFovFromTx
-#' @rdname .addFovFromTx
+#' @name dot-addFovFromTx
+#' @rdname dot-addFovFromTx
 #'
 #' @description
 #' Add FOV information from transcript file to cell metadata.
