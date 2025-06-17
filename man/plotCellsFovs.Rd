@@ -9,7 +9,8 @@ plotCellsFovs(
   sample_id = unique(spe$sample_id),
   point_col = "firebrick",
   numbers_col = "black",
-  alpha_numbers = 0.8
+  alpha_numbers = 0.8,
+  fov_dim = metadata(spe)$fov_dim
 )
 }
 \arguments{
@@ -23,6 +24,9 @@ Default: `unique(spe$sample_id)`.}
 \item{numbers_col}{Color for the FoV labels. Default: `"black"`.}
 
 \item{alpha_numbers}{Numeric transparency for FoV labels. Default: `0.8`.}
+
+\item{fov_dim}{numeric with two named dimensions xdim, ydim. (Default is
+metadata(spe)$fov_dim)}
 }
 \value{
 A `ggplot` object showing cell centroids and FoV boundaries.

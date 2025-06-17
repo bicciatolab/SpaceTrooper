@@ -13,6 +13,8 @@
 #' @param point_col Color for the cell centroids. Default: `"firebrick"`.
 #' @param numbers_col Color for the FoV labels. Default: `"black"`.
 #' @param alpha_numbers Numeric transparency for FoV labels. Default: `0.8`.
+#' @param fov_dim numeric with two named dimensions xdim, ydim. (Default is
+#' metadata(spe)$fov_dim)
 #'
 #' @return A `ggplot` object showing cell centroids and FoV boundaries.
 #'
@@ -27,13 +29,12 @@
 #' print(g)
 plotCellsFovs <- function(spe, sample_id=unique(spe$sample_id),
                         point_col="firebrick", numbers_col="black",
-                        alpha_numbers=0.8)
+                        alpha_numbers=0.8, fov_dim=metadata(spe)$fov_dim)
 {
     stopifnot(is(spe, "SpatialExperiment"))
     stopifnot("fov" %in% names(colData(spe)))
-    # fov_positions <- data.table::fread(fovpos_file, header = T)
-    # fov_positions <- fov_positions[fov_positions$fov%in%unique(metadata$fov),]
-    # if( !is.null(sample_id) ) spe <- spe[,spe$sample_id]
+    stopifnot( all(names(fov_dim) %in% c("xdim","ydim")) )
+
     spd <- as.data.frame(spatialCoords(spe))
     x_coord <- spatialCoordsNames(spe)[1]
     y_coord <- spatialCoordsNames(spe)[2]
@@ -46,15 +47,15 @@ plotCellsFovs <- function(spe, sample_id=unique(spe$sample_id),
         annotate("rect",
             xmin=metadata(spe)$fov_positions["x_global_px"][ , , drop=TRUE],
             xmax=metadata(spe)$fov_positions["x_global_px"][ , , drop=TRUE] +
-                metadata(spe)$fov_dim[["xdim"]],
+                fov_dim[["xdim"]],
             ymin=metadata(spe)$fov_positions["y_global_px"][ , , drop=TRUE],
             ymax=metadata(spe)$fov_positions["y_global_px"][ , , drop=TRUE] +
-                metadata(spe)$fov_dim[["ydim"]],
+                fov_dim[["ydim"]],
             alpha=.2, color="black", linewidth=0.2) +
         geom_text(aes(x=metadata(spe)$fov_positions["x_global_px"][,,drop=TRUE]+
-                        metadata(spe)$fov_dim[["xdim"]]/2,
+                        fov_dim[["xdim"]]/2,
                     y=metadata(spe)$fov_positions["y_global_px"][,,drop=TRUE]+
-                        metadata(spe)$fov_dim[["ydim"]]/2,
+                        fov_dim[["ydim"]]/2,
                     label=metadata(spe)$fov_positions["fov"][,,drop=TRUE]),
                     color=numbers_col, fontface="bold", alpha=alpha_numbers) +
         ggtitle(sample_id) +
