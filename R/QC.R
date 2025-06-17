@@ -14,6 +14,10 @@
 #'   - Xenium: `"NegControlProbe"`, `"NegControlCodeword"`,
 #'     `"UnassignedCodeword"`
 #'   - MERFISH: `"Blank"`
+#' @param use_altexps logical for `use_altexps` in `scuttle` package.
+#' If TRUE uses the altexps for computing some metrics on it.
+#' Useful for interoperability with `SpatialExperimentIO`.
+#' (See \link[scuttle]{addPerCellQC} for additional details).
 #'
 #' @return A `SpatialExperiment` object with added QC metrics in `colData`.
 #'
@@ -31,14 +35,15 @@
 #' spe <- spatialPerCellQC(spe)
 spatialPerCellQC <- function(spe, micronConvFact=0.12, rmZeros=TRUE,negProbList=
     c("NegPrb", "Negative", "SystemControl", "Ms IgG1", "Rb IgG", "BLANK_",
-    "NegControlProbe", "NegControlCodeword", "UnassignedCodeword", "Blank")) {
+    "NegControlProbe", "NegControlCodeword", "UnassignedCodeword", "Blank"),
+    use_altexps=NULL) {
     stopifnot(is(object=spe, "SpatialExperiment"))
     idxlist <- lapply(negProbList, function(ng) {
         grep(paste0("^", ng), rownames(spe))
     })
     names(idxlist) <- negProbList
     idxlist <- idxlist[which(lengths(idxlist)!=0)]
-    spe <- addPerCellQC(spe, subsets=idxlist)
+    spe <- addPerCellQC(spe, subsets=idxlist, use_altexps=use_altexps)
     idx <- grep("^subsets_.*_sum$", colnames(colData(spe)))
     npc <- npd <- 0
     if ( length(idx) !=0 ) {

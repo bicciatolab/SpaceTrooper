@@ -8,8 +8,9 @@ spatialPerCellQC(
   spe,
   micronConvFact = 0.12,
   rmZeros = TRUE,
-  negProbList = c("NegPrb", "Negative", "SystemControl", "Ms IgG1", "Rb IgG",
-    "NegControlProbe", "NegControlCodeword", "UnassignedCodeword", "Blank")
+  negProbList = c("NegPrb", "Negative", "SystemControl", "Ms IgG1", "Rb IgG", "BLANK_",
+    "NegControlProbe", "NegControlCodeword", "UnassignedCodeword", "Blank"),
+  use_altexps = NULL
 )
 }
 \arguments{
@@ -26,6 +27,11 @@ Defaults include:
 - Xenium: `"NegControlProbe"`, `"NegControlCodeword"`,
   `"UnassignedCodeword"`
 - MERFISH: `"Blank"`}
+
+\item{use_altexps}{logical for `use_altexps` in `scuttle` package.
+If TRUE uses the altexps for computing some metrics on it.
+Useful for interoperability with `SpatialExperimentIO`.
+(See \link[scuttle]{addPerCellQC} for additional details).}
 }
 \value{
 A `SpatialExperiment` object with added QC metrics in `colData`.
