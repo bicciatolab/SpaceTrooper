@@ -190,7 +190,8 @@ readAndAddPolygonsToSPE <- function(spe, polygonsCol="polygons",
                                 keepMultiPol=TRUE, type=boundaries_type)
             },
             "10X_Xenium"={
-                polygons <- readPolygonsXenium(pol_file, keepMultiPol=TRUE)
+                polygons <- readPolygonsXenium(metadata(spe)$polygons,
+                                            keepMultiPol=TRUE)
             },
             stop("Unrecognized technology, please use an SPE from one of ",
                 "Nanostring_CosMx, Vizgen_MERFISH and 10x_Xenium")
