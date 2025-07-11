@@ -33,9 +33,10 @@
 #' @examples
 #' example(readCosmxSPE)
 #' spe <- spatialPerCellQC(spe)
-spatialPerCellQC <- function(spe, micronConvFact=0.12, rmZeros=TRUE,negProbList=
-    c("NegPrb", "Negative", "SystemControl", "Ms IgG1", "Rb IgG", "BLANK_",
-    "NegControlProbe", "NegControlCodeword", "UnassignedCodeword", "Blank"),
+spatialPerCellQC <- function(spe, micronConvFact=0.12, rmZeros=TRUE,
+    negProbList=c("NegPrb", "Negative", "SystemControl", "Ms IgG1", "Rb IgG",
+    "BLANK_", "NegControlProbe", "NegControlCodeword", "UnassignedCodeword",
+    "Blank"),
     use_altexps=NULL) {
     stopifnot(is(object=spe, "SpatialExperiment"))
     idxlist <- lapply(negProbList, function(ng) {
@@ -266,11 +267,12 @@ computeThresholdFlags <- function(spe, total_threshold=0,
 
 #' computeLambda
 #' @description
-#' Compute Optimal Ridge Regularization Parameter (\eqn{\lambda}) via Cross-Validation
+#' Compute Optimal Ridge Regularization Parameter \eqn{\lambda} via
+#' Cross-Validation
 #'
 #' \code{computeLambda} performs ridge (L2) logistic regression with
 #' cross-validation to identify the optimal regularization parameter
-#' \eqn{\eqn{\lambda}} for a binary response.
+#' \eqn{\lambda} for a binary response.
 #'
 #' @param technology  \[character\]
 #'   The name of the experimental technology. Passed to
@@ -286,7 +288,7 @@ computeThresholdFlags <- function(spe, total_threshold=0,
 #'
 #' @return
 #' \[numeric\]
-#'   The value of \eqn{\eqn{\lambda}} (i.e., \code{lambda.min}) from
+#'   The value of \eqn{\lambda} (i.e., \code{lambda.min}) from
 #'   \code{\link[glmnet]{cv.glmnet}} that minimizes the cross-validation error.
 #'
 #' @details
@@ -403,7 +405,7 @@ computeQScore <- function(spe, best_lambda=NULL, verbose=FALSE) {
 #' @return
 #' A \code{\link[glmnet]{glmnet}} model object fitted with
 #' \code{family="binomial"}, \code{alpha=0} (ridge), and a sequence of
-#' \eqn{\eqn{\lambda}} values.
+#' \eqn{\lambda} values.
 #'
 #' @examples
 #' example(computeTrainDF)

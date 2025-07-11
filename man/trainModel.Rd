@@ -17,7 +17,7 @@ A data frame containing at least the response column
 \value{
 A \code{\link[glmnet]{glmnet}} model object fitted with
 \code{family="binomial"}, \code{alpha=0} (ridge), and a sequence of
-\eqn{\eqn{\lambda}} values.
+\eqn{\lambda} values.
 }
 \description{
 Fit a Ridge Logistic Regression Model
