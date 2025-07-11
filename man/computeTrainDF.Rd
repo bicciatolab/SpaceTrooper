@@ -2,7 +2,7 @@
 % Please edit documentation in R/QC.R
 \name{computeTrainDF}
 \alias{computeTrainDF}
-\title{Build a Balanced Training Data Frame from a SpatialExperiment}
+\title{computeTrainDF}
 \usage{
 computeTrainDF(spe, verbose = FALSE)
 }
@@ -27,6 +27,8 @@ A \code{data.frame} with one row per cell, including:
 }
 }
 \description{
+Build a Balanced Training Data Frame from a SpatialExperiment
+
 \code{computeTrainDF} takes a \linkS4class{SpatialExperiment} object,
 flags spatial outliers on “log2CountArea”, then assembles a
 balanced training set of “good” vs “bad” cells for subsequent model fitting.

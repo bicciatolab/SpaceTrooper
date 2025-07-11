@@ -8,9 +8,10 @@ spe0 <- example(readCosmxSPE)$value
 
 test_that("QC functions are exported", {
     expect_true(exists("spatialPerCellQC",   mode = "function"))
-    expect_true(exists("computeQCScore",      mode = "function"))
+    expect_true(exists("computeQScore",      mode = "function"))
     expect_true(exists("computeSpatialOutlier", mode = "function"))
-    expect_true(exists("computeFilterFlags",  mode = "function"))
+    expect_true(exists("computeQScoreFlags",  mode = "function"))
+    expect_true(exists("computeThresholdFlags",  mode = "function"))
 })
 
 
@@ -24,7 +25,7 @@ test_that("spatialPerCellQC adds per‐cell metrics to colData", {
     expect_true(all(required %in% colnames(cd)))
 })
 
-test_that("computeQCScore adds a flag_score between 0 and 1", {
+test_that("computeQScore adds a flag_score between 0 and 1", {
     spe <- spatialPerCellQC(spe0)
     spe2 <- computeQScore(spe)
     cd2 <- colData(spe2)
@@ -45,7 +46,7 @@ test_that("computeSpatialOutlier flags outliers for a chosen metric", {
 })
 
 
-test_that("computeFilterFlags combines filters and returns filter_out", {
+test_that("computeQScoreFlags combines filters and returns filter_out", {
     spe <- spatialPerCellQC(spe0)
     spe <- computeQScore(spe)
     ff <- computeThresholdFlags(spe,

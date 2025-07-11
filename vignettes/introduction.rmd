@@ -272,7 +272,7 @@ a zoom-in of selected FoVs, colored by the `colour_by` argument. You can also
 toggle between `tmap` and `ggplot2` for visualization (this is a
 work-in-progress).
 
-```{r}
+```{r plot-zoom-fov}
 plotZoomFovsMap(spe, fovs=16, colour_by="quality_score")
 plotZoomFovsMap(spe, fovs=16, colour_by="is_qscore_outlier")
 ```
@@ -294,6 +294,6 @@ Main steps shown are:
 
 # Session Information
 
-```{r}
+```{r sessioninfo}
 sessionInfo()
 ```

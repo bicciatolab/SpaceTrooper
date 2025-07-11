@@ -48,7 +48,15 @@ Suggests:
     testthat (>= 3.0.0),
     withr,
     viridis
-biocViews: QualityControl, Spatial
+biocViews: 
+    Software, 
+    Transcriptomics, 
+    GeneExpression, 
+    QualityControl, 
+    Spatial, 
+    SingleCell,
+    DataImport,
+    ImmunoOncology
 RoxygenNote: 7.3.2
 VignetteBuilder: knitr
 BugReports: https://github.com/drighelli/SpaceTrooper/issues

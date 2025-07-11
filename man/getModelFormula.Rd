@@ -2,7 +2,7 @@
 % Please edit documentation in R/QC.R
 \name{getModelFormula}
 \alias{getModelFormula}
-\title{Internal: Model Formula Printer}
+\title{getModelFormula}
 \usage{
 getModelFormula(technology)
 }
