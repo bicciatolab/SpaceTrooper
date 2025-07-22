@@ -5,19 +5,19 @@
 \title{computeMissingMetricsXenium}
 \usage{
 computeMissingMetricsXenium(
-  pol_file,
-  coldata,
-  keep_polygons = FALSE,
+  polFile,
+  colData,
+  keepPolygons = FALSE,
   polygonsCol = "polygons"
 )
 }
 \arguments{
-\item{pol_file}{A character string specifying the file path to the polygon
+\item{polFile}{A character string specifying the file path to the polygon
 data.}
 
-\item{coldata}{A `DataFrame` containing the `colData` for the Xenium dataset.}
+\item{colData}{A `DataFrame` containing the `colData` for the Xenium dataset.}
 
-\item{keep_polygons}{A logical value indicating whether to keep the polygon
+\item{keepPolygons}{A logical value indicating whether to keep the polygon
 data in the resulting `colData`. Default is `FALSE`.}
 
 \item{polygonsCol}{character indicating the name of the polygons column to
@@ -25,7 +25,7 @@ add into the colData (default is `polygons`).}
 }
 \value{
 A `DataFrame` containing the updated `colData` with computed metrics.
-If `keep_polygons` is `TRUE`, the polygon data is also included.
+If `keepPolygons` is `TRUE`, the polygon data is also included.
 }
 \description{
 Compute Missing Metrics for Xenium Data
@@ -43,5 +43,5 @@ returned `colData`.
 \examples{
 example(readXeniumSPE)
 colData(spe) <- computeMissingMetricsXenium(metadata(spe)$polygons,
-    colData(spe), keep_polygons=TRUE)
+    colData(spe), keepPolygons=TRUE)
 }

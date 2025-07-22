@@ -27,9 +27,9 @@ quality score stored in `SpatialExperiment` object.
 \examples{
 example(computeQScore)
 spe <- computeQScoreFlags(spe)
-table(spe$is_qscore_outlier)
+table(spe$low_qscore)
 # if fixed filters are defined we have an additional column
 spe <- computeThresholdFlags(spe)
 spe <- computeQScoreFlags(spe)
-table(spe$threshold_qscore_flags)
+table(spe$low_threshold_qscore)
 }

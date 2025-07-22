@@ -91,6 +91,7 @@ readXeniumSPE <- function(dirName, sampleName="sample01",
             countMatPattern=cfm, metaDataPattern=metadataFPattern,
             coordNames=coordNames, returnType="SPE", addExperimentXenium=FALSE,
             altExps=NULL, addParquetPaths=FALSE)
+    spe$sample_id <- sampleName
     rownames(colData(spe)) <- spe$cell_id
     pex <- paste0(polygonsFPattern, switch(boundariesType, parquet=".parquet",
                                                             csv=".csv.gz"))

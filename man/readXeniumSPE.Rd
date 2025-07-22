@@ -5,52 +5,52 @@
 \title{Load data from a 10x Genomics Xenium experiment}
 \usage{
 readXeniumSPE(
-  dirname,
-  sample_name = "sample01",
+  dirName,
+  sampleName = "sample01",
   type = c("HDF5", "sparse"),
-  coord_names = c("x_centroid", "y_centroid"),
-  boundaries_type = c("parquet", "csv"),
-  compute_missing_metrics = TRUE,
-  keep_polygons = FALSE,
-  countsfilepattern = "cell_feature_matrix",
-  metadatafpattern = "cells",
-  polygonsfpattern = "cell_boundaries",
+  coordNames = c("x_centroid", "y_centroid"),
+  boundariesType = c("parquet", "csv"),
+  computeMissingMetrics = TRUE,
+  keepPolygons = FALSE,
+  countsFilePattern = "cell_feature_matrix",
+  metadataFPattern = "cells.csv.gz",
+  polygonsFPattern = "cell_boundaries",
   polygonsCol = "polygons",
-  txpattern = "transcripts",
-  add_FOVs = FALSE
+  txPattern = "transcripts",
+  addFOVs = FALSE
 )
 }
 \arguments{
-\item{dirname}{`character(1)`
+\item{dirName}{`character(1)`
 Path to a Xenium Output Bundle directory.}
 
-\item{sample_name}{`character(1)`
+\item{sampleName}{`character(1)`
 Sample identifier to assign to `sample_id`. Default: `"sample01"`.}
 
 \item{type}{`character(1)`
 One of `"HDF5"` or `"sparse"`; method to read the feature matrix.}
 
-\item{coord_names}{`character(2)`
+\item{coordNames}{`character(2)`
 Names of X/Y spatial coordinate columns. Default:
 `c("x_centroid", "y_centroid")`.}
 
-\item{boundaries_type}{`character(1)`
+\item{boundariesType}{`character(1)`
 One of `"parquet"` or `"csv"`; format of the polygon file.}
 
-\item{compute_missing_metrics}{`logical(1)`
+\item{computeMissingMetrics}{`logical(1)`
 If `TRUE`, compute area and aspect‐ratio from boundary polygons.}
 
-\item{keep_polygons}{`logical(1)`
+\item{keepPolygons}{`logical(1)`
 If `TRUE`, append raw polygon geometries to `colData`.}
 
-\item{countsfilepattern}{`character(1)`
+\item{countsFilePattern}{`character(1)`
 Pattern to locate the feature matrix file. Default:
 `"cell_feature_matrix"`.}
 
-\item{metadatafpattern}{`character(1)`
+\item{metadataFPattern}{`character(1)`
 Pattern to locate the cell metadata file. Default: `"cells"`.}
 
-\item{polygonsfpattern}{`character(1)`
+\item{polygonsFPattern}{`character(1)`
 Pattern to locate the cell boundaries file. Default:
 `"cell_boundaries"`.}
 
@@ -58,14 +58,14 @@ Pattern to locate the cell boundaries file. Default:
 Name of the polygons column to add to `colData`. Default:
 `"polygons"`.}
 
-\item{txpattern}{`character(1)`
+\item{txPattern}{`character(1)`
 Pattern (base filename, without extension) to locate the transcript file
 (usually a `.parquet` file) from which to extract Field-Of-View (FOV)
 information for each cell. Default: `"transcripts"`.}
 
-\item{add_FOVs}{`logical(1)`
+\item{addFOVs}{`logical(1)`
 If `TRUE`, extract Field-Of-View (FOV) information from the transcript file
-(as located by `txpattern`) and append it to cell metadata (`colData`).
+(as located by `txPattern`) and append it to cell metadata (`colData`).
 Default: `FALSE`.}
 }
 \value{
@@ -89,8 +89,8 @@ xepath <- system.file(
   "extdata", "Xenium_small", package = "SpaceTrooper"
 )
 (spe <- readXeniumSPE(
-  dirname = xepath,
-  keep_polygons = TRUE
+  dirName = xepath,
+  keepPolygons = TRUE
 ))
 }
 \author{
