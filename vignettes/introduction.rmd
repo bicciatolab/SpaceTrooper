@@ -264,7 +264,7 @@ thresholds for various metrics. Currently, the function considers:
 # Compute flags to identify cells for filtering
 spe <- computeQScoreFlags(spe, qs_threshold=0.5)
 names(colData(spe))
-table(spe$is_qscore_flags)
+table(spe$low_qscore)
 ```
 
 We detected 88 cells to be removed.
@@ -327,7 +327,7 @@ of log2AspectRatio and Area in micron.
 
 ```{r plot-polygons-fov-1}
 plotPolygons(spe, colour_by="quality_score")
-plotPolygons(spe, colour_by="is_qscore_flags")
+plotPolygons(spe, colour_by="low_qscore")
 ```
 
 We can see that the quality score is able to detect both these aspects and 

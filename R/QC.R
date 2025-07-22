@@ -621,11 +621,11 @@ getModelFormula <- function(technology)
 #' @examples
 #' example(computeQScore)
 #' spe <- computeQScoreFlags(spe)
-#' table(spe$is_qscore_outlier)
+#' table(spe$low_qscore)
 #' # if fixed filters are defined we have an additional column
 #' spe <- computeThresholdFlags(spe)
 #' spe <- computeQScoreFlags(spe)
-#' table(spe$threshold_qscore_flags)
+#' table(spe$low_threshold_qscore)
 computeQScoreFlags <- function(spe, qs_threshold=0.5, use_qs_quantiles=FALSE) {
     stopifnot(is(spe, "SpatialExperiment"))
     stopifnot("quality_score" %in% names(colData(spe)))
@@ -635,11 +635,11 @@ computeQScoreFlags <- function(spe, qs_threshold=0.5, use_qs_quantiles=FALSE) {
             spe$quality_score < quantile(spe$quality_score, probs=qs_threshold),
             TRUE, FALSE)
     } else {
-        spe$is_qscore_flags <- spe$quality_score < qs_threshold
+        spe$low_qscore <- spe$quality_score < qs_threshold
     }
 
     if("threshold_flags" %in% names(colData(spe))) {
-        spe$threshold_qscore_flags <- (spe$is_qscore_flags &
+        spe$low_threshold_qscore <- (spe$is_qscore_flags &
                                         spe$threshold_flags)
     }
     return(spe)
