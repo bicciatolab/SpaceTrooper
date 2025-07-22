@@ -1,7 +1,7 @@
 #' readCosmxSPE
 #' @name readCosmxSPE
 #' @rdname readCosmxSPE
-#' @aliases readCosmxSPE
+#' @aliases readCosmxSPE readCosmxProteinSPE
 #' @description
 #' Read and Construct a SpatialExperiment Object from CosMx Data
 #'
@@ -33,7 +33,10 @@
 #' metadata, and FOV positions, and constructs a `SpatialExperiment` object.
 #' Optionally, polygon data can be read and added to the object.
 #'
-#' @author Estella Yixing Dong, Dario Righelli
+#' readCosmxProteinSPE is a wrapper of readCosmxSPE, it only changes the
+#' technology metadata in Nanostring_CosMx_Protein.
+#'
+#' @author Dario Righelli, Benedetta Banzi
 #'
 #' @importFrom data.table fread merge.data.table
 #' @importFrom SpatialExperiment SpatialExperiment
@@ -70,7 +73,21 @@ readCosmxSPE <- function(dirName, sampleName="sample01",
         fov_dim=fovdims, polygons=pol_file, technology="Nanostring_CosMx")
 
     names(colData(spe))[names(colData(spe)) == "cell_ID"] <- "cellID"
+    spe$sample_id <- sampleName
+    return(spe)
+}
 
+
+readCosmxProteinSPE <- function(dirName, sampleName="sample01",
+    coordNames=c("CenterX_global_px", "CenterY_global_px"),
+    countMatFPattern="exprMat_file.csv", metadataFPattern="metadata_file.csv",
+    polygonsFPattern="polygons.csv", fovPosFPattern="fov_positions_file.csv",
+    fovdims=c(xdim=4256, ydim=4256)) {
+
+    spe <- readCosmxSPE(dirName, sampleName, coordNames, countMatFPattern,
+        metadataFPattern, polygonsFPattern, fovPosFPattern, fovdims)
+
+    metadata(spe)$technology <- "Nanostring_CosMx_Protein"
     return(spe)
 }
 
@@ -95,7 +112,6 @@ readCosmxSPE <- function(dirName, sampleName="sample01",
 #' for the metadata `fov_position` `data.frame`.
 #'
 #' @keywords internal
-#' @importFrom SummarizedExperiment metadata
 #' @noRd
 
 .checkFovPositionVersion <- function(spe)
