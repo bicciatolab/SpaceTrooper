@@ -2,6 +2,7 @@
 % Please edit documentation in R/readCosMx.R
 \name{readCosmxSPE}
 \alias{readCosmxSPE}
+\alias{readCosmxProteinSPE}
 \title{readCosmxSPE}
 \usage{
 readCosmxSPE(
@@ -55,6 +56,9 @@ This function reads in data from Nanostring CosMx files and constructs a
 The function reads in the specified files for count matrices,
 metadata, and FOV positions, and constructs a `SpatialExperiment` object.
 Optionally, polygon data can be read and added to the object.
+
+readCosmxProteinSPE is a wrapper of readCosmxSPE, it only changes the
+technology metadata in Nanostring_CosMx_Protein.
 }
 \examples{
 cospath <- system.file(file.path("extdata", "CosMx_DBKero_Tiny"),
@@ -62,5 +66,5 @@ cospath <- system.file(file.path("extdata", "CosMx_DBKero_Tiny"),
 spe <- readCosmxSPE(cospath, sampleName="DBKero_Tiny")
 }
 \author{
-Estella Yixing Dong, Dario Righelli
+Dario Righelli, Benedetta Banzi
 }

@@ -7,8 +7,8 @@
 computeMissingMetricsMerfish(
   pol_file,
   coldata,
-  boundaries_type = c("parquet", "HDF5"),
-  keep_polygons = FALSE,
+  boundariesType = c("parquet", "HDF5"),
+  keepPolygons = FALSE,
   polygonsCol = "polygons"
 )
 }
@@ -19,11 +19,11 @@ Path (or vector of paths) to polygon files (HDF5 or Parquet).}
 \item{coldata}{`DataFrame` or `data.frame`
 Cell metadata with at least a `cell_id` column.}
 
-\item{boundaries_type}{`character(1)`
+\item{boundariesType}{`character(1)`
 One of `"HDF5"` or `"parquet"`—passed on to
 `readPolygonsMerfish()`.}
 
-\item{keep_polygons}{`logical(1)`
+\item{keepPolygons}{`logical(1)`
 If `TRUE`, cbinds the raw polygon `sf` columns onto `coldata`.}
 
 \item{polygonsCol}{character indicating the name of the polygons column to
@@ -44,7 +44,7 @@ appends the raw polygon geometries.
 \examples{
 example(readMerfishSPE)
 cd <- computeMissingMetricsMerfish(metadata(spe)$polygons, colData(spe),
-    boundaries_type="parquet")
+    boundariesType="parquet")
 colData(spe) <- cd
 cd
 }

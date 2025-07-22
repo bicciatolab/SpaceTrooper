@@ -94,5 +94,5 @@ xepath <- system.file(
 ))
 }
 \author{
-Estella Yixing Dong, Dario Righelli
+Dario Righelli, Benedetta Banzi
 }
