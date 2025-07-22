@@ -177,13 +177,13 @@ computeSpatialOutlier <- function(spe, compute_by=NULL,
     scuttleType <- match.arg(scuttleType)
     cd <- colData(spe)
     cdcol <- cd[[compute_by]]
-    mcfl<-scuttlefl<-FALSE
-    switch(method, both={ mcfl<-scuttlefl<-TRUE },
-            mc={ mcfl<-TRUE }, scuttle={ scuttlefl <- TRUE },
+    mcfl <- scuttlefl <- FALSE
+    switch(method, both={ mcfl <- scuttlefl <- TRUE },
+            mc={ mcfl <- TRUE }, scuttle={ scuttlefl <- TRUE },
             {stop("Method is not one of allowed methods")} )
     if (mcfl) {
         skw <- e1071::skewness(cdcol, na.rm = TRUE) # NAs arise problems
-        if (skw>-1 & skw<1) warning("Distribution is symmetric: ",
+        if (skw >- 1 & skw < 1) warning("Distribution is symmetric: ",
                 "mc is for asymmetric distributions. Use scuttle instead.")
         mcval <- robustbase::mc(cdcol, doScale=mcDoScale, na.rm=TRUE)
         if ( any( (mcval <= -0.6), (mcval >= 0.6) ) )
@@ -198,16 +198,17 @@ computeSpatialOutlier <- function(spe, compute_by=NULL,
         names(thrs) <- c("lower", "higher")
         attr(outlier_mc, "thresholds") <- thrs
         cd$outlier_mc <- outlier_mc
-        names(cd)[names(cd)=="outlier_mc"] <- paste0(compute_by, "_outlier_mc")
+        names(cd)[names(cd) =="outlier_mc"] <- paste0(compute_by, "_outlier_mc")
         # TODO: compute distributions in the adjusted boxplots to store in cd
     }
     if (scuttlefl) {
         outssc <- scuttle::isOutlier(cdcol, type=scuttleType)
         sctri <- rep("NO", dim(cd)[1])
-        sctri <- ifelse(outssc==TRUE & cdcol<=attr(outssc, "thresholds")[1],
+        sctri <- ifelse(outssc == TRUE & cdcol <= attr(outssc, "thresholds")[1],
                         "LOW", sctri)
-        outlier_sc <-ifelse(outssc==TRUE & cdcol>=attr(outssc, "thresholds")[2],
-                        "HIGH", sctri)
+        outlier_sc <- ifelse(outssc == TRUE &
+                            cdcol >= attr(outssc, "thresholds")[2],
+                            "HIGH", sctri)
         outlier_sc <- scuttle::outlier.filter(outlier_sc)
         attr(outlier_sc, "thresholds") <- attr(outssc, "thresholds")
         cd$outlier_sc <- outlier_sc
@@ -635,7 +636,6 @@ computeQScoreFlags <- function(spe, qs_threshold=0.5, use_qs_quantiles=FALSE) {
             TRUE, FALSE)
     } else {
         spe$is_qscore_flags <- spe$quality_score < qs_threshold
-
     }
 
     if("threshold_flags" %in% names(colData(spe))) {

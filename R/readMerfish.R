@@ -62,6 +62,7 @@ readMerfishSPE <- function(dirname, sample_name="sample01",
     metadatafpattern="cell_metadata.csv",
     polygonsfpattern="cell_boundaries.parquet",
     coord_names=c("center_x", "center_y"), polygonsCol="polygons") {
+
     countmat_file <- list.files(dirname, countmatfpattern, full.names=TRUE)
     metadata_file <- list.files(dirname, metadatafpattern, full.names=TRUE)
     pol_file <- list.files(dirname, polygonsfpattern, full.names=TRUE) #parquet?
@@ -86,7 +87,7 @@ readMerfishSPE <- function(dirname, sample_name="sample01",
                                             keep_polygons, polygonsCol)
     }
     spe <- SpatialExperiment::SpatialExperiment(sample_id=sample_name,
-        assays = list(counts = counts), colData=cd,
+        assays=list(counts=counts), colData=cd,
         spatialCoordsNames=coord_names,
         metadata=list(polygons=pol_file, technology="Vizgen_MERFISH"))
     colnames(spe) <- spe$cell_id
@@ -129,7 +130,7 @@ readMerfishSPE <- function(dirname, sample_name="sample01",
 #' cd
 computeMissingMetricsMerfish <- function(pol_file, coldata,
     boundaries_type=c("parquet","HDF5"), keep_polygons=FALSE,
-    polygonsCol="polygons"){
+    polygonsCol="polygons") {
     boundaries_type <- match.arg(boundaries_type)
     polygons <- readPolygonsMerfish(pol_file, type=boundaries_type)
     cd <- DataFrame(coldata)
