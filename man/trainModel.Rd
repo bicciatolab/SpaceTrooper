@@ -2,7 +2,7 @@
 % Please edit documentation in R/QC.R
 \name{trainModel}
 \alias{trainModel}
-\title{Fit a Ridge Logistic Regression Model}
+\title{trainModel}
 \usage{
 trainModel(model_matrix, train_df)
 }
@@ -17,9 +17,11 @@ A data frame containing at least the response column
 \value{
 A \code{\link[glmnet]{glmnet}} model object fitted with
 \code{family="binomial"}, \code{alpha=0} (ridge), and a sequence of
-\eqn{λ} values.
+\eqn{\lambda} values.
 }
 \description{
+Fit a Ridge Logistic Regression Model
+
 \code{trainModel} fits an L2-regularized (ridge) logistic regression
 using \pkg{glmnet}, given a design matrix and a training data frame.
 }

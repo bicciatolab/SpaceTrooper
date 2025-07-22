@@ -116,8 +116,7 @@ plotCentroids <- function(spe, colour_by=NULL, colour_log=FALSE,
                         sample_id=unique(spe$sample_id),
                         isNegativeProbe=FALSE, palette=NULL,
                         point_col="darkmagenta", size=0.05, alpha=0.8,
-                        aspect_ratio=1)
-{
+                        aspect_ratio=1) {
     stopifnot(is(spe, "SpatialExperiment"))
     if(is.null(colour_by)) {
         ggp <- ggplot(data.frame(spatialCoords(spe)),
@@ -139,11 +138,11 @@ plotCentroids <- function(spe, colour_by=NULL, colour_log=FALSE,
                         colour=.data[[colour_by]],
                         fill=.data[[colour_by]])) +
             geom_point(size=size, alpha=alpha) + coord_fixed()
-        if(!is(spe[[colour_by]], "factor")) {
+        if( all(!is(spe[[colour_by]], "factor"),
+                !is(spe[[colour_by]], "logical"))) {
             ggp <- ggp + ggplot2::scale_colour_viridis_c() +
                 ggplot2::scale_fill_viridis_c() + coord_fixed()
         }
-
         if(isNegativeProbe) {
             ggp <- ggp + scale_color_gradient(low="white", high="red",
                 name=colour_by) + .negative_image_theme()

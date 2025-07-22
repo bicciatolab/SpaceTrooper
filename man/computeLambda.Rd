@@ -21,15 +21,16 @@ A data frame for training that must include:
 }
 \value{
 \[numeric\]
-  The value of \eqn{λ} (i.e., \code{lambda.min}) from
+  The value of \eqn{\lambda} (i.e., \code{lambda.min}) from
   \code{\link[glmnet]{cv.glmnet}} that minimizes the cross-validation error.
 }
 \description{
-Compute Optimal Ridge Regularization Parameter (λ) via Cross-Validation
+Compute Optimal Ridge Regularization Parameter \eqn{\lambda} via
+Cross-Validation
 
 \code{computeLambda} performs ridge (L2) logistic regression with
 cross-validation to identify the optimal regularization parameter
-\eqn{λ} for a binary response.
+\eqn{\lambda} for a binary response.
 }
 \details{
 Internally, the function:

@@ -33,9 +33,10 @@
 #' @examples
 #' example(readCosmxSPE)
 #' spe <- spatialPerCellQC(spe)
-spatialPerCellQC <- function(spe, micronConvFact=0.12, rmZeros=TRUE,negProbList=
-    c("NegPrb", "Negative", "SystemControl", "Ms IgG1", "Rb IgG", "BLANK_",
-    "NegControlProbe", "NegControlCodeword", "UnassignedCodeword", "Blank"),
+spatialPerCellQC <- function(spe, micronConvFact=0.12, rmZeros=TRUE,
+    negProbList=c("NegPrb", "Negative", "SystemControl", "Ms IgG1", "Rb IgG",
+    "BLANK_", "NegControlProbe", "NegControlCodeword", "UnassignedCodeword",
+    "Blank"),
     use_altexps=NULL) {
     stopifnot(is(object=spe, "SpatialExperiment"))
     idxlist <- lapply(negProbList, function(ng) {
@@ -266,11 +267,12 @@ computeThresholdFlags <- function(spe, total_threshold=0,
 
 #' computeLambda
 #' @description
-#' Compute Optimal Ridge Regularization Parameter (λ) via Cross-Validation
+#' Compute Optimal Ridge Regularization Parameter \eqn{\lambda} via
+#' Cross-Validation
 #'
 #' \code{computeLambda} performs ridge (L2) logistic regression with
 #' cross-validation to identify the optimal regularization parameter
-#' \eqn{λ} for a binary response.
+#' \eqn{\lambda} for a binary response.
 #'
 #' @param technology  \[character\]
 #'   The name of the experimental technology. Passed to
@@ -286,7 +288,7 @@ computeThresholdFlags <- function(spe, total_threshold=0,
 #'
 #' @return
 #' \[numeric\]
-#'   The value of \eqn{λ} (i.e., \code{lambda.min}) from
+#'   The value of \eqn{\lambda} (i.e., \code{lambda.min}) from
 #'   \code{\link[glmnet]{cv.glmnet}} that minimizes the cross-validation error.
 #'
 #' @details
@@ -384,6 +386,10 @@ computeQScore <- function(spe, best_lambda=NULL, verbose=FALSE) {
     return(spe)
 }
 
+#' trainModel
+#' @name trainModel
+#' @rdname trainModel
+#' @description
 #' Fit a Ridge Logistic Regression Model
 #'
 #' \code{trainModel} fits an L2-regularized (ridge) logistic regression
@@ -399,7 +405,7 @@ computeQScore <- function(spe, best_lambda=NULL, verbose=FALSE) {
 #' @return
 #' A \code{\link[glmnet]{glmnet}} model object fitted with
 #' \code{family="binomial"}, \code{alpha=0} (ridge), and a sequence of
-#' \eqn{λ} values.
+#' \eqn{\lambda} values.
 #'
 #' @examples
 #' example(computeTrainDF)
@@ -416,6 +422,10 @@ trainModel <- function(model_matrix, train_df)
     return(model)
 }
 
+#' computeTrainDF
+#' @name computeTrainDF
+#' @rdname computeTrainDF
+#' @description
 #' Build a Balanced Training Data Frame from a SpatialExperiment
 #'
 #' \code{computeTrainDF} takes a \linkS4class{SpatialExperiment} object,
@@ -507,7 +517,9 @@ computeTrainDF <- function(spe, verbose=FALSE)
     return(train_df)
 }
 
-#' @title Internal: Model Formula Printer
+#' getModelFormula
+#' @name getModelFormula
+#' @rdname getModelFormula
 #' @description
 #' Returns the right‐hand side of a model formula string based on technology.
 #' @param technology \[character\]
@@ -530,8 +542,11 @@ getModelFormula <- function(technology)
     return(model_formula)
 }
 
-#' @title Internal: Build Training Set for Xenium & MERFISH
+#' .computeXenMerTrainSet
+#' @name dot-computeXenMerTrainSet
+#' @rdname dot-computeXenMerTrainSet
 #' @description
+#' Internal: Build Training Set for Xenium & MERFISH
 #' Splits a SpatialExperiment into “bad” vs “good” cells based on
 #' pre-computed outlier labels on log2CountArea.
 #' @param spe \linkS4class{SpatialExperiment}
@@ -550,8 +565,11 @@ getModelFormula <- function(technology)
     return(list(bad=train_bad, good=train_good))
 }
 
-#' @title Internal: Build Training Set for CosMx
+#' .computeCosmxTrainSet
+#' @name dot-computeCosmxTrainSet
+#' @rdname dot-computeCosmxTrainSet
 #' @description
+#' Internal: Build Training Set for CosMx
 #' Splits a SpatialExperiment into “bad” vs “good” cells based on
 #' outliers in aspect ratio near tissue border or low count area.
 #' @param spe \linkS4class{SpatialExperiment}
