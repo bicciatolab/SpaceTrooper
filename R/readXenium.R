@@ -51,7 +51,7 @@
 #' @return A [`SpatialExperiment`] object with assays, `colData`, spatial
 #'   coordinates, and `metadata$polygons` & `metadata$technology`.
 #'
-#' @author Estella Yixing Dong, Dario Righelli
+#' @author Dario Righelli, Benedetta Banzi
 #'
 #' @importFrom DropletUtils read10xCounts
 #' @importFrom data.table fread
