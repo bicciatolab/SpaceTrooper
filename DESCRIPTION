@@ -44,7 +44,8 @@ Imports:
     glmnet,
     rhdf5,
     methods,
-    rlang
+    rlang,
+    SpatialExperimentIO
 Suggests:
     knitr,
     rmarkdown,
