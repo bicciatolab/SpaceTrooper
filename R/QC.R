@@ -68,6 +68,10 @@ spatialPerCellQC <- function(spe, micronConvFact=0.12, rmZeros=TRUE,
         spe$Area_um <- spe$Area * (micronConvFact^2)
         spe <- .computeBorderDistanceCosMx(spe)
     }
+    if(metadata(spe)$technology == "Nanostring_CosMx_Protein") {
+        # Only for proteins will be included in QScore
+        spe$log2Ctrl_total_ratio <- log2(spe$ctrl_total_ratio)
+    }
     if (metadata(spe)$technology == "10X_Xenium") {
         spe$Area_um <- spe$cell_area # standardized across other techs
     }
@@ -496,6 +500,9 @@ computeTrainDF <- function(spe, verbose=FALSE)
     if(metadata(spe)$technology == "Nanostring_CosMx") {
         ts <- .computeCosmxTrainSet(spe)
     }
+    if(metadata(spe)$technology == "Nanostring_CosMx_Protein") {
+        ts <- .computeCosmxProteinTrainSet(spe)
+    }
     if(any(metadata(spe)$technology %in% c("10X_Xenium", "Vizgen_MERFISH"))) {
         ts <- .computeXenMerTrainSet(spe)
     }
@@ -539,6 +546,14 @@ getModelFormula <- function(technology)
                                 "* as.numeric(dist_border<50)) + ",
                                 " log2CountArea:I(abs(log2AspectRatio)",
                                 "* as.numeric(dist_border<50))") #for cosmx
+    }
+    if(technology == "Nanostring_CosMx_Protein") {
+    model_formula <- paste0("~ log2CountArea + I(abs(log2AspectRatio) ",
+        "*as.numeric(dist_border<50)) + log2Ctrl_total_ratio + ",
+        " log2CountArea:I(abs(log2AspectRatio) ",
+        "* as.numeric(dist_border<50)) + log2CountArea:log2Ctrl_total_ratio ",
+        " + log2Ctrl_total_ratio:I(abs(log2AspectRatio) ",
+        " * as.numeric(dist_border<50))")
     }
     return(model_formula)
 }
@@ -593,6 +608,39 @@ getModelFormula <- function(technology)
                     dist_border > 50) |
                     (log2CountArea > quantile(log2CountArea, probs = 0.90) &
                     log2CountArea < quantile(log2CountArea, probs = 0.99))) |>
+        mutate(qscore_train=1, is_a_bad_boy=cell_id %in% train_bad$cell_id)
+    return(list(bad=train_bad, good=train_good))
+}
+
+#' .computeCosmxProteinTrainSet
+#' @name dot-computeCosmxProteinTrainSet
+#' @rdname dot-computeCosmxProteinTrainSet
+#' @description
+#' Internal: Build Training Set for CosMx-Protein
+#' Splits a SpatialExperiment into “bad” vs “good” cells based on
+#' outliers in aspect ratio near tissue border or low count area.
+#' @param spe \linkS4class{SpatialExperiment}
+#' @return
+#' A list with elements \code{bad} and \code{good}, each a data.frame
+#' with \code{qscore_train} and (for “good”) an \code{is_a_bad_boy} flag.
+#' @keywords internal
+.computeCosmxProteinTrainSet <- function(spe)
+{
+    spe <- computeSpatialOutlier(spe, "log2AspectRatio", method="both")
+    spe <- computeSpatialOutlier(spe, "log2Ctrl_total_ratio", method="both")
+    train_bad <- data.frame(colData(spe)) |>
+        filter((log2AspectRatio_outlier_mc == "HIGH" & dist_border < 50) |
+                (log2AspectRatio_outlier_mc == "LOW" & dist_border < 50) |
+                log2CountArea_outlier_train == "LOW" |
+                log2Ctrl_total_ratio_outlier_sc == "HIGH") |>
+        mutate(qscore_train = 0)
+
+    train_good <- data.frame(colData(spe)) |>
+        filter((log2AspectRatio > quantile(log2AspectRatio, probs = 0.25) &
+                log2AspectRatio < quantile(log2AspectRatio, probs = 0.75) &
+                dist_border > 50) |
+                (log2CountArea > quantile(log2CountArea, probs = 0.90) &
+                log2CountArea < quantile(log2CountArea, probs = 0.99))) |>
         mutate(qscore_train=1, is_a_bad_boy=cell_id %in% train_bad$cell_id)
     return(list(bad=train_bad, good=train_good))
 }
