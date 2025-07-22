@@ -15,6 +15,10 @@ Authors@R:
 Description: SpaceTrooper performs Quality Control analysis using data driven 
     GLM models of Image-Based spatial data, providing exploration plots, 
     QC metrics computation, outlier detection.
+    It implements a GLM strategy for the detection of low quality cells in 
+    imaging-based spatial data (Transcriptomics and Proteomics). 
+    It additionally implements several plots for the visualization of 
+    imaging based polygons through the ggplot2 package.
 License: MIT + file LICENSE
 Encoding: UTF-8
 Depends: 
