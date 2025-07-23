@@ -61,30 +61,39 @@ spatialPerCellQC <- function(spe, micronConvFact=0.12, rmZeros=TRUE,
         colData(spe) <- cbind.DataFrame(colData(spe), spatialCoords(spe))
     }
 
-    if(metadata(spe)$technology == "Nanostring_CosMx") {
+    spe$ctrl_total_ratio <- spe$control_sum/spe$total
+    spe$ctrl_total_ratio[which(is.na(spe$ctrl_total_ratio))] <- 0
+    if(metadata(spe)$technology == "Nanostring_CosMx_Protein") {
+        # Only for proteins will be included in QScore
+        spe$log2Ctrl_total_ratio <- log2(spe$ctrl_total_ratio)
+        idx <- which(names(colData(spe)) == "Area.um2")
+        if(length(idx)!=0) { names(colData(spe))[idx] <- "Area_um" }
+    }
+
+    if(any(metadata(spe)$technology %in%
+            c("Nanostring_CosMx", "Nanostring_CosMx_Protein"))) {
         spnc <- spatialCoords(spe) * micronConvFact
         colnames(spnc) <- gsub("px", "um", spatialCoordsNames(spe))
         colData(spe) <- cbind.DataFrame(colData(spe), spnc)
         spe$Area_um <- spe$Area * (micronConvFact^2)
         spe <- .computeBorderDistanceCosMx(spe)
     }
-    if(metadata(spe)$technology == "Nanostring_CosMx_Protein") {
-        # Only for proteins will be included in QScore
-        spe$log2Ctrl_total_ratio <- log2(spe$ctrl_total_ratio)
-    }
+
     if (metadata(spe)$technology == "10X_Xenium") {
         spe$Area_um <- spe$cell_area # standardized across other techs
     }
     if ("AspectRatio" %in% colnames(colData(spe))) {
         spe$log2AspectRatio <- log2(spe$AspectRatio) # not cosmx
     } else { warning("Missing aspect ratio in colData") }
-    spe$ctrl_total_ratio <- spe$control_sum/spe$total
-    spe$ctrl_total_ratio[which(is.na(spe$ctrl_total_ratio))] <- 0
+
     spe$CountArea <- spe$sum/spe$Area_um
     spe$log2CountArea <- log2(spe$CountArea)
-    if(sum(spe$sum==0) > 0) { # TODO: add a flag argument?
-        message("Removing ", dim(spe[,spe$sum==0])[2], " cells with 0 counts!")
-        spe <- spe[,!spe$sum==0]
+    if (rmZeros) {
+        if (sum(spe$sum==0) > 0) {
+            message("Removing ", dim(spe[,spe$sum==0])[2],
+                    " cells with 0 counts!")
+            spe <- spe[,!spe$sum==0]
+        }
     }
     return(spe)
 }
