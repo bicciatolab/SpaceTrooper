@@ -46,7 +46,7 @@ for the inclusion of polygons with the `keep_polygons` argument. This stores
 polygons in the `colData` of the `SpatialExperiment`.
 
 
-```{r load-data, eval=TRUE}
+```{r load-data}
 # Load the SpaceTrooper library
 library(SpaceTrooper)
 
@@ -99,7 +99,7 @@ the detection of negative control probes, which is crucial for QC.
 By default, it automatically removes 0 counts cells, but this can be handled 
 with the `rmZeros` argument.
 
-Here, for transparency, we specified the `negProbList` for CosMx protein assays, 
+Here, for transparency, we specified the `negProbList` for CosMx protein assays,
 but the algorithm has already a set of negative probes for the mostly used 
 probes in multiple technologies.
 Notice that despite the same approach can be applied to CODEX data, it is not
@@ -183,7 +183,7 @@ outlier each method detected.
 
 If we want, we can already use these fences to remove the computed outliers.
 
- 
+
 # The Quality Score
 
 Next, we use `computeQScore` to calculate a flag score based on previously
@@ -232,7 +232,7 @@ the function `computeThresholdFlags` considers:
 * **Negative Probe Ratio (`ctrl_tot_ratio_threshold`)**: Minimum ratio of
     negative probes to total counts (default 0.1).
     
-```{r}
+```{r thresholds-outliers}
 spe <- computeThresholdFlags(spe, total_threshold=0, 
                                 ctrl_tot_ratio_threshold=0.1)
 table(spe$threshold_flags)
@@ -269,16 +269,16 @@ plotPolygons(spe, bg_color="white")
 
 Showing the cells on a white background for better visualization.
 
-```{r plot-polygons-fov-1}
+```{r plot-polygons-fov-2}
 # Plot polygons colored by cell area
 plotPolygons(spe, colour_by="log2AspectRatio")
 plotPolygons(spe, colour_by="Area_um")
 ```
 
-We can see in yellow and darkviolet that there are few cells with extreme values 
-of log2AspectRatio and Area in micron.
+We can see in `yellow` and `darkviolet` that there are few cells with extreme 
+values of `log2AspectRatio` and `Area:um` in micron.
 
-```{r plot-polygons-fov-1}
+```{r plot-polygons-fov-3}
 plotPolygons(spe, colour_by="quality_score")
 plotPolygons(spe, colour_by="low_qscore")
 ```
@@ -321,6 +321,6 @@ Main steps shown are:
 
 # Session Information
 
-```{r sessioninfo}
+```{r sessionInfo}
 sessionInfo()
 ```
