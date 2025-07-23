@@ -4,15 +4,15 @@
 \alias{trainModel}
 \title{trainModel}
 \usage{
-trainModel(model_matrix, train_df)
+trainModel(modelMatrix, trainDF)
 }
 \arguments{
-\item{model_matrix}{\[matrix\]
-The design matrix of predictors (e.g. from \code{model.matrix()}).}
-
-\item{train_df}{\[data.frame\]
+\item{trainDF}{\[data.frame\]
 A data frame containing at least the response column
 \code{qscore_train}, coded as 0/1.}
+
+\item{model_matrix}{\[matrix\]
+The design matrix of predictors (e.g. from \code{model.matrix()}).}
 }
 \value{
 A \code{\link[glmnet]{glmnet}} model object fitted with

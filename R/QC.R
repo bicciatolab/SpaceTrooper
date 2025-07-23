@@ -153,7 +153,7 @@ spatialPerCellQC <- function(spe, micronConvFact=0.12, rmZeros=TRUE,
 #'
 #' @param spe a SpatialExperiment object with target_counts, area in micron
 #' and log2 of the aspect ratio in the `colData`.
-#' @param compute_by character indicating a `colData` column name on which
+#' @param computeBy character indicating a `colData` column name on which
 #' compute the outlier.
 #' @param method one of `mc`, `scuttle`, `both`.
 #' Use `mc` for medcouple, `scuttle` for median absolute deviations as computed
@@ -177,19 +177,19 @@ spatialPerCellQC <- function(spe, micronConvFact=0.12, rmZeros=TRUE,
 #'
 #' @examples
 #' example(spatialPerCellQC)
-#' spe <- computeSpatialOutlier(spe, compute_by="log2CountArea", method="both")
+#' spe <- computeSpatialOutlier(spe, computeBy="log2CountArea", method="both")
 #' table(spe$log2CountArea_outlier_mc)
 #' table(spe$log2CountArea_outlier_sc)
-computeSpatialOutlier <- function(spe, compute_by=NULL,
+computeSpatialOutlier <- function(spe, computeBy=NULL,
     method=c("mc", "scuttle", "both"), mcDoScale=FALSE,
     scuttleType=c("both", "lower", "higher")) {
-    stopifnot(all(is(spe, "SpatialExperiment"), !is.null(compute_by)))
-    stopifnot(compute_by %in% names(colData(spe)))
+    stopifnot(all(is(spe, "SpatialExperiment"), !is.null(computeBy)))
+    stopifnot(computeBy %in% names(colData(spe)))
     options(mc_doScale_quiet=TRUE)
     method <- match.arg(method)
     scuttleType <- match.arg(scuttleType)
     cd <- colData(spe)
-    cdcol <- cd[[compute_by]]
+    cdcol <- cd[[computeBy]]
     mcfl <- scuttlefl <- FALSE
     switch(method, both={ mcfl <- scuttlefl <- TRUE },
             mc={ mcfl <- TRUE }, scuttle={ scuttlefl <- TRUE },
@@ -211,7 +211,7 @@ computeSpatialOutlier <- function(spe, compute_by=NULL,
         names(thrs) <- c("lower", "higher")
         attr(outlier_mc, "thresholds") <- thrs
         cd$outlier_mc <- outlier_mc
-        names(cd)[names(cd) =="outlier_mc"] <- paste0(compute_by, "_outlier_mc")
+        names(cd)[names(cd) =="outlier_mc"] <- paste0(computeBy, "_outlier_mc")
         # TODO: compute distributions in the adjusted boxplots to store in cd
     }
     if (scuttlefl) {
@@ -225,7 +225,7 @@ computeSpatialOutlier <- function(spe, compute_by=NULL,
         outlier_sc <- scuttle::outlier.filter(outlier_sc)
         attr(outlier_sc, "thresholds") <- attr(outssc, "thresholds")
         cd$outlier_sc <- outlier_sc
-        names(cd)[names(cd)=="outlier_sc"] <- paste0(compute_by, "_outlier_sc")
+        names(cd)[names(cd)=="outlier_sc"] <- paste0(computeBy, "_outlier_sc")
     }
     colData(spe) <- cd
     return(spe)
@@ -242,9 +242,9 @@ computeSpatialOutlier <- function(spe, compute_by=NULL,
 #' object.
 #'
 #' @param spe A `SpatialExperiment` object with spatial transcriptomics data.
-#' @param total_threshold A numeric value for the threshold of total counts to
+#' @param totalThreshold A numeric value for the threshold of total counts to
 #' identify cells with low counts. Default is `0`.
-#' @param ctrl_tot_ratio_threshold A numeric value for the threshold of
+#' @param ctrlTotRatioThreshold A numeric value for the threshold of
 #' control-to-total ratio to flag cells over a certain threshold. Default is
 #' `0.1`.
 #'
@@ -261,17 +261,17 @@ computeSpatialOutlier <- function(spe, compute_by=NULL,
 #' spe <- spatialPerCellQC(spe)
 #' spe <- computeThresholdFlags(spe)
 #' table(spe$threshold_flags)
-computeThresholdFlags <- function(spe, total_threshold=0,
-                            ctrl_tot_ratio_threshold=0.1)
+computeThresholdFlags <- function(spe, totalThreshold=0,
+                            ctrlTotRatioThreshold=0.1)
 {
     stopifnot(is(spe, "SpatialExperiment"))
     stopifnot("total" %in% names(colData(spe)))
     stopifnot("ctrl_total_ratio" %in% names(colData(spe)))
 
-    spe$is_zero_counts <- ifelse(spe$total == total_threshold, TRUE, FALSE)
+    spe$is_zero_counts <- ifelse(spe$total == totalThreshold, TRUE, FALSE)
     #flagging cells with probe counts on total counts ratio > 0.1
     spe$is_ctrl_tot_outlier <- ifelse(spe$ctrl_total_ratio >
-                                        ctrl_tot_ratio_threshold, TRUE, FALSE)
+                                        ctrlTotRatioThreshold, TRUE, FALSE)
 
     spe$threshold_flags <- (spe$is_ctrl_tot_outlier &
                                 spe$is_zero_counts)
@@ -292,7 +292,7 @@ computeThresholdFlags <- function(spe, total_threshold=0,
 #'   The name of the experimental technology. Passed to
 #'   \code{getModelFormula()} to retrieve the corresponding model formula.
 #'
-#' @param train_df  \[data.frame\]
+#' @param trainDF  \[data.frame\]
 #'   A data frame for training that must include:
 #'   \describe{
 #'     \item{Predictor columns}{All columns referenced in the formula returned
@@ -318,21 +318,21 @@ computeThresholdFlags <- function(spe, total_threshold=0,
 #'
 #' @examples
 #' example(spatialPerCellQC)
-#' withr::with_seed(1998, train_df <- computeTrainDF(spe))
-#' best_lambda <- computeLambda(metadata(spe)$technology, train_df)
+#' withr::with_seed(1998, trainDF <- computeTrainDF(spe))
+#' best_lambda <- computeLambda(metadata(spe)$technology, trainDF)
 #' print(best_lambda)
 #'
 #' @seealso
 #' \code{\link[glmnet]{cv.glmnet}}
 #'
 #' @export
-computeLambda <- function(technology, train_df) {
+computeLambda <- function(technology, trainDF) {
     model_formula <- getModelFormula(technology)
-    model_matrix <- model.matrix(as.formula(model_formula), data=train_df)
-    ridge_cv <- cv.glmnet(model_matrix, train_df$qscore_train,
+    model_matrix <- model.matrix(as.formula(model_formula), data=trainDF)
+    ridge_cv <- cv.glmnet(model_matrix, trainDF$qscore_train,
                         family="binomial", alpha=0, lambda=NULL)
-    best_lambda <- ridge_cv$lambda.min
-    return(best_lambda)
+    bestLambda <- ridge_cv$lambda.min
+    return(bestLambda)
 }
 
 #' computeQScore
@@ -360,7 +360,7 @@ computeLambda <- function(technology, train_df) {
 #'
 #' @param spe A `SpatialExperiment` object with spatial transcriptomics data.
 #' @param verbose logical for having a verbose output. Default is FALSE.
-#' @param best_lambda the best lambda typically computed using `computeLambda`.
+#' @param bestLambda the best lambda typically computed using `computeLambda`.
 #'
 #' @return The `SpatialExperiment` object with added quality score in `colData`.
 #' @export
@@ -373,26 +373,26 @@ computeLambda <- function(technology, train_df) {
 #' spe <- computeQScore(spe)
 #' summary(spe$training_status)
 #' summary(spe$quality_score)
-computeQScore <- function(spe, best_lambda=NULL, verbose=FALSE) {
+computeQScore <- function(spe, bestLambda=NULL, verbose=FALSE) {
     stopifnot(is(spe, "SpatialExperiment"))
 
-    train_df <- computeTrainDF(spe, verbose)
+    trainDF <- computeTrainDF(spe, verbose)
     model_formula <- getModelFormula(metadata(spe)$technology)
-    model_matrix <- model.matrix(as.formula(model_formula), data=train_df)
-    model <- trainModel(model_matrix, train_df)
-    if(is.null(best_lambda)) {
-        best_lambda <- computeLambda(metadata(spe)$technology,
-                                train_df)
+    model_matrix <- model.matrix(as.formula(model_formula), data=trainDF)
+    model <- trainModel(model_matrix, trainDF)
+    if(is.null(bestLambda)) {
+        bestLambda <- computeLambda(metadata(spe)$technology,
+                                trainDF)
     }
     cd <- data.frame(colData(spe))
     full_matrix <- model.matrix(as.formula(model_formula), data = cd)
-    cd$quality_score <- as.vector(predict(model, s=best_lambda,
+    cd$quality_score <- as.vector(predict(model, s=bestLambda,
                                         newx = full_matrix,
                                         type = "response"))
     spe$quality_score <- cd$quality_score
     train_identity <- rep("TEST", dim(spe)[2])
-    train_bad <- train_df$cell_id[train_df$qscore_train==0]
-    train_good <- train_df$cell_id[train_df$qscore_train==1]
+    train_bad <- trainDF$cell_id[trainDF$qscore_train==0]
+    train_good <- trainDF$cell_id[trainDF$qscore_train==1]
     spe$training_status <- dplyr::case_when(
         spe$cell_id %in% train_bad ~ "BAD",
         spe$cell_id %in% train_good ~ "GOOD",
@@ -412,7 +412,7 @@ computeQScore <- function(spe, best_lambda=NULL, verbose=FALSE) {
 #' @param model_matrix \[matrix\]
 #'   The design matrix of predictors (e.g. from \code{model.matrix()}).
 #'
-#' @param train_df \[data.frame\]
+#' @param trainDF \[data.frame\]
 #'   A data frame containing at least the response column
 #'   \code{qscore_train}, coded as 0/1.
 #'
@@ -429,9 +429,9 @@ computeQScore <- function(spe, best_lambda=NULL, verbose=FALSE) {
 #' coef(fit, s = 0.01)
 #'
 #' @export
-trainModel <- function(model_matrix, train_df)
+trainModel <- function(modelMatrix, trainDF)
 {
-    model <- glmnet(x=model_matrix, y=train_df$qscore_train,
+    model <- glmnet(x=modelMatrix, y=trainDF$qscore_train,
                     family="binomial", lambda=NULL, alpha=0)
     return(model)
 }
@@ -487,7 +487,7 @@ trainModel <- function(model_matrix, train_df)
 computeTrainDF <- function(spe, verbose=FALSE)
 {
     spe_temp <- computeSpatialOutlier(spe[,spe$total>0],
-        compute_by="log2CountArea", method="both")
+        computeBy="log2CountArea", method="both")
 
     if(getFencesOutlier(spe_temp, "log2CountArea_outlier_mc", "lower") <
         min(spe_temp$log2CountArea)) {
@@ -529,9 +529,9 @@ computeTrainDF <- function(spe, verbose=FALSE)
     if(verbose) message("Chosen good quality examples: ", dim(train_good)[1])
 
     train_good$is_a_bad_boy <- NULL
-    train_df <- rbind(train_bad, train_good)
-    train_df <- train_df |> distinct(cell_id, .keep_all = TRUE)
-    return(train_df)
+    trainDF <- rbind(train_bad, train_good)
+    trainDF <- trainDF |> distinct(cell_id, .keep_all = TRUE)
+    return(trainDF)
 }
 
 #' getModelFormula
@@ -665,9 +665,9 @@ getModelFormula <- function(technology)
 #' quality score stored in `SpatialExperiment` object.
 #'
 #' @param spe A `SpatialExperiment` object with spatial transcriptomics data.
-#' @param qs_threshold Numeric threshold or quantile for quality score. Default
+#' @param qsThreshold Numeric threshold or quantile for quality score. Default
 #'   `0.5`.
-#' @param use_qs_quantiles Logical; if `TRUE`, treat `qs_threshold` as a
+#' @param useQSQuantiles Logical; if `TRUE`, treat `qsThreshold` as a
 #'   percentile.
 #'
 #' @return The `SpatialExperiment` object with added filter flags in `colData`.
@@ -683,16 +683,16 @@ getModelFormula <- function(technology)
 #' spe <- computeThresholdFlags(spe)
 #' spe <- computeQScoreFlags(spe)
 #' table(spe$low_threshold_qscore)
-computeQScoreFlags <- function(spe, qs_threshold=0.5, use_qs_quantiles=FALSE) {
+computeQScoreFlags <- function(spe, qsThreshold=0.5, useQSQuantiles=FALSE) {
     stopifnot(is(spe, "SpatialExperiment"))
     stopifnot("quality_score" %in% names(colData(spe)))
 
-    if(use_qs_quantiles) {
+    if(useQSQuantiles) {
         spe$is_qscore_flags <- ifelse(
-            spe$quality_score < quantile(spe$quality_score, probs=qs_threshold),
+            spe$quality_score < quantile(spe$quality_score, probs=qsThreshold),
             TRUE, FALSE)
     } else {
-        spe$low_qscore <- spe$quality_score < qs_threshold
+        spe$low_qscore <- spe$quality_score < qsThreshold
     }
 
     if("threshold_flags" %in% names(colData(spe))) {

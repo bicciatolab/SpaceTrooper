@@ -4,15 +4,15 @@
 \alias{computeThresholdFlags}
 \title{computeThresholdFlags}
 \usage{
-computeThresholdFlags(spe, total_threshold = 0, ctrl_tot_ratio_threshold = 0.1)
+computeThresholdFlags(spe, totalThreshold = 0, ctrlTotRatioThreshold = 0.1)
 }
 \arguments{
 \item{spe}{A `SpatialExperiment` object with spatial transcriptomics data.}
 
-\item{total_threshold}{A numeric value for the threshold of total counts to
+\item{totalThreshold}{A numeric value for the threshold of total counts to
 identify cells with low counts. Default is `0`.}
 
-\item{ctrl_tot_ratio_threshold}{A numeric value for the threshold of
+\item{ctrlTotRatioThreshold}{A numeric value for the threshold of
 control-to-total ratio to flag cells over a certain threshold. Default is
 `0.1`.}
 }

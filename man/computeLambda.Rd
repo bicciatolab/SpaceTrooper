@@ -4,14 +4,14 @@
 \alias{computeLambda}
 \title{computeLambda}
 \usage{
-computeLambda(technology, train_df)
+computeLambda(technology, trainDF)
 }
 \arguments{
 \item{technology}{\[character\]
 The name of the experimental technology. Passed to
 \code{getModelFormula()} to retrieve the corresponding model formula.}
 
-\item{train_df}{\[data.frame\]
+\item{trainDF}{\[data.frame\]
 A data frame for training that must include:
 \describe{
   \item{Predictor columns}{All columns referenced in the formula returned
@@ -45,8 +45,8 @@ Internally, the function:
 }
 \examples{
 example(spatialPerCellQC)
-withr::with_seed(1998, train_df <- computeTrainDF(spe))
-best_lambda <- computeLambda(metadata(spe)$technology, train_df)
+withr::with_seed(1998, trainDF <- computeTrainDF(spe))
+best_lambda <- computeLambda(metadata(spe)$technology, trainDF)
 print(best_lambda)
 
 }

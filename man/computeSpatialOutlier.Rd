@@ -6,7 +6,7 @@
 \usage{
 computeSpatialOutlier(
   spe,
-  compute_by = NULL,
+  computeBy = NULL,
   method = c("mc", "scuttle", "both"),
   mcDoScale = FALSE,
   scuttleType = c("both", "lower", "higher")
@@ -16,7 +16,7 @@ computeSpatialOutlier(
 \item{spe}{a SpatialExperiment object with target_counts, area in micron
 and log2 of the aspect ratio in the `colData`.}
 
-\item{compute_by}{character indicating a `colData` column name on which
+\item{computeBy}{character indicating a `colData` column name on which
 compute the outlier.}
 
 \item{method}{one of `mc`, `scuttle`, `both`.
@@ -53,7 +53,7 @@ for further details.
 }
 \examples{
 example(spatialPerCellQC)
-spe <- computeSpatialOutlier(spe, compute_by="log2CountArea", method="both")
+spe <- computeSpatialOutlier(spe, computeBy="log2CountArea", method="both")
 table(spe$log2CountArea_outlier_mc)
 table(spe$log2CountArea_outlier_sc)
 }
