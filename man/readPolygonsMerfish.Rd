@@ -9,7 +9,7 @@ readPolygonsMerfish(
   type = c("parquet", "HDF5"),
   keepMultiPol = TRUE,
   hdf5pattern = "hdf5",
-  z_lev = 3L,
+  zLev = 3L,
   zcolumn = "ZIndex",
   geometry = "Geometry",
   verbose = FALSE
@@ -27,7 +27,7 @@ Default is parquet.}
 \item{hdf5pattern}{A character string specifying the pattern to match HDF5
 files.}
 
-\item{z_lev}{An integer specifying the Z level to filter the data. Default is
+\item{zLev}{An integer specifying the Z level to filter the data. Default is
 `3L`.}
 
 \item{zcolumn}{A character string specifying the column name for the Z index.}

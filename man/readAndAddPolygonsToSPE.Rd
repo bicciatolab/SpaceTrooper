@@ -8,7 +8,7 @@ readAndAddPolygonsToSPE(
   spe,
   polygonsCol = "polygons",
   keepMultiPol = TRUE,
-  boundaries_type = c("csv", "HDF5", "parquet")
+  boundariesType = c("csv", "HDF5", "parquet")
 )
 }
 \arguments{
@@ -22,7 +22,7 @@ add into the colData (default is `polygons`).}
 \item{keepMultiPol}{Logical. If \code{TRUE}, multi-polygon features will be
 kept when reading the boundary data. Defaults to \code{TRUE}.}
 
-\item{boundaries_type}{Character. Specifies the type of boundary file format
+\item{boundariesType}{Character. Specifies the type of boundary file format
 to read. Options are \code{"HDF5"} or \code{"parquet"}. Defaults to
 \code{"HDF5"}.}
 }

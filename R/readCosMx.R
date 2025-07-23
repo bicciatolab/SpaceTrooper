@@ -42,6 +42,7 @@
 #' @importFrom SpatialExperiment SpatialExperiment
 #' @importFrom S4Vectors DataFrame
 #' @importFrom dplyr mutate
+#' @importFrom SpatialExperimentIO readCosmxSXE
 #' @export
 #'
 #' @examples
@@ -56,7 +57,7 @@ readCosmxSPE <- function(dirName, sampleName="sample01",
 
     stopifnot(all(names(fovdims) == c("xdim", "ydim"), file.exists(dirName)))
 
-    spe <- readCosmxSXE(dirName=dirName, returnType="SPE",
+    spe <- SpatialExperimentIO::readCosmxSXE(dirName=dirName, returnType="SPE",
         countMatPattern=countMatFPattern, metaDataPattern=metadataFPattern,
         coordNames=coordNames, addFovPos=TRUE, fovPosPattern=fovPosFPattern,
         altExps=NULL,addParquetPaths=FALSE)
@@ -77,7 +78,7 @@ readCosmxSPE <- function(dirName, sampleName="sample01",
     return(spe)
 }
 
-
+#' @export
 readCosmxProteinSPE <- function(dirName, sampleName="sample01",
     coordNames=c("CenterX_global_px", "CenterY_global_px"),
     countMatFPattern="exprMat_file.csv", metadataFPattern="metadata_file.csv",

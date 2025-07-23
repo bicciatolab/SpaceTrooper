@@ -6,26 +6,26 @@
 \usage{
 plotCellsFovs(
   spe,
-  sample_id = unique(spe$sample_id),
-  point_col = "firebrick",
-  numbers_col = "black",
-  alpha_numbers = 0.8,
-  fov_dim = metadata(spe)$fov_dim
+  sampleId = unique(spe$sample_id),
+  pointCol = "firebrick",
+  numbersCol = "black",
+  alphaNumbers = 0.8,
+  fovDim = metadata(spe)$fov_dim
 )
 }
 \arguments{
 \item{spe}{A `SpatialExperiment` object with `fov` in `colData`.}
 
-\item{sample_id}{Character string identifying which sample to plot.
+\item{sampleId}{Character string identifying which sample to plot.
 Default: `unique(spe$sample_id)`.}
 
-\item{point_col}{Color for the cell centroids. Default: `"firebrick"`.}
+\item{pointCol}{Color for the cell centroids. Default: `"firebrick"`.}
 
-\item{numbers_col}{Color for the FoV labels. Default: `"black"`.}
+\item{numbersCol}{Color for the FoV labels. Default: `"black"`.}
 
-\item{alpha_numbers}{Numeric transparency for FoV labels. Default: `0.8`.}
+\item{alphaNumbers}{Numeric transparency for FoV labels. Default: `0.8`.}
 
-\item{fov_dim}{numeric with two named dimensions xdim, ydim. (Default is
+\item{fovDim}{numeric with two named dimensions xdim, ydim. (Default is
 metadata(spe)$fov_dim)}
 }
 \value{

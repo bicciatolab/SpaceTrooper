@@ -8,12 +8,12 @@
 #' overlapping grid.
 #'
 #' @param spe A `SpatialExperiment` object with `fov` in `colData`.
-#' @param sample_id Character string identifying which sample to plot.
+#' @param sampleId Character string identifying which sample to plot.
 #'   Default: `unique(spe$sample_id)`.
-#' @param point_col Color for the cell centroids. Default: `"firebrick"`.
-#' @param numbers_col Color for the FoV labels. Default: `"black"`.
-#' @param alpha_numbers Numeric transparency for FoV labels. Default: `0.8`.
-#' @param fov_dim numeric with two named dimensions xdim, ydim. (Default is
+#' @param pointCol Color for the cell centroids. Default: `"firebrick"`.
+#' @param numbersCol Color for the FoV labels. Default: `"black"`.
+#' @param alphaNumbers Numeric transparency for FoV labels. Default: `0.8`.
+#' @param fovDim numeric with two named dimensions xdim, ydim. (Default is
 #' metadata(spe)$fov_dim)
 #'
 #' @return A `ggplot` object showing cell centroids and FoV boundaries.
@@ -27,13 +27,13 @@
 #' example(readCosmxSPE)
 #' g <- plotCellsFovs(spe)
 #' print(g)
-plotCellsFovs <- function(spe, sample_id=unique(spe$sample_id),
-                        point_col="firebrick", numbers_col="black",
-                        alpha_numbers=0.8, fov_dim=metadata(spe)$fov_dim)
+plotCellsFovs <- function(spe, sampleId=unique(spe$sample_id),
+                        pointCol="firebrick", numbersCol="black",
+                        alphaNumbers=0.8, fovDim=metadata(spe)$fov_dim)
 {
     stopifnot(is(spe, "SpatialExperiment"))
     stopifnot("fov" %in% names(colData(spe)))
-    stopifnot( all(names(fov_dim) %in% c("xdim","ydim")) )
+    stopifnot( all(names(fovDim) %in% c("xdim","ydim")) )
 
     spd <- as.data.frame(spatialCoords(spe))
     x_coord <- spatialCoordsNames(spe)[1]
@@ -41,26 +41,26 @@ plotCellsFovs <- function(spe, sample_id=unique(spe$sample_id),
     ggp <- ggplot() +
         geom_point(data=spd, mapping=aes(x=.data[[x_coord]],
                                         y=.data[[y_coord]]),
-                    colour=point_col,
-                    fill=point_col,
+                    colour=pointCol,
+                    fill=pointCol,
                     size=0.05, alpha=0.8) +
         annotate("rect",
             xmin=metadata(spe)$fov_positions["x_global_px"][ , , drop=TRUE],
             xmax=metadata(spe)$fov_positions["x_global_px"][ , , drop=TRUE] +
-                fov_dim[["xdim"]],
+                fovDim[["xdim"]],
             ymin=metadata(spe)$fov_positions["y_global_px"][ , , drop=TRUE],
             ymax=metadata(spe)$fov_positions["y_global_px"][ , , drop=TRUE] +
-                fov_dim[["ydim"]],
+                fovDim[["ydim"]],
             alpha=.2, color="black", linewidth=0.2) +
         geom_text(aes(x=metadata(spe)$fov_positions["x_global_px"][,,drop=TRUE]+
-                        fov_dim[["xdim"]]/2,
+                        fovDim[["xdim"]]/2,
                     y=metadata(spe)$fov_positions["y_global_px"][,,drop=TRUE]+
-                        fov_dim[["ydim"]]/2,
+                        fovDim[["ydim"]]/2,
                     label=metadata(spe)$fov_positions["fov"][,,drop=TRUE]),
-                    color=numbers_col, fontface="bold", alpha=alpha_numbers) +
-        ggtitle(sample_id) +
-        .fov_image_theme(back.color="white", back.border="white",
-                        title.col="black") + ggplot2::coord_fixed()
+                    color=numbersCol, fontface="bold", alpha=alphaNumbers) +
+        ggtitle(sampleId) +
+        .fov_image_theme(backColor="white", backBorder="white",
+                        titleCol="black") + ggplot2::coord_fixed()
     return(ggp)
 }
 
@@ -75,26 +75,26 @@ plotCellsFovs <- function(spe, sample_id=unique(spe$sample_id),
 #'
 #' @param spe A `SpatialExperiment` object containing spatial
 #' transcriptomics data.
-#' @param colour_by An optional character string specifying the column in
+#' @param colourBy An optional character string specifying the column in
 #' `colData(spe)` to use for coloring the points. If `NULL`, all points will be
 #' colored the same.
-#' @param colour_log Logical to log-transform the data to enhance visualization
+#' @param colourLog Logical to log-transform the data to enhance visualization
 #' (Default is FALSE).
-#' @param sample_id A character string specifying the sample identifier to be
+#' @param sampleId A character string specifying the sample identifier to be
 #' used as the plot title. (Default is the unique sample ID from `spe`)
 #' @param isNegativeProbe A logical value indicating whether to apply a custom
 #' color gradient for negative probe data. (Default is `FALSE`)
 #' @param palette A vector of colors to be used as a custom palette. For
 #' categorical data, this should be a vector of colors with the same length as
-#' the number of levels in `colour_by`. For continuous data, this should be a
+#' the number of levels in `colourBy`. For continuous data, this should be a
 #' vector of colors used to create a gradient.
-#' @param point_col A character string specifying the color of the points when
-#' `colour_by` is `NULL`. (Default is `"darkmagenta"`)
+#' @param pointCol A character string specifying the color of the points when
+#' `colourBy` is `NULL`. (Default is `"darkmagenta"`)
 #' @param size A numeric value specifying the size of the points. (Default is
 #' `0.05`)
 #' @param alpha A numeric value specifying the transparency level of the points.
 #' (Default is `0.2`)
-#' @param aspect_ratio A numeric value specifying the aspect ratio of the plot.
+#' @param aspectRatio A numeric value specifying the aspect ratio of the plot.
 #' (Default is `1`)
 #' @return A `ggplot` object representing the spatial coordinates plot of
 #' polygon centroids.
@@ -110,54 +110,54 @@ plotCellsFovs <- function(spe, sample_id=unique(spe$sample_id),
 #'
 #' @examples
 #' example(readCosmxSPE)
-#' g <- plotCentroids(spe, colour_by="Mean.DAPI")
+#' g <- plotCentroids(spe, colourBy="Mean.DAPI")
 #' print(g)
-plotCentroids <- function(spe, colour_by=NULL, colour_log=FALSE,
-                        sample_id=unique(spe$sample_id),
+plotCentroids <- function(spe, colourBy=NULL, colourLog=FALSE,
+                        sampleId=unique(spe$sample_id),
                         isNegativeProbe=FALSE, palette=NULL,
-                        point_col="darkmagenta", size=0.05, alpha=0.8,
-                        aspect_ratio=1) {
+                        pointCol="darkmagenta", size=0.05, alpha=0.8,
+                        aspectRatio=1) {
     stopifnot(is(spe, "SpatialExperiment"))
-    if(is.null(colour_by)) {
+    if(is.null(colourBy)) {
         ggp <- ggplot(data.frame(spatialCoords(spe)),
                     aes(x=.data[[spatialCoordsNames(spe)[1]]],
                         y=.data[[spatialCoordsNames(spe)[2]]])) +
-            geom_point(colour=point_col, fill=point_col,
-                        size=size, alpha=alpha) + ggplot2::ggtitle(sample_id) +
+            geom_point(colour=pointCol, fill=pointCol,
+                        size=size, alpha=alpha) + ggplot2::ggtitle(sampleId) +
             ggplot2::theme_bw() + ggplot2::coord_fixed()
     } else {
-        if(colour_log) {
-            stopifnot(colour_by %in% names(colData(spe)))
-            colour_byo <- colour_by
-            colour_by <- paste0("log(", colour_byo, ")")
-            colData(spe)[[colour_by]] <- log1p(colData(spe)[[colour_byo]])
+        if(colourLog) {
+            stopifnot(colourBy %in% names(colData(spe)))
+            colourByo <- colourBy
+            colourBy <- paste0("log(", colourByo, ")")
+            colData(spe)[[colourBy]] <- log1p(colData(spe)[[colourByo]])
         }
         ggp <- ggplot(data.frame(colData(spe), spatialCoords(spe)),
                     aes(x=.data[[spatialCoordsNames(spe)[1]]],
                         y=.data[[spatialCoordsNames(spe)[2]]],
-                        colour=.data[[colour_by]],
-                        fill=.data[[colour_by]])) +
+                        colour=.data[[colourBy]],
+                        fill=.data[[colourBy]])) +
             geom_point(size=size, alpha=alpha) + coord_fixed()
-        if( all(!is(spe[[colour_by]], "factor"),
-                !is(spe[[colour_by]], "logical"))) {
+        if( all(!is(spe[[colourBy]], "factor"),
+                !is(spe[[colourBy]], "logical"))) {
             ggp <- ggp + ggplot2::scale_colour_viridis_c() +
                 ggplot2::scale_fill_viridis_c() + coord_fixed()
         }
         if(isNegativeProbe) {
             ggp <- ggp + scale_color_gradient(low="white", high="red",
-                name=colour_by) + .negative_image_theme()
+                name=colourBy) + .negative_image_theme()
         } else if(all(!is.null(palette), (palette %in% names(colData(spe))))) {
-            palette <- createPaletteFromColData(spe, palette_names=colour_by,
-                                                    palette_colors=palette)
-            if(is.factor(colData(spe)[[colour_by]])) {
+            palette <- createPaletteFromColData(spe, paletteNames=colourBy,
+                                                    paletteColors=palette)
+            if(is.factor(colData(spe)[[colourBy]])) {
                 ggp <- ggp + scale_color_manual(values=palette)
-            } else if(is.numeric(colData(spe)[[colour_by]])) {
+            } else if(is.numeric(colData(spe)[[colourBy]])) {
                 ggp <- ggp + scale_color_gradientn(colors=palette)
             }
         }
     }
-    ggp <- ggp + ggtitle(sample_id) +
-        theme(aspect.ratio=aspect_ratio, plot.title=element_text(hjust=0.5))
+    ggp <- ggp + ggtitle(sampleId) +
+        theme(aspect.ratio=aspectRatio, plot.title=element_text(hjust=0.5))
     if(!isNegativeProbe) ggp <- ggp + theme_bw()
     return(ggp)
 }
@@ -176,17 +176,17 @@ plotCentroids <- function(spe, colour_by=NULL, colour_log=FALSE,
 #' data.
 #' @param metric A character string specifying the name of the metric
 #' (column in `colData(spe)`) to plot.
-#' @param fill_color A character string specifying the fill color of the
+#' @param fillColor A character string specifying the fill color of the
 #' histogram bars. (Default is `"#69b3a2"`)
-#' @param use_fences A character string specifying the name of the column in
+#' @param useFences A character string specifying the name of the column in
 #' `colData(spe)` that contains the fence thresholds (typically from an outlier
 #' filter). If `NULL`, no fences will be plotted. (Default is `NULL`)
-#' @param fences_colors A named character vector specifying the colors to use
+#' @param fencesColors A named character vector specifying the colors to use
 #' for the lower and higher fences. The names should be `"lower"` and `"higher"`
 #'. (Default is `c("lower"="purple4", "higher"="tomato")`)
 #' @param bins An integer specifying the number of bins to use in the histogram.
 #' (Default is `30`)
-#' @param bin_width A numeric value specifying the width of the bins. If `NULL`,
+#' @param binWidth A numeric value specifying the width of the bins. If `NULL`,
 #' the bin width will be automatically determined based on the `bins` parameter.
 #' (Default is `NULL`)
 #'
@@ -201,27 +201,27 @@ plotCentroids <- function(spe, colour_by=NULL, colour_log=FALSE,
 #' example(readCosmxSPE)
 #' g <- plotMetricHist(spe, metric="Mean.DAPI")
 #' print(g)
-plotMetricHist <- function(spe, metric, fill_color="#c0c8cf",
-        use_fences=NULL, fences_colors=c("lower"="purple4", "higher"="tomato"),
-        bins=30, bin_width=NULL)
+plotMetricHist <- function(spe, metric, fillColor="#c0c8cf",
+        useFences=NULL, fencesColors=c("lower"="purple4", "higher"="tomato"),
+        bins=30, binWidth=NULL)
 {
     stopifnot(is(spe, "SpatialExperiment"))
     stopifnot(metric %in% names(colData(spe)))
 
     ggp <- ggplot(data=as.data.frame(colData(spe))) +
-            geom_histogram(aes(x=.data[[metric]]), fill=fill_color,
-                    bins=bins, binwidth=bin_width)
-    if (!is.null(use_fences))
+            geom_histogram(aes(x=.data[[metric]]), fill=fillColor,
+                    bins=bins, binwidth=binWidth)
+    if (!is.null(useFences))
     {
-        stopifnot(use_fences %in% names(colData(spe)))
-        fences <- getFencesOutlier(spe, use_fences, "both", 2)
+        stopifnot(useFences %in% names(colData(spe)))
+        fences <- getFencesOutlier(spe, useFences, "both", 2)
         fences_labs <- paste0(names(fences), ": ", fences)
-        names(fences_colors) <- fences_labs
+        names(fencesColors) <- fences_labs
         ggp <- ggp +
             geom_vline(aes(xintercept=fences[1], color=fences_labs[1])) +
             geom_vline(aes(xintercept=fences[2], color=fences_labs[2])) +
-            labs(color=paste0("Fences ", use_fences)) +
-            scale_colour_manual(values=fences_colors)
+            labs(color=paste0("Fences ", useFences)) +
+            scale_colour_manual(values=fencesColors)
     }
     ggp <- ggp + ggtitle(metric) + theme_bw()
 
@@ -236,20 +236,20 @@ plotMetricHist <- function(spe, metric, fill_color="#c0c8cf",
 #' @description Plot polygons from a `SpatialExperiment` object using ggplot2.
 #'
 #' @param spe A `SpatialExperiment` object with polygon data as an `sf` object.
-#' @param colour_by A column in `colData(spe)` for coloring the polygons or a
+#' @param colourBy A column in `colData(spe)` for coloring the polygons or a
 #' string color in colors(). (Default is "darkgrey")
-#' @param colour_log Logical to log-transform the data to enhance visualization
+#' @param colourLog Logical to log-transform the data to enhance visualization
 #' (Default is FALSE).
-#' @param sample_id Sample ID for plot title. Default is the unique sample ID.
-#' @param fill_alpha Transparency level for polygon fill. Default is `1`.
-#' @param palette Colors to use if `colour_by` is a factor. Default is `NULL`.
-#' @param border_col Color of polygon borders. Default is `"black"`.
-#' @param border_alpha Transparency level for borders. Default is `1`.
-#' @param border_line_width Width of polygon borders. Default is `0.1`.
-#' @param draw_borders Logical; whether to draw borders. Default is `TRUE`.
-#' @param poly_column character for the name of the column where the polygons sf
+#' @param sampleId Sample ID for plot title. Default is the unique sample ID.
+#' @param fillAlpha Transparency level for polygon fill. Default is `1`.
+#' @param palette Colors to use if `colourBy` is a factor. Default is `NULL`.
+#' @param borderCol Color of polygon borders. Default is `"black"`.
+#' @param borderAlpha Transparency level for borders. Default is `1`.
+#' @param borderLineWidth Width of polygon borders. Default is `0.1`.
+#' @param drawBorders Logical; whether to draw borders. Default is `TRUE`.
+#' @param polyColumn character for the name of the column where the polygons sf
 #' are stored (default is "polygons.global")
-#' @param bg_color character indicating color for the background
+#' @param bgColor character indicating color for the background
 #' (default is "white")
 #'
 #' @return A `ggplot` object representing the polygon plot of the spatial data.
@@ -263,53 +263,53 @@ plotMetricHist <- function(spe, metric, fill_color="#c0c8cf",
 #'
 #' @examples
 #' example(readAndAddPolygonsToSPE)
-#' plotPolygons(spe, colour_by="Mean.DAPI")
-plotPolygons <- function(spe, colour_by="darkgrey", colour_log=FALSE,
-    poly_column="polygons.global", sample_id=unique(spe$sample_id),
-    bg_color="white", fill_alpha=1, palette=NULL, border_col=NA,
-    border_alpha=1, border_line_width=0.1, draw_borders=TRUE) {
+#' plotPolygons(spe, colourBy="Mean.DAPI")
+plotPolygons <- function(spe, colourBy="darkgrey", colourLog=FALSE,
+    polyColumn="polygons.global", sampleId=unique(spe$sample_id),
+    bgColor="white", fillAlpha=1, palette=NULL, borderCol=NA,
+    borderAlpha=1, borderLineWidth=0.1, drawBorders=TRUE) {
     stopifnot(is(spe, "SpatialExperiment"))
     stopifnot("polygons" %in% names(colData(spe)))
     df <- data.frame(colData(spe))
     polflag <- FALSE
-    if(!is.null(colour_by)) {
-        if(colour_by %in% names(colData(spe))) {
-            if(colour_log) {
-                colour_byo <- colour_by
-                colour_by <- paste0("log(", colour_byo, ")")
-                df[[colour_by]] <- log1p(df[[colour_byo]])
+    if(!is.null(colourBy)) {
+        if(colourBy %in% names(colData(spe))) {
+            if(colourLog) {
+                colourByo <- colourBy
+                colourBy <- paste0("log(", colourByo, ")")
+                df[[colourBy]] <- log1p(df[[colourByo]])
             }
             polflag <- TRUE
         } else {
-            if(!(colour_by %in% grDevices::colors())) {
-                warning("colour_by not in known colors nor in colData")
-                colour_by <- "darkgrey"
+            if(!(colourBy %in% grDevices::colors())) {
+                warning(colourBy, " not in known colors nor in colData")
+                colourBy <- "darkgrey"
             }}}
-    border_params <- if(draw_borders) {
-        list(color=border_col, size=border_line_width)
+    border_params <- if(drawBorders) {
+        list(color=borderCol, size=borderLineWidth)
     } else { list(color=NA, size=0) }
     if(polflag) {
-        p <- ggplot(df, aes(geometry=.data[[poly_column]],
-            fill=.data[[colour_by]])) + geom_sf(alpha=fill_alpha,
+        p <- ggplot(df, aes(geometry=.data[[polyColumn]],
+            fill=.data[[colourBy]])) + geom_sf(alpha=fillAlpha,
             color=border_params$color, size=border_params$size)
     } else {
-        p <- ggplot(df, aes(geometry = .data[[poly_column]])) +
-            geom_sf(fill=colour_by, alpha=fill_alpha,
+        p <- ggplot(df, aes(geometry = .data[[polyColumn]])) +
+            geom_sf(fill=colourBy, alpha=fillAlpha,
                 color=border_params$color, size=border_params$size)
     }
-    if(!is.null(colour_by) && (is.factor(df[[colour_by]]) ||
-                                is.logical(df[[colour_by]]))) {
+    if(!is.null(colourBy) && (is.factor(df[[colourBy]]) ||
+                                is.logical(df[[colourBy]]))) {
         if(!is.null(palette)) { p <- p + scale_fill_manual(values=palette) }
-    } else if(!is.null(colour_by) && is.numeric(df[[colour_by]])) {
+    } else if(!is.null(colourBy) && is.numeric(df[[colourBy]])) {
         p <- p + scale_fill_viridis_c(option="D")
     } else { p <- p + scale_fill_identity() }
     p <- p + theme_minimal() + theme(legend.position="right",
         plot.title.position="plot",plot.title=element_text(face="bold",size=14),
             plot.margin=margin(0, 0, 0, 0),
-            panel.background=element_rect(fill=bg_color, color=bg_color,size=1),
+            panel.background=element_rect(fill=bgColor, color=bgColor, size=1),
             panel.border = element_rect(color="black", fill=NA, linewidth=0.1),
             panel.grid.minor=element_blank()
-        ) + labs(title=sample_id, fill=colour_by)
+        ) + labs(title=sampleId, fill=colourBy)
     return(p)
 }
 
@@ -329,11 +329,11 @@ plotPolygons <- function(spe, colour_by="darkgrey", colour_log=FALSE,
 #' data.
 #' @param fovs A character vector specifying the FOVs to be zoomed in and
 #' plotted. Must match values in the `fov` column of `colData(spe)`.
-#' @param map_point_col A character string specifying the color of the points
+#' @param mapPointCol A character string specifying the color of the points
 #' in the map. Default is `"darkmagenta"`.
-#' @param map_numbers_col A character string specifying the color of the
+#' @param mapNumbersCol A character string specifying the color of the
 #' numbers on the map. Default is `"black"`.
-#' @param map_alpha_numbers A numeric value specifying the transparency of the
+#' @param mapAlphaNumbers A numeric value specifying the transparency of the
 #' numbers on the map. Default is `0.8`.
 #' @param title An optional character string specifying the title of the final
 #' plot. If `NULL`, no title is added. Default is `NULL`.
@@ -356,18 +356,18 @@ plotPolygons <- function(spe, colour_by="darkgrey", colour_log=FALSE,
 #' example(readAndAddPolygonsToSPE)
 #' plotZoomFovsMap(spe, fovs=16, title="FOV 16")
 plotZoomFovsMap <- function(spe, fovs=NULL,
-                            map_point_col="darkmagenta",
-                            map_numbers_col="black",
-                            map_alpha_numbers=0.8,
+                            mapPointCol="darkmagenta",
+                            mapNumbersCol="black",
+                            mapAlphaNumbers=0.8,
                             title=NULL, ...) {
     stopifnot(is(spe, "SpatialExperiment"))
     stopifnot("fov" %in% names(colData(spe)))
     stopifnot(all(fovs %in% spe$fov))
     spefovs <- spe[, spe$fov %in% fovs]
-    map <- plotCellsFovs(spefovs, point_col=map_point_col,
-        numbers_col=map_numbers_col, alpha_numbers=map_alpha_numbers,
-        sample_id=NULL)
-    g2 <- plotPolygons(spefovs, sample_id=NULL, ...)
+    map <- plotCellsFovs(spefovs, pointCol=mapPointCol,
+        numbersCol=mapNumbersCol, alphaNumbers=mapAlphaNumbers,
+        sampleId=NULL)
+    g2 <- plotPolygons(spefovs, sampleId=NULL, ...)
     final_plot <- ggpubr::ggarrange(map, g2, ncol=2)
     if (!is.null(title)) {
         final_plot <- ggpubr::annotate_figure(final_plot,
@@ -386,11 +386,11 @@ plotZoomFovsMap <- function(spe, fovs=NULL,
 #'
 #' @param spe A `SpatialExperiment` object with `quality_score` and term
 #'   columns in `colData`.
-#' @param sample_id Character string for plot title. Must match values in the
+#' @param sampleId Character string for plot title. Must match values in the
 #'   `fov` column of `colData(spe)`. Default: `unique(spe$sample_id)`.
 #' @param size Numeric point size for the scatter plots. Default: `0.05`.
 #' @param alpha Numeric transparency for the scatter plots. Default: `0.2`.
-#' @param aspect_ratio Numeric aspect ratio of the plots. Default: `1`.
+#' @param aspectRatio Numeric aspect ratio of the plots. Default: `1`.
 #' @param custom Logical; if `TRUE`, use custom polygon‐derived metrics.
 #'
 #' @return A combined plot (via `cowplot::plot_grid`) showing spatial maps
@@ -406,40 +406,40 @@ plotZoomFovsMap <- function(spe, fovs=NULL,
 #' example(spatialPerCellQC)
 #' p <- plotQScoreTerms(spe)
 #' print(p)
-plotQScoreTerms <- function(spe, sample_id=unique(spe$sample_id), size=0.05,
-                            alpha=0.8, aspect_ratio=1, custom = FALSE) {
+plotQScoreTerms <- function(spe, sampleId=unique(spe$sample_id), size=0.05,
+                            alpha=0.8, aspectRatio=1, custom = FALSE) {
     if(metadata(spe)$technology=="Nanostring_CosMx") {
         if(custom==TRUE) {
             ggp <- scater::plotColData(spe, x=spatialCoordsNames(spe)[1],
                                         y=spatialCoordsNames(spe)[2],
                                         colour_by="cust_log2CountArea",
                                         point_size=size, point_alpha=alpha)+
-                ggplot2::ggtitle(sample_id)+ .centroid_image_theme() +
+                ggplot2::ggtitle(sampleId)+ .centroid_image_theme() +
                 ggplot2::coord_fixed()
             ggp2 <- scater::plotColData(spe, x=spatialCoordsNames(spe)[1],
                                         y=spatialCoordsNames(spe)[2],
                                         colour_by="cust_log2AspectRatio",
                                         point_size=size, point_alpha=alpha)+
-                ggplot2::ggtitle(sample_id) + .centroid_image_theme() +
+                ggplot2::ggtitle(sampleId) + .centroid_image_theme() +
                 ggplot2::coord_fixed()
         } else {
             ggp <- scater::plotColData(spe, x=spatialCoordsNames(spe)[1],
                                         y=spatialCoordsNames(spe)[2],
                                         colour_by="log2CountArea",
                                         point_size=size, point_alpha=alpha)+
-                ggtitle(sample_id)+ .centroid_image_theme() + coord_fixed()
+                ggtitle(sampleId)+ .centroid_image_theme() + coord_fixed()
             ggp2 <- scater::plotColData(spe, x=spatialCoordsNames(spe)[1],
                                         y=spatialCoordsNames(spe)[2],
                                         colour_by="log2AspectRatio",
                                         point_size=size, point_alpha=alpha)+
-                ggplot2::ggtitle(sample_id) + .centroid_image_theme() +
+                ggplot2::ggtitle(sampleId) + .centroid_image_theme() +
                 ggplot2::coord_fixed()
         }
         ggp3 <- scater::plotColData(spe, x=spatialCoordsNames(spe)[1],
                                     y=spatialCoordsNames(spe)[2],
                                     colour_by="dist_border",
                                     point_size=size, point_alpha=alpha)+
-            ggplot2::ggtitle(sample_id) + .centroid_image_theme() +
+            ggplot2::ggtitle(sampleId) + .centroid_image_theme() +
             ggplot2::coord_fixed()
         ggp <- cowplot::plot_grid(ggp, ggp2, ggp3, ncol = 2)
     } else {
@@ -448,7 +448,7 @@ plotQScoreTerms <- function(spe, sample_id=unique(spe$sample_id), size=0.05,
                                             y=spatialCoordsNames(spe)[2],
                                             colour_by="log2CountArea",
                                             point_size=size, point_alpha=alpha)+
-            ggplot2::ggtitle(sample_id)+ .centroid_image_theme() +
+            ggplot2::ggtitle(sampleId)+ .centroid_image_theme() +
             ggplot2::coord_fixed()
     }
     return(ggp)
@@ -531,8 +531,8 @@ qcFlagPlots <- function(spe, fov=unique(spe$fov),
     if (!all(c("is_zero_counts", "is_ctrl_tot_outlier") %in%
             names(colData(spe))))
         stop("Fixed thresholds flag cells not found. Run computeFixedFlags().")
-    spe <- computeSpatialOutlier(spe, compute_by="Area_um", method="both")
-    spe <- computeSpatialOutlier(spe, compute_by="Mean.DAPI", method="both")
+    spe <- computeSpatialOutlier(spe, computeBy="Area_um", method="both")
+    spe <- computeSpatialOutlier(spe, computeBy="Mean.DAPI", method="both")
     spe$polygons$fixed_flags_color <- dplyr::case_when(
         spe$is_zero_counts ~ "0 counts",
         spe$is_ctrl_tot_outlier ~ "ctrl/total ratio > 0.1",

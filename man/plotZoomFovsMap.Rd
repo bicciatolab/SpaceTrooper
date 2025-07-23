@@ -7,9 +7,9 @@
 plotZoomFovsMap(
   spe,
   fovs = NULL,
-  map_point_col = "darkmagenta",
-  map_numbers_col = "black",
-  map_alpha_numbers = 0.8,
+  mapPointCol = "darkmagenta",
+  mapNumbersCol = "black",
+  mapAlphaNumbers = 0.8,
   title = NULL,
   ...
 )
@@ -21,13 +21,13 @@ data.}
 \item{fovs}{A character vector specifying the FOVs to be zoomed in and
 plotted. Must match values in the `fov` column of `colData(spe)`.}
 
-\item{map_point_col}{A character string specifying the color of the points
+\item{mapPointCol}{A character string specifying the color of the points
 in the map. Default is `"darkmagenta"`.}
 
-\item{map_numbers_col}{A character string specifying the color of the
+\item{mapNumbersCol}{A character string specifying the color of the
 numbers on the map. Default is `"black"`.}
 
-\item{map_alpha_numbers}{A numeric value specifying the transparency of the
+\item{mapAlphaNumbers}{A numeric value specifying the transparency of the
 numbers on the map. Default is `0.8`.}
 
 \item{title}{An optional character string specifying the title of the final

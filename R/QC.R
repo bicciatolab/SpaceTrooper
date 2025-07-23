@@ -409,12 +409,11 @@ computeQScore <- function(spe, bestLambda=NULL, verbose=FALSE) {
 #' \code{trainModel} fits an L2-regularized (ridge) logistic regression
 #' using \pkg{glmnet}, given a design matrix and a training data frame.
 #'
-#' @param model_matrix \[matrix\]
-#'   The design matrix of predictors (e.g. from \code{model.matrix()}).
-#'
 #' @param trainDF \[data.frame\]
 #'   A data frame containing at least the response column
 #'   \code{qscore_train}, coded as 0/1.
+#' @param modelMatrix a matrix describing the model variables, tipically created
+#' with `getModelFormula` and `model.matrix` functions.
 #'
 #' @return
 #' A \code{\link[glmnet]{glmnet}} model object fitted with
@@ -688,7 +687,7 @@ computeQScoreFlags <- function(spe, qsThreshold=0.5, useQSQuantiles=FALSE) {
     stopifnot("quality_score" %in% names(colData(spe)))
 
     if(useQSQuantiles) {
-        spe$is_qscore_flags <- ifelse(
+        spe$low_qscore <- ifelse(
             spe$quality_score < quantile(spe$quality_score, probs=qsThreshold),
             TRUE, FALSE)
     } else {
@@ -696,7 +695,7 @@ computeQScoreFlags <- function(spe, qsThreshold=0.5, useQSQuantiles=FALSE) {
     }
 
     if("threshold_flags" %in% names(colData(spe))) {
-        spe$low_threshold_qscore <- (spe$is_qscore_flags &
+        spe$low_threshold_qscore <- (spe$low_qscore &
                                         spe$threshold_flags)
     }
     return(spe)

@@ -105,8 +105,6 @@ readMerfishSPE <- function(dirName, sampleName="sample01",
 #' polygons, calculates per‐cell area and aspect‐ratio, and optionally
 #' appends the raw polygon geometries.
 #'
-#' @param pol_file `character`
-#' Path (or vector of paths) to polygon files (HDF5 or Parquet).
 #' @param coldata `DataFrame` or `data.frame`
 #' Cell metadata with at least a `cell_id` column.
 #' @param boundariesType `character(1)`
@@ -116,6 +114,7 @@ readMerfishSPE <- function(dirName, sampleName="sample01",
 #'   If `TRUE`, cbinds the raw polygon `sf` columns onto `coldata`.
 #' @param polygonsCol character indicating the name of the polygons column to
 #' add into the colData (default is `polygons`).
+#' @param polFile path to the polygon file
 #'
 #' @return A `DataFrame` (or `data.frame`) with:
 #'   - all columns of `coldata`
@@ -131,11 +130,11 @@ readMerfishSPE <- function(dirName, sampleName="sample01",
 #'     boundariesType="parquet")
 #' colData(spe) <- cd
 #' cd
-computeMissingMetricsMerfish <- function(pol_file, coldata,
+computeMissingMetricsMerfish <- function(polFile, coldata,
     boundariesType=c("parquet","HDF5"), keepPolygons=FALSE,
     polygonsCol="polygons") {
     boundariesType <- match.arg(boundariesType)
-    polygons <- readPolygonsMerfish(pol_file, type=boundariesType)
+    polygons <- readPolygonsMerfish(polFile, type=boundariesType)
     cd <- DataFrame(coldata)
     cd$um_area <- computeAreaFromPolygons(polygons)
     cd$AspectRatio <- computeAspectRatioFromPolygons(polygons)

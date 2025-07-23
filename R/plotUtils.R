@@ -5,15 +5,15 @@
 #' internal function to setup the theme for the fov background on the whole
 #' image
 #'
-#' @param back.color not used
-#' @param back.border color for the borders of the background (default=NA)
-#' @param title.col character indicating the color of the title
+#' @param backColor not used
+#' @param backBorder color for the borders of the background (default=NA)
+#' @param titleCol character indicating the color of the title
 #'
 #' @return a ggplot2 theme object
 #' @importFrom ggplot2 theme element_blank element_rect element_text
 #' @keywords internal
-.fov_image_theme <- function(back.color="black", back.border=NA,
-                            title.col="white")
+.fov_image_theme <- function(backColor="black", backBorder=NA,
+                            titleCol="white")
 {
     theme(panel.border=element_blank(),
         legend.key=element_blank(),
@@ -26,8 +26,8 @@
         panel.grid.minor=element_blank(),
         panel.grid.major=element_blank(),
         panel.background=element_rect(fill = "transparent", colour = NA),
-        plot.title=element_text(color=title.col, hjust=0.5, face="bold"),
-        plot.background=element_rect(fill="transparent", colour=back.border))
+        plot.title=element_text(color=titleCol, hjust=0.5, face="bold"),
+        plot.background=element_rect(fill="transparent", colour=backBorder))
 }
 
 #' .centroid_image_theme
@@ -36,12 +36,12 @@
 #' @description
 #' internal function to setup the theme for the centroid plot background
 #'
-#' @param back.border color for the borders of the background (default=NA)
+#' @param backBorder color for the borders of the background (default=NA)
 #'
 #' @return a ggplot2 theme object
 #' @importFrom ggplot2 theme element_blank element_rect
 #' @keywords internal
-.centroid_image_theme <- function(back.border=NA) {
+.centroid_image_theme <- function(backBorder=NA) {
     theme(panel.border=element_rect(color = "black"),
         legend.key=element_blank(),
         axis.line=element_blank(),
@@ -55,7 +55,7 @@
         panel.grid.major=element_blank(),
         panel.background=element_rect(fill = "transparent", colour = NA),
         plot.title=element_blank(),
-        plot.background=element_rect(fill="transparent", colour=back.border))
+        plot.background=element_rect(fill="transparent", colour=backBorder))
 }
 
 
@@ -66,17 +66,17 @@
 #' internal function to setup the theme for the negative background for
 #' negative plots
 #'
-#' @param fill_color color to fill the element_rect (default is "black")
-#' @param fore_color color for all the other elements (default is "white")
+#' @param fillColor color to fill the element_rect (default is "black")
+#' @param foreColor color for all the other elements (default is "white")
 #'
 #' @return a ggplot2 theme object
 #' @importFrom ggplot2 theme element_line element_rect element_text
 #' element_blank
 #' @keywords internal
-.negative_image_theme <- function(fill_color="black", fore_color="white") {
-    theme(panel.border = element_rect(color = fore_color),
-        panel.background=element_rect(fill=fill_color, color=NA),
-        plot.background=element_rect(fill=fill_color, color=NA),
+.negative_image_theme <- function(fillColor="black", foreColor="white") {
+    theme(panel.border = element_rect(color = foreColor),
+        panel.background=element_rect(fill=fillColor, color=NA),
+        plot.background=element_rect(fill=fillColor, color=NA),
         title=element_blank(),
         axis.line=element_blank(),
         axis.title.x=element_blank(),
@@ -84,9 +84,9 @@
         axis.ticks=element_blank(),
         axis.text.y=element_blank(),
         axis.text.x=element_blank(),
-        legend.background=element_rect(fill=fill_color, color=NA),
-        legend.text=element_text(color=fore_color),
-        legend.title=element_text(color=fore_color),
+        legend.background=element_rect(fill=fillColor, color=NA),
+        legend.text=element_text(color=foreColor),
+        legend.title=element_text(color=foreColor),
         panel.grid=element_blank(),
         panel.grid.minor=element_blank(),
         panel.grid.major=element_blank())
@@ -102,11 +102,11 @@
 #' @return a ggplot2 theme object
 #' @importFrom ggplot2 theme element_blank element_rect
 #' @keywords internal
-.light_theme <- function(fill_color="white", fore_color="black"){
-    theme(panel.border=element_rect(color = fore_color, fill = NA,
+.light_theme <- function(fillColor="white", foreColor="black") {
+    theme(panel.border=element_rect(color = foreColor, fill = NA,
         linewidth = 0.1),
-        panel.background=element_rect(fill=fill_color, color=NA),
-        plot.background=element_rect(fill=fill_color, color=NA),
+        panel.background=element_rect(fill=fillColor, color=NA),
+        plot.background=element_rect(fill=fillColor, color=NA),
         axis.line=element_blank(),
         axis.title.x=element_blank(),
         axis.title.y=element_blank(),
@@ -124,25 +124,25 @@
 #' @description
 #' internal function to setup the black background theme for the First Filter
 #' plot
-#' #' @param fill_color color to fill the element_rect (default is "black")
-#' @param fore_color color for all the other elements (default is "white")
+#' @param fillColor color to fill the element_rect (default is "black")
+#' @param foreColor color for all the other elements (default is "white")
 #'
 #' @return a ggplot2 theme object
 #' @importFrom ggplot2 theme element_blank element_rect element_text
 #' @keywords internal
-.dark_theme <- function(fill_color="black", fore_color="white") {
-    theme(panel.background=element_rect(fill=fill_color, color=NA),
-        plot.background=element_rect(fill=fill_color, color=NA),
-        panel.border=element_rect(color = fore_color, fill = NA, linewidth=0.1),
-        title=element_text(color=fore_color),
+.dark_theme <- function(fillColor="black", foreColor="white") {
+    theme(panel.background=element_rect(fill=fillColor, color=NA),
+        plot.background=element_rect(fill=fillColor, color=NA),
+        panel.border=element_rect(color = foreColor, fill = NA, linewidth=0.1),
+        title=element_text(color=foreColor),
         axis.line=element_blank(),
         axis.title.x=element_blank(),
         axis.title.y=element_blank(),
         axis.ticks=element_blank(),
         axis.text.y=element_blank(),
         axis.text.x=element_blank(),
-        legend.background=element_rect(fill=fill_color, color=NA),
-        legend.text=element_text(color=fore_color),
+        legend.background=element_rect(fill=fillColor, color=NA),
+        legend.text=element_text(color=foreColor),
         panel.grid=element_blank(),
         panel.grid.minor=element_blank(),
         panel.grid.major=element_blank())
@@ -158,26 +158,26 @@
 #' the `colData` of a `SpatialExperiment` object.
 #'
 #' @param spe A `SpatialExperiment` object with spatial transcriptomics data.
-#' @param palette_names A character string specifying the column in
+#' @param paletteNames A character string specifying the column in
 #' `colData(spe)` to be used for the names in the palette.
-#' @param palette_colors A character string specifying the column in
+#' @param paletteColors A character string specifying the column in
 #' `colData(spe)` to be used for the colors in the palette.
 #'
 #' @return A character vector representing the palette mapping, where each
 #' element is a string in the format `"name=color"`.
 #'
 #' @details The function creates a new palette based on the unique combinations
-#' of values in the specified `palette_names` and `palette_colors` columns in
+#' of values in the specified `paletteNames` and `paletteColors` columns in
 #' `colData(spe)`.
 #'
 #' @importFrom SummarizedExperiment colData
 #' @keywords internal
-createPaletteFromColData <- function(spe, palette_names, palette_colors)
+createPaletteFromColData <- function(spe, paletteNames, paletteColors)
 {
     stopifnot(is(spe, "SpatialExperiment"))
-    stopifnot(all(c(palette_names, palette_colors) %in% names(colData(spe))))
+    stopifnot(all(c(paletteNames, paletteColors) %in% names(colData(spe))))
 
-    tb <- table(spe[[palette_names]], spe[[palette_colors]])
+    tb <- table(spe[[paletteNames]], spe[[paletteColors]])
     newpal <- colnames(tb)[which(tb!=0, arr.ind=TRUE)[,2]]
     names(newpal) <- rownames(tb)[which(tb!=0, arr.ind=TRUE)[,1]]
     return(newpal)

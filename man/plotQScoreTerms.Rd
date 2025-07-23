@@ -6,10 +6,10 @@
 \usage{
 plotQScoreTerms(
   spe,
-  sample_id = unique(spe$sample_id),
+  sampleId = unique(spe$sample_id),
   size = 0.05,
   alpha = 0.8,
-  aspect_ratio = 1,
+  aspectRatio = 1,
   custom = FALSE
 )
 }
@@ -17,14 +17,14 @@ plotQScoreTerms(
 \item{spe}{A `SpatialExperiment` object with `quality_score` and term
 columns in `colData`.}
 
-\item{sample_id}{Character string for plot title. Must match values in the
+\item{sampleId}{Character string for plot title. Must match values in the
 `fov` column of `colData(spe)`. Default: `unique(spe$sample_id)`.}
 
 \item{size}{Numeric point size for the scatter plots. Default: `0.05`.}
 
 \item{alpha}{Numeric transparency for the scatter plots. Default: `0.2`.}
 
-\item{aspect_ratio}{Numeric aspect ratio of the plots. Default: `1`.}
+\item{aspectRatio}{Numeric aspect ratio of the plots. Default: `1`.}
 
 \item{custom}{Logical; if `TRUE`, use custom polygon‐derived metrics.}
 }

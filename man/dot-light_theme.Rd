@@ -4,7 +4,7 @@
 \alias{.light_theme}
 \title{.light_theme}
 \usage{
-.light_theme(fill_color = "white", fore_color = "black")
+.light_theme(fillColor = "white", foreColor = "black")
 }
 \value{
 a ggplot2 theme object

@@ -52,7 +52,7 @@ library(SpaceTrooper)
 
 # Load Xenium data into a Spatial Experiment object (SPE)
 protfolder <- system.file( "extdata", "S0_prot", package="SpaceTrooper")
-(spe <- readCosmxSPE(protfolder))
+(spe <- readCosmxProteinSPE(protfolder))
 colData(spe)
 ```
 
@@ -153,10 +153,10 @@ discarded on a singular metric.
 
 ```{r cosmx-analysis-outlier, warning=FALSE}
 # Identify spatial outliers based on cell area (Area_um)
-spe <- computeSpatialOutlier(spe, compute_by="Area_um", method="both")
+spe <- computeSpatialOutlier(spe, computeBy="Area_um", method="both")
 
 # Identify spatial outliers based on mean DAPI intensity
-spe <- computeSpatialOutlier(spe, compute_by="Mean.DAPI", method="both")
+spe <- computeSpatialOutlier(spe, computeBy="Mean.DAPI", method="both")
 names(colData(spe))
 ```
 
@@ -165,16 +165,16 @@ visualize which fences have been used to create the filter on the cells.
 
 ```{r plot-metrics-2}
 # Plot a histogram with fences to identify outliers using the medcouple
-plotMetricHist(spe, metric="Area_um", use_fences="Area_um_outlier_mc")
+plotMetricHist(spe, metric="Area_um", useFences="Area_um_outlier_mc")
 
 # Plot a histogram with fences to identify outliers using scuttle
-plotMetricHist(spe, metric="Area_um", use_fences="Area_um_outlier_sc")
+plotMetricHist(spe, metric="Area_um", useFences="Area_um_outlier_sc")
 
 # Plot a histogram with fences to identify outliers using the medcouple
-plotMetricHist(spe, metric="Mean.DAPI", use_fences="Mean.DAPI_outlier_mc")
+plotMetricHist(spe, metric="Mean.DAPI", useFences="Mean.DAPI_outlier_mc")
 
 # Plot a histogram with fences to identify outliers using scuttle
-plotMetricHist(spe, metric="Mean.DAPI", use_fences="Mean.DAPI_outlier_sc")
+plotMetricHist(spe, metric="Mean.DAPI", useFences="Mean.DAPI_outlier_sc")
 ```
 
 We visualize the fences computed with medcouple and scuttle outlier 
@@ -215,7 +215,7 @@ thresholds for various metrics. Currently, the function considers:
 
 ```{r cosmx-analysis-score2}
 # Compute flags to identify cells for filtering
-spe <- computeQScoreFlags(spe, qs_threshold=0.5)
+spe <- computeQScoreFlags(spe, qsThreshold=0.5)
 names(colData(spe))
 table(spe$low_qscore)
 ```
@@ -233,8 +233,8 @@ the function `computeThresholdFlags` considers:
     negative probes to total counts (default 0.1).
     
 ```{r thresholds-outliers}
-spe <- computeThresholdFlags(spe, total_threshold=0, 
-                                ctrl_tot_ratio_threshold=0.1)
+spe <- computeThresholdFlags(spe, totalThreshold=0, 
+                                ctrlTotRatioThreshold=0.1)
 table(spe$threshold_flags)
 ```
 
@@ -264,23 +264,23 @@ visualized using functions based on the `ggplot2` library.
 
 ```{r plot-polygons-fov-1}
 # Plot the polygons of the selected cells
-plotPolygons(spe, bg_color="white")
+plotPolygons(spe, bgColor="white")
 ```
 
 Showing the cells on a white background for better visualization.
 
 ```{r plot-polygons-fov-2}
 # Plot polygons colored by cell area
-plotPolygons(spe, colour_by="log2AspectRatio")
-plotPolygons(spe, colour_by="Area_um")
+plotPolygons(spe, colourBy="log2AspectRatio")
+plotPolygons(spe, colourBy="Area_um")
 ```
 
 We can see in `yellow` and `darkviolet` that there are few cells with extreme 
 values of `log2AspectRatio` and `Area:um` in micron.
 
 ```{r plot-polygons-fov-3}
-plotPolygons(spe, colour_by="quality_score")
-plotPolygons(spe, colour_by="low_qscore")
+plotPolygons(spe, colourBy="quality_score")
+plotPolygons(spe, colourBy="low_qscore")
 ```
 
 We can see that the quality score is able to detect both these aspects and 
@@ -296,8 +296,8 @@ The `plotZoomFovsMap` function allows you to visualize a map of the FoVs with
 a zoom-in of selected FoVs, colored by the `colour_by` argument.
 
 ```{r plot-zoom-fov}
-plotZoomFovsMap(spe, fovs=60, colour_by="quality_score")
-plotZoomFovsMap(spe, fovs=60, colour_by="low_qscore")
+plotZoomFovsMap(spe, fovs=60, colourBy="quality_score")
+plotZoomFovsMap(spe, fovs=60, colourBy="low_qscore")
 ```
 
 We see on the left side the map of all the FoVs (only the FoV 16 in this case),

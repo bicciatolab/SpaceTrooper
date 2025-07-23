@@ -4,10 +4,12 @@
 \alias{.dark_theme}
 \title{.dark_theme}
 \usage{
-.dark_theme(fill_color = "black", fore_color = "white")
+.dark_theme(fillColor = "black", foreColor = "white")
 }
 \arguments{
-\item{fore_color}{color for all the other elements (default is "white")}
+\item{fillColor}{color to fill the element_rect (default is "black")}
+
+\item{foreColor}{color for all the other elements (default is "white")}
 }
 \value{
 a ggplot2 theme object
@@ -15,6 +17,5 @@ a ggplot2 theme object
 \description{
 internal function to setup the black background theme for the First Filter
 plot
-#' @param fill_color color to fill the element_rect (default is "black")
 }
 \keyword{internal}

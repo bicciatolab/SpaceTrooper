@@ -57,6 +57,7 @@
 #' @importFrom data.table fread
 #' @importFrom SpatialExperiment SpatialExperiment
 #' @importFrom SummarizedExperiment assays rowData
+#' @importFrom SpatialExperimentIO readXeniumSXE
 #' @export
 #' @examples
 #' xepath <- system.file(
@@ -167,11 +168,7 @@ computeMissingMetricsXenium <- function(polFile, colData, keepPolygons=FALSE,
 #' This function retrieves FOV information from transcript file and appends
 #' the data to the resulting `colData`.
 #'
-#' @param dirName `character(1)`
-#'   Path to a Xenium Output Bundle directory.
-#' @param txPattern A character string specifying the pattern to look for in the
-#' directory to find the transcript file, only parquet file is supported.
-#' data.
+#' @param txFile `character(1)` path to a Xenium Output tx file.
 #' @param colData A `DataFrame` containing the `colData` for the Xenium dataset.
 #'
 #' @return A `DataFrame` containing the updated `colData` with FOV information.
@@ -184,6 +181,7 @@ computeMissingMetricsXenium <- function(polFile, colData, keepPolygons=FALSE,
 #' @importFrom arrow read_parquet
 #' @importFrom dplyr group_by select distinct left_join
 #' @keywords internal
+#'
 .addFovFromTx <- function(txFile, colData) {
     stopifnot(file.exists(txFile))
     df <- data.frame(colData)
@@ -195,6 +193,6 @@ computeMissingMetricsXenium <- function(polFile, colData, keepPolygons=FALSE,
         distinct(cell_id, .keep_all = TRUE)
     df <- left_join(df, g_tx, by="cell_id")
     colData$fov <- df$fov
-    return(cd)
+    return(colData)
 }
 

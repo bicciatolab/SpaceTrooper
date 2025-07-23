@@ -5,7 +5,7 @@
 \title{computeMissingMetricsMerfish}
 \usage{
 computeMissingMetricsMerfish(
-  pol_file,
+  polFile,
   coldata,
   boundariesType = c("parquet", "HDF5"),
   keepPolygons = FALSE,
@@ -13,8 +13,7 @@ computeMissingMetricsMerfish(
 )
 }
 \arguments{
-\item{pol_file}{`character`
-Path (or vector of paths) to polygon files (HDF5 or Parquet).}
+\item{polFile}{path to the polygon file}
 
 \item{coldata}{`DataFrame` or `data.frame`
 Cell metadata with at least a `cell_id` column.}
