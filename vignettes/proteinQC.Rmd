@@ -21,7 +21,8 @@ knitr::opts_chunk$set(echo = TRUE, message = FALSE, warning = FALSE)
 
 # Introduction
 
-This vignette introduces the `SpaceTrooper` package for spatial data analysis
+This vignette introduces the `SpaceTrooper` package for preprocessing and 
+quality control of imaging-based spatial omics
 from platforms like **CosMx** on Protein assay. 
 
 # Installation
@@ -143,9 +144,9 @@ score addresses some metrics, other outlier detection methods may be needed.
 
 The `computeSpatialOutlier` function allows the computation of the medcouple
 statistics on a specified metric (`compute_by` argument). 
-The medcouple is specifically designed for symmetric distributions, indeed the
+The medcouple is specifically designed for asymmetric distributions, indeed the
 function stamps a warning message when this requisite is not satisfied.
-It can also use `scuttle::isOutlier` for asymmetric distributions. 
+It can also use `scuttle::isOutlier` for symmetric distributions. 
 The `method` argument supports `mc`, `scuttle`, or `both`.
 
 This outlier detection approach can be used to decide if and which cells can be 
@@ -188,7 +189,7 @@ If we want, we can already use these fences to remove the computed outliers.
 
 Next, we use `computeQScore` to calculate a flag score based on previously
 computed metrics. 
-The flag score combines **transcript counts** related to 
+The quality score combines **transcript counts** related to 
 **cell area**, the **aspect ratio** of each cell, and its 
 **distance from the FoV border** (only for CosMx, this last one is not used 
 otherwise).
@@ -204,12 +205,12 @@ names(colData(spe))
 Logical filters can then be computed using `computeQScoreFlags`, which requires
 thresholds for various metrics. Currently, the function considers:
 
-* **Flag Score (`qs_threshold`)**: Cells with scores below this threshold
+* **Quality Score (`qs_threshold`)**: Cells with scores below this threshold
     (default 0.5) are flagged for exclusion. This value can be used to indicate 
     the quantile for the filtering when setting the `use_fs_quantiles` argument 
     to `TRUE`.
     
-* **Flag Score Quantiles (`use_qs_quantiles`)**: Option to filter based on
+* **Quality Score Quantiles (`use_qs_quantiles`)**: Option to filter based on
     quantiles (default `FALSE`).
 
 
