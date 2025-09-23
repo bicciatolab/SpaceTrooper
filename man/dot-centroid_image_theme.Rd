@@ -4,10 +4,10 @@
 \alias{.centroid_image_theme}
 \title{.centroid_image_theme}
 \usage{
-.centroid_image_theme(back.border = NA)
+.centroid_image_theme(backBorder = NA)
 }
 \arguments{
-\item{back.border}{color for the borders of the background (default=NA)}
+\item{backBorder}{color for the borders of the background (default=NA)}
 }
 \value{
 a ggplot2 theme object

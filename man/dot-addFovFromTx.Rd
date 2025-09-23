@@ -5,14 +5,12 @@
 \alias{.addFovFromTx}
 \title{.addFovFromTx}
 \usage{
-.addFovFromTx(txpattern, coldata)
+.addFovFromTx(txFile, colData)
 }
 \arguments{
-\item{txpattern}{A character string specifying the pattern to look for in the
-directory to find the transcript file, only parquet file is supported.
-data.}
+\item{txFile}{`character(1)` path to a Xenium Output tx file.}
 
-\item{coldata}{A `DataFrame` containing the `colData` for the Xenium dataset.}
+\item{colData}{A `DataFrame` containing the `colData` for the Xenium dataset.}
 }
 \value{
 A `DataFrame` containing the updated `colData` with FOV information.

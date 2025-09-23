@@ -158,7 +158,7 @@ readPolygons <- function(polygonsFile, type=c("csv", "parquet", "h5"),
 #' (e.g., "Nanostring_CosMx", "Vizgen_MERFISH", or "10X_Xenium").
 #' @param keepMultiPol Logical. If \code{TRUE}, multi-polygon features will be
 #' kept when reading the boundary data. Defaults to \code{TRUE}.
-#' @param boundaries_type Character. Specifies the type of boundary file format
+#' @param boundariesType Character. Specifies the type of boundary file format
 #' to read. Options are \code{"HDF5"} or \code{"parquet"}. Defaults to
 #' \code{"HDF5"}.
 #' @param polygonsCol character indicating the name of the polygons column to
@@ -173,9 +173,9 @@ readPolygons <- function(polygonsFile, type=c("csv", "parquet", "h5"),
 #' spe <- readAndAddPolygonsToSPE(spe)
 #' colData(spe)
 readAndAddPolygonsToSPE <- function(spe, polygonsCol="polygons",
-    keepMultiPol=TRUE, boundaries_type=c("csv", "HDF5", "parquet"))
+    keepMultiPol=TRUE, boundariesType=c("csv", "HDF5", "parquet"))
 {
-    boundaries_type <- match.arg(boundaries_type)
+    boundariesType <- match.arg(boundariesType)
     stopifnot("technology" %in% names(metadata(spe)))
     tech <- metadata(spe)$technology
     switch(tech,
@@ -185,9 +185,9 @@ readAndAddPolygonsToSPE <- function(spe, polygonsCol="polygons",
             "Vizgen_MERFISH"={
                 ##### NEED TO HANDLE THE DIFFERENCES BETWEEN HDF5 FILES
                 ##### AND PARQUET, TO PROPAGATE TO READING FUNCTION
-                # ifelse(boundaries_type=="HDF5", merpol=)
-                polygons <- readPolygonsMerfish(polygonsFolder,
-                                keepMultiPol=TRUE, type=boundaries_type)
+                # ifelse(boundariesType=="HDF5", merpol=)
+                polygons <- readPolygonsMerfish(metadata(spe)$polygons,
+                                keepMultiPol=TRUE, type=boundariesType)
             },
             "10X_Xenium"={
                 polygons <- readPolygonsXenium(metadata(spe)$polygons,
@@ -417,7 +417,7 @@ readPolygonsXenium <- function(polygonsFile, type=c("parquet", "csv"),
 #' @param hdf5pattern A character string specifying the pattern to match HDF5
 #' files.
 #' @param keepMultiPol A logical value indicating whether to keep multipolygons.
-#' @param z_lev An integer specifying the Z level to filter the data. Default is
+#' @param zLev An integer specifying the Z level to filter the data. Default is
 #' `3L`.
 #' @param zcolumn A character string specifying the column name for the Z index.
 #' @param geometry A character string specifying the geometry column name.
@@ -435,7 +435,7 @@ readPolygonsXenium <- function(polygonsFile, type=c("parquet", "csv"),
 #' polygons
 readPolygonsMerfish <- function(polygons, type=c("parquet", "HDF5"),
                                 keepMultiPol=TRUE, hdf5pattern="hdf5",
-                                z_lev=3L, zcolumn="ZIndex",
+                                zLev=3L, zcolumn="ZIndex",
                                 geometry="Geometry",
                                 verbose=FALSE)
 {
@@ -446,7 +446,7 @@ readPolygonsMerfish <- function(polygons, type=c("parquet", "HDF5"),
                                 full.names=TRUE)
         dfsfl <- lapply(seq_along(polfiles), function(i)
         {
-            poll <- readh5polygons(pol_file=polfiles[i])
+            poll <- readh5polygons(polFile=polfiles[i])
             df <- data.frame(cell_id=paste0("f", i-1, "_c", poll$ids),
                 cell_ID=poll$ids, fov=i-1,
                 geometry=sf::st_sfc(poll$g)) ## geometry can be a simple column
@@ -461,7 +461,7 @@ readPolygonsMerfish <- function(polygons, type=c("parquet", "HDF5"),
                             # full.names=TRUE)
         polfile <- polygons
         polygons <- arrow::read_parquet(polfile, as_data_frame=TRUE)
-        polygons <- polygons[polygons[[zcolumn]]==z_lev,]
+        polygons <- polygons[polygons[[zcolumn]]==zLev,]
         polygons$cell_id <- polygons$EntityID
         polygons <- .createPolygons(polygons)
         polygons <- .renameGeometry(polygons, geometry, "global")
@@ -575,7 +575,7 @@ computeAspectRatioFromPolygons <- function(polygons)
 #' @rdname readh5polygons
 #' @description This function reads polygon data from an HDF5 file.
 #'
-#' @param pol_file A character string specifying the file path to the HDF5
+#' @param polFile A character string specifying the file path to the HDF5
 #' polygon data.
 #'
 #' @return A list containing the polygon geometries and their associated cell_id
@@ -583,9 +583,9 @@ computeAspectRatioFromPolygons <- function(polygons)
 #' @importFrom rhdf5 h5dump
 #' @importFrom sf st_polygon
 #' @keywords internal
-readh5polygons <- function(pol_file)
+readh5polygons <- function(polFile)
 {
-    l <- rhdf5::h5dump(pol_file)[[1]]
+    l <- rhdf5::h5dump(polFile)[[1]]
     cell_ids <- names(l)
     geometries <- lapply(l, function(m) {
         sf::st_polygon(list(t(m[["zIndex_0"]]$p_0$coordinates[,,1])))

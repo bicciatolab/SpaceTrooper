@@ -77,12 +77,12 @@
 #'
 #' @param spe A `SpatialExperiment` object containing spatial transcriptomics
 #' data.
-#' @param fences_of A character string specifying the name of the column in
+#' @param fencesOf A character string specifying the name of the column in
 #' `colData(spe)` from which to extract the fence values. This column should
 #' contain an `outlier.filter` object (see `computeSpatialOutlier```).
-#' @param high_low character indicating which fence to get if "higher", "lower"
+#' @param highLow character indicating which fence to get if "higher", "lower"
 #' or "both" (default is "both").
-#' @param decimal_round An optional integer specifying the number of decimal
+#' @param decimalRound An optional integer specifying the number of decimal
 #' places to which the fence values should be rounded. If `NULL`, no rounding is
 #'  applied. Default is `NULL`.
 #'
@@ -93,17 +93,17 @@
 #' @export
 #' @examples
 #' example(computeSpatialOutlier)
-#' getFencesOutlier(spe, fences_of="log2CountArea_outlier_mc")
-getFencesOutlier <- function(spe, fences_of,
-                    high_low=c("both", "lower", "higher"), decimal_round=NULL)
+#' getFencesOutlier(spe, fencesOf="log2CountArea_outlier_mc")
+getFencesOutlier <- function(spe, fencesOf,
+                    highLow=c("both", "lower", "higher"), decimalRound=NULL)
 {
     stopifnot(is(spe, "SpatialExperiment"))
-    stopifnot(fences_of %in% names(colData(spe)))
-    stopifnot(is(colData(spe)[[fences_of]], "outlier.filter"))
-    high_low <- match.arg(high_low)
-    fences <- attr(colData(spe)[[fences_of]], "thresholds")
-    if(!is.null(decimal_round)) {fences <- round(fences, decimal_round)}
-    fences <- switch (high_low,
+    stopifnot(fencesOf %in% names(colData(spe)))
+    stopifnot(is(colData(spe)[[fencesOf]], "outlier.filter"))
+    highLow <- match.arg(highLow)
+    fences <- attr(colData(spe)[[fencesOf]], "thresholds")
+    if(!is.null(decimalRound)) {fences <- round(fences, decimalRound)}
+    fences <- switch (highLow,
         both = {fences},
         lower = {fences[1]},
         higher = {fences[2]}

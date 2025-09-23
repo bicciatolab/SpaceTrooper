@@ -4,12 +4,12 @@
 \alias{computeQScore}
 \title{computeQScore}
 \usage{
-computeQScore(spe, best_lambda = NULL, verbose = FALSE)
+computeQScore(spe, bestLambda = NULL, verbose = FALSE)
 }
 \arguments{
 \item{spe}{A `SpatialExperiment` object with spatial transcriptomics data.}
 
-\item{best_lambda}{the best lambda typically computed using `computeLambda`.}
+\item{bestLambda}{the best lambda typically computed using `computeLambda`.}
 
 \item{verbose}{logical for having a verbose output. Default is FALSE.}
 }

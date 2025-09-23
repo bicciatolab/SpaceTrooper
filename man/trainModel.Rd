@@ -4,13 +4,13 @@
 \alias{trainModel}
 \title{trainModel}
 \usage{
-trainModel(model_matrix, train_df)
+trainModel(modelMatrix, trainDF)
 }
 \arguments{
-\item{model_matrix}{\[matrix\]
-The design matrix of predictors (e.g. from \code{model.matrix()}).}
+\item{modelMatrix}{a matrix describing the model variables, tipically created
+with `getModelFormula` and `model.matrix` functions.}
 
-\item{train_df}{\[data.frame\]
+\item{trainDF}{\[data.frame\]
 A data frame containing at least the response column
 \code{qscore_train}, coded as 0/1.}
 }

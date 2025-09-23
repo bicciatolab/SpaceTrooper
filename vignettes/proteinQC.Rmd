@@ -1,5 +1,5 @@
 ---
-title: "Spatial Data Quality Control with SpaceTrooper Package"
+title: "Spatial Data Quality Control on Protein data"
 author: "Dario Righelli"
 date: "`r BiocStyle::doc_date()`"
 output:
@@ -7,7 +7,7 @@ output:
         toc: true
         toc_float: true
 vignette: >
-    %\VignetteIndexEntry{Spatial Data Quality Control with SpaceTrooper Package}
+    %\VignetteIndexEntry{Spatial Data Quality Control on Protein data}
     %\VignetteEncoding{UTF-8}
     %\VignetteEngine{knitr::rmarkdown}
 editor_options:
@@ -22,9 +22,8 @@ knitr::opts_chunk$set(echo = TRUE, message = FALSE, warning = FALSE)
 # Introduction
 
 This vignette introduces the `SpaceTrooper` package for preprocessing and 
-quality control of imaging-based spatial omics,
-from platforms like **Xenium**, **Merfish**, and **CosMx**. We cover data
-loading, quality control, and results visualization.
+quality control of imaging-based spatial omics
+from platforms like **CosMx** on Protein assay. 
 
 # Installation
 
@@ -34,7 +33,7 @@ To install `SpaceTrooper`, use the following commands:
 # Install BiocManager if not already installed, then install SpaceTrooper
 if (!requireNamespace("BiocManager", quietly = TRUE))
     install.packages("BiocManager")
-BiocManager::install("SpaceTrooper")
+BiocManager::install("drighelli/SpaceTrooper")
 ```
 
 # Data Loading
@@ -46,65 +45,39 @@ all technologies, allowing for consistent QC analysis.
 The functions in `SpaceTrooper` compute missing metrics as needed and allow
 for the inclusion of polygons with the `keep_polygons` argument. This stores
 polygons in the `colData` of the `SpatialExperiment`.
-We suggest to use the `keep_polygons` argument for technologies like 
-**Xenium** and **Merfish/Merscope** because we already load the polygons to 
-compute missing metrics in these cases.
 
-Note that when loading data with `readXeniumSPE` in HDF5 format, this creates a 
-`DelayedArray` count assay in the `SpatialExperiment`, which could lead to some 
-issues in downstream analysis, in case this data structure is not supported
-by the used package.
 
 ```{r load-data}
-library(SpatialExperiment)
 # Load the SpaceTrooper library
 library(SpaceTrooper)
 
 # Load Xenium data into a Spatial Experiment object (SPE)
-xeniumFolder <- system.file( "extdata", "Xenium_small", package="SpaceTrooper")
-(xen <- readXeniumSPE(xeniumFolder, computeMissingMetrics=TRUE,
-                        keepPolygons=TRUE))
-colData(xen)
-# Load Merfish data into an SPE with parquet boundaries
-merscopeFolder <- system.file("extdata", "Merfish_Tiny", package="SpaceTrooper")
-(mer <- readMerfishSPE(merscopeFolder, boundariesType="parquet",
-                        computeMissingMetrics=TRUE, keepPolygons=TRUE))
-colData(mer)
+protfolder <- system.file( "extdata", "S0_prot", package="SpaceTrooper")
+(spe <- readCosmxProteinSPE(protfolder))
+colData(spe)
 ```
 
-Despite main differences across the technologies provided data, we can see that 
-all the technologies have the same mandatory `cell_id` and `AspectRatio` 
-columns.
-
-# Data Analysis based on CosMx
+# Data Analysis for CosMx protein
 
 The package offers several functions for spatial data analysis, including
 quality control and visualization.
 
-This tutorial focuses on CosMx data, which provides Fields of View (FoVs)
-with cell identifiers. Note that FoVs are unique to CosMx and are not
-available for other technologies like Xenium and Merfish/Merscope.
+This tutorial focuses on CosMx protein data, which provides Fields of View 
+(FoVs) with cell identifiers. Note that FoVs are unique to CosMx.
 
-For CosMx data, you don't need to `keep_polygons` initially because the
-metrics can be computed without them. Polygons can be loaded later if needed.
-
-```{r cosmx-analysis}
-# Reload CosMx data with sample name and without polygons
-cosmxFolder <- system.file(file.path("extdata", "CosMx_DBKero_Tiny"), 
-                        package="SpaceTrooper")
-spe <- readCosmxSPE(cosmxFolder, sampleName="DBKero_CosMx")
-## a custom function for the labels of this dataset
-source(system.file(file.path("scripts", "labelsfunct.R"), 
-                    package="SpaceTrooper"))
-spe <- addLabelsDBKero(spe)
-
-spe
-```
+Additionally, even if not tested, the same approach can be extended on Akoya 
+CODEX data, as far as a `SpatialExperiment` object is created.
+Polygons can be loaded later if needed.
 
 # Field of Views (FOVs) Visualization
 
 The `plotCellsFovs` function shows a map of the FoVs within an experiment. 
 This plot is specific to CosMx data and uses cell centroids.
+
+Please keep in mind, that this specific experiment had unaligned `fov_positions`
+and cell centroids positions.
+An alignment approach, can be found at the end of the `scripts/datacreation.R`
+file.
 
 ```{r plot-fovs}
 # Plot the cells within their respective Field of Views (FOVs)
@@ -118,30 +91,6 @@ centroids of the cells in purple.
 When an experiment has multiple FoVs, you can see the map and the topological
 organization of the FoVs, together with their identifiers.
 
-# Visualizing cell types
-
-To focus on cell centroids, use the `plotCentroidsSPE` function. It provides
-a `colour_by` argument, similar to `scater`, to colour the centroids by the 
-values present in the indicated column.
-Additionally, if you have a column with a color palette it automatically maps it
-to the values passed in the `colour_by` argument.
-
-```{r plot-centroids-labels}
-# Plot the centroids of the cells in the SPE
-plotCentroids(spe, colourBy="labels")
-# Plot the centroids of the cells in the SPE with personalized labels
-plotCentroids(spe, colourBy="labels", palette="labels_colors")
-```
-
-This allow us to see the cell centroids coloured by their cell types giving us
-an idea of the cell population in the entire experiment.
-
-Additionally, the `palette` argument allows to use a user-defined palette
-for the associated centroids. The `palette` value must by a column in the 
-object `colData`.
-
-Notice that with this plot the FoV identifier is not shown.
-
 # Quality control 
 
 The `spatialPerCellQC` function, inspired by `scater::addPerCellQC`, computes
@@ -151,13 +100,18 @@ the detection of negative control probes, which is crucial for QC.
 By default, it automatically removes 0 counts cells, but this can be handled 
 with the `rmZeros` argument.
 
+Here, for transparency, we specified the `negProbList` for CosMx protein assays,
+but the algorithm has already a set of negative probes for the mostly used 
+probes in multiple technologies.
+Notice that despite the same approach can be applied to CODEX data, it is not
+provided a list of negative probes for this technology, so the user needs to 
+specify them.
+
 ```{r cosmx-analysis-qc}
 # Perform per-cell quality control checks
-spe <- spatialPerCellQC(spe, rmZeros=TRUE,
-        negProbList=c("NegPrb", "Negative", "SystemControl"))
+spe <- spatialPerCellQC(spe, negProbList=c("Ms IgG1", "Rb IgG"))
 names(colData(spe))
 ```
-
 
 # Metrics Histograms
 
@@ -172,11 +126,16 @@ plotMetricHist(spe, metric="sum")
 plotMetricHist(spe, metric="Area_um")
 # Plot a histogram of proportion of counts respect to the cell area in micron 
 plotMetricHist(spe, metric="log2CountArea")
+# Plot a histogram of proportion of negative probe counts respect to the total
+# counts in cells
+plotMetricHist(spe, metric="log2Ctrl_total_ratio")
 ```
 
 These plots show, respectively, the distributions of the total counts (`sum`),
-of the Area in micron (`Area_um`) and the relationship between the counts and 
-the Area of each cell (`log2CountArea`).
+of the Area in micron (`Area_um`), the relationship between the counts and 
+the Area of each cell (`log2CountArea`) and the proportion between the 
+negative probes counts and the total counts of each cell 
+(`log2Ctrl_total_ratio`).
 
 # Spatial Outlier Detection 
 
@@ -225,6 +184,7 @@ outlier each method detected.
 
 If we want, we can already use these fences to remove the computed outliers.
 
+
 # The Quality Score
 
 Next, we use `computeQScore` to calculate a flag score based on previously
@@ -261,7 +221,7 @@ names(colData(spe))
 table(spe$low_qscore)
 ```
 
-We detected 88 cells to be removed.
+We detected 61 cells to be removed.
 
 # Additional metrics to filter out cells
 
@@ -273,7 +233,7 @@ the function `computeThresholdFlags` considers:
 * **Negative Probe Ratio (`ctrl_tot_ratio_threshold`)**: Minimum ratio of
     negative probes to total counts (default 0.1).
     
-```{r threshold-outlier}
+```{r thresholds-outliers}
 spe <- computeThresholdFlags(spe, totalThreshold=0, 
                                 ctrlTotRatioThreshold=0.1)
 table(spe$threshold_flags)
@@ -317,7 +277,7 @@ plotPolygons(spe, colourBy="Area_um")
 ```
 
 We can see in `yellow` and `darkviolet` that there are few cells with extreme 
-values of `log2AspectRatio` and `Area_um` in micron.
+values of `log2AspectRatio` and `Area:um` in micron.
 
 ```{r plot-polygons-fov-3}
 plotPolygons(spe, colourBy="quality_score")
@@ -337,8 +297,8 @@ The `plotZoomFovsMap` function allows you to visualize a map of the FoVs with
 a zoom-in of selected FoVs, colored by the `colour_by` argument.
 
 ```{r plot-zoom-fov}
-plotZoomFovsMap(spe, fovs=16, colourBy="quality_score")
-plotZoomFovsMap(spe, fovs=16, colourBy="low_qscore")
+plotZoomFovsMap(spe, fovs=60, colourBy="quality_score")
+plotZoomFovsMap(spe, fovs=60, colourBy="low_qscore")
 ```
 
 We see on the left side the map of all the FoVs (only the FoV 16 in this case),
@@ -351,8 +311,7 @@ experiment.
 In this vignette, we explored the main functionalities of the `SpaceTrooper`
 package for spatial data analysis. 
 Main steps shown are:
-* data loading: Xenium, Merfish/Merscope, CosMx 
-* polygons loading: Xenium, Merfish/Merscope, CosMx 
+* data and polygons loading for CosMx Protein, CosMx 
 * quality control: 
     + outlier detection: medcouple and scuttle MAD
     + flag score: a score combining **transcript counts**, **cell area**, 

@@ -1,20 +1,25 @@
 Package: SpaceTrooper
 Type: Package
 Title: SpaceTrooper performs Quality Control analysis of Image-Based spatial
-Version: 0.99.2
+Version: 0.99.4
 Authors@R:
-    c(person("Dario", "Righelli",
+        c(person(given="Benedetta", family="Banzi", role="aut"),
+        person("Dario", "Righelli",
             email = "dario.righelli@gmail.com",
             role = c("aut", "cre"),
             comment=c(ORCID="0000-0003-1504-3583")),
-        person(given="Benedetta", family="Banzi", role="aut"),
         person(given="Oriana", family="Romano", role="aut"),
+        person(given="Matteo", family="Merchionni", role="aut"),
         person(given="Mattia", family="Forcato", role="aut"),
         person(given="Silvio", family="Bicciato", role="aut"),
         person(given="Davide", family="Risso", role="aut"))
 Description: SpaceTrooper performs Quality Control analysis using data driven 
     GLM models of Image-Based spatial data, providing exploration plots, 
     QC metrics computation, outlier detection.
+    It implements a GLM strategy for the detection of low quality cells in 
+    imaging-based spatial data (Transcriptomics and Proteomics). 
+    It additionally implements several plots for the visualization of 
+    imaging based polygons through the ggplot2 package.
 License: MIT + file LICENSE
 Encoding: UTF-8
 Depends: 
@@ -40,7 +45,8 @@ Imports:
     glmnet,
     rhdf5,
     methods,
-    rlang
+    rlang,
+    SpatialExperimentIO
 Suggests:
     knitr,
     rmarkdown,

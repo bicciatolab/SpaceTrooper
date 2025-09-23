@@ -6,23 +6,23 @@
 \usage{
 getFencesOutlier(
   spe,
-  fences_of,
-  high_low = c("both", "lower", "higher"),
-  decimal_round = NULL
+  fencesOf,
+  highLow = c("both", "lower", "higher"),
+  decimalRound = NULL
 )
 }
 \arguments{
 \item{spe}{A `SpatialExperiment` object containing spatial transcriptomics
 data.}
 
-\item{fences_of}{A character string specifying the name of the column in
+\item{fencesOf}{A character string specifying the name of the column in
 `colData(spe)` from which to extract the fence values. This column should
 contain an `outlier.filter` object (see `computeSpatialOutlier```).}
 
-\item{high_low}{character indicating which fence to get if "higher", "lower"
+\item{highLow}{character indicating which fence to get if "higher", "lower"
 or "both" (default is "both").}
 
-\item{decimal_round}{An optional integer specifying the number of decimal
+\item{decimalRound}{An optional integer specifying the number of decimal
 places to which the fence values should be rounded. If `NULL`, no rounding is
  applied. Default is `NULL`.}
 }
@@ -38,5 +38,5 @@ from a specified column in the `colData` of a `SpatialExperiment` object.
 }
 \examples{
 example(computeSpatialOutlier)
-getFencesOutlier(spe, fences_of="log2CountArea_outlier_mc")
+getFencesOutlier(spe, fencesOf="log2CountArea_outlier_mc")
 }

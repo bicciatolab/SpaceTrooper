@@ -4,10 +4,10 @@
 \alias{readh5polygons}
 \title{readh5polygons}
 \usage{
-readh5polygons(pol_file)
+readh5polygons(polFile)
 }
 \arguments{
-\item{pol_file}{A character string specifying the file path to the HDF5
+\item{polFile}{A character string specifying the file path to the HDF5
 polygon data.}
 }
 \value{

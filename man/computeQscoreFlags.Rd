@@ -4,15 +4,15 @@
 \alias{computeQScoreFlags}
 \title{computeQScoreFlags}
 \usage{
-computeQScoreFlags(spe, qs_threshold = 0.5, use_qs_quantiles = FALSE)
+computeQScoreFlags(spe, qsThreshold = 0.5, useQSQuantiles = FALSE)
 }
 \arguments{
 \item{spe}{A `SpatialExperiment` object with spatial transcriptomics data.}
 
-\item{qs_threshold}{Numeric threshold or quantile for quality score. Default
+\item{qsThreshold}{Numeric threshold or quantile for quality score. Default
 `0.5`.}
 
-\item{use_qs_quantiles}{Logical; if `TRUE`, treat `qs_threshold` as a
+\item{useQSQuantiles}{Logical; if `TRUE`, treat `qsThreshold` as a
 percentile.}
 }
 \value{
@@ -27,9 +27,9 @@ quality score stored in `SpatialExperiment` object.
 \examples{
 example(computeQScore)
 spe <- computeQScoreFlags(spe)
-table(spe$is_qscore_outlier)
+table(spe$low_qscore)
 # if fixed filters are defined we have an additional column
 spe <- computeThresholdFlags(spe)
 spe <- computeQScoreFlags(spe)
-table(spe$threshold_qscore_flags)
+table(spe$low_threshold_qscore)
 }

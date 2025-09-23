@@ -6,29 +6,29 @@
 \usage{
 plotCentroids(
   spe,
-  colour_by = NULL,
-  colour_log = FALSE,
-  sample_id = unique(spe$sample_id),
+  colourBy = NULL,
+  colourLog = FALSE,
+  sampleId = unique(spe$sample_id),
   isNegativeProbe = FALSE,
   palette = NULL,
-  point_col = "darkmagenta",
+  pointCol = "darkmagenta",
   size = 0.05,
   alpha = 0.8,
-  aspect_ratio = 1
+  aspectRatio = 1
 )
 }
 \arguments{
 \item{spe}{A `SpatialExperiment` object containing spatial
 transcriptomics data.}
 
-\item{colour_by}{An optional character string specifying the column in
+\item{colourBy}{An optional character string specifying the column in
 `colData(spe)` to use for coloring the points. If `NULL`, all points will be
 colored the same.}
 
-\item{colour_log}{Logical to log-transform the data to enhance visualization
+\item{colourLog}{Logical to log-transform the data to enhance visualization
 (Default is FALSE).}
 
-\item{sample_id}{A character string specifying the sample identifier to be
+\item{sampleId}{A character string specifying the sample identifier to be
 used as the plot title. (Default is the unique sample ID from `spe`)}
 
 \item{isNegativeProbe}{A logical value indicating whether to apply a custom
@@ -36,11 +36,11 @@ color gradient for negative probe data. (Default is `FALSE`)}
 
 \item{palette}{A vector of colors to be used as a custom palette. For
 categorical data, this should be a vector of colors with the same length as
-the number of levels in `colour_by`. For continuous data, this should be a
+the number of levels in `colourBy`. For continuous data, this should be a
 vector of colors used to create a gradient.}
 
-\item{point_col}{A character string specifying the color of the points when
-`colour_by` is `NULL`. (Default is `"darkmagenta"`)}
+\item{pointCol}{A character string specifying the color of the points when
+`colourBy` is `NULL`. (Default is `"darkmagenta"`)}
 
 \item{size}{A numeric value specifying the size of the points. (Default is
 `0.05`)}
@@ -48,7 +48,7 @@ vector of colors used to create a gradient.}
 \item{alpha}{A numeric value specifying the transparency level of the points.
 (Default is `0.2`)}
 
-\item{aspect_ratio}{A numeric value specifying the aspect ratio of the plot.
+\item{aspectRatio}{A numeric value specifying the aspect ratio of the plot.
 (Default is `1`)}
 }
 \value{
@@ -63,6 +63,6 @@ column in `colData`.
 }
 \examples{
 example(readCosmxSPE)
-g <- plotCentroids(spe, colour_by="Mean.DAPI")
+g <- plotCentroids(spe, colourBy="Mean.DAPI")
 print(g)
 }

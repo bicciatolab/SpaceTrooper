@@ -1,4 +1,6 @@
 utils::globalVariables(c(
+    "log2Ctrl_total_ratio_outlier_sc",
+    "log2AspectRatio_outlier_mc",
     "log2AspectRatio_outlier_sc",
     "dist_border",
     "log2CountArea_outlier_train",

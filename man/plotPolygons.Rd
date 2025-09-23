@@ -6,47 +6,47 @@
 \usage{
 plotPolygons(
   spe,
-  colour_by = "darkgrey",
-  colour_log = FALSE,
-  poly_column = "polygons.global",
-  sample_id = unique(spe$sample_id),
-  bg_color = "white",
-  fill_alpha = 1,
+  colourBy = "darkgrey",
+  colourLog = FALSE,
+  polyColumn = "polygons.global",
+  sampleId = unique(spe$sample_id),
+  bgColor = "white",
+  fillAlpha = 1,
   palette = NULL,
-  border_col = NA,
-  border_alpha = 1,
-  border_line_width = 0.1,
-  draw_borders = TRUE
+  borderCol = NA,
+  borderAlpha = 1,
+  borderLineWidth = 0.1,
+  drawBorders = TRUE
 )
 }
 \arguments{
 \item{spe}{A `SpatialExperiment` object with polygon data as an `sf` object.}
 
-\item{colour_by}{A column in `colData(spe)` for coloring the polygons or a
+\item{colourBy}{A column in `colData(spe)` for coloring the polygons or a
 string color in colors(). (Default is "darkgrey")}
 
-\item{colour_log}{Logical to log-transform the data to enhance visualization
+\item{colourLog}{Logical to log-transform the data to enhance visualization
 (Default is FALSE).}
 
-\item{poly_column}{character for the name of the column where the polygons sf
+\item{polyColumn}{character for the name of the column where the polygons sf
 are stored (default is "polygons.global")}
 
-\item{sample_id}{Sample ID for plot title. Default is the unique sample ID.}
+\item{sampleId}{Sample ID for plot title. Default is the unique sample ID.}
 
-\item{bg_color}{character indicating color for the background
+\item{bgColor}{character indicating color for the background
 (default is "white")}
 
-\item{fill_alpha}{Transparency level for polygon fill. Default is `1`.}
+\item{fillAlpha}{Transparency level for polygon fill. Default is `1`.}
 
-\item{palette}{Colors to use if `colour_by` is a factor. Default is `NULL`.}
+\item{palette}{Colors to use if `colourBy` is a factor. Default is `NULL`.}
 
-\item{border_col}{Color of polygon borders. Default is `"black"`.}
+\item{borderCol}{Color of polygon borders. Default is `"black"`.}
 
-\item{border_alpha}{Transparency level for borders. Default is `1`.}
+\item{borderAlpha}{Transparency level for borders. Default is `1`.}
 
-\item{border_line_width}{Width of polygon borders. Default is `0.1`.}
+\item{borderLineWidth}{Width of polygon borders. Default is `0.1`.}
 
-\item{draw_borders}{Logical; whether to draw borders. Default is `TRUE`.}
+\item{drawBorders}{Logical; whether to draw borders. Default is `TRUE`.}
 }
 \value{
 A `ggplot` object representing the polygon plot of the spatial data.
@@ -56,5 +56,5 @@ Plot polygons from a `SpatialExperiment` object using ggplot2.
 }
 \examples{
 example(readAndAddPolygonsToSPE)
-plotPolygons(spe, colour_by="Mean.DAPI")
+plotPolygons(spe, colourBy="Mean.DAPI")
 }

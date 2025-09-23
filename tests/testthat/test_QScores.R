@@ -1,8 +1,6 @@
 library(testthat)
 library(SpaceTrooper)
 
-context("QC functions")
-
 # load the example SpatialExperiment
 spe0 <- example(readCosmxSPE)$value
 
@@ -39,7 +37,7 @@ test_that("computeQScore adds a flag_score between 0 and 1", {
 test_that("computeSpatialOutlier flags outliers for a chosen metric", {
     spe <- spatialPerCellQC(spe0)
     # use 'Area_um' and both methods
-    out <- computeSpatialOutlier(spe, compute_by="Area_um", method="scuttle")
+    out <- computeSpatialOutlier(spe, computeBy="Area_um", method="scuttle")
     cd_out <- colData(out)
     expect_true(is.logical(cd_out$Area_um_outlier_sc) ||
                     is(cd_out$Area_um_outlier_sc, "outlier.filter"))
@@ -50,8 +48,8 @@ test_that("computeQScoreFlags combines filters and returns filter_out", {
     spe <- spatialPerCellQC(spe0)
     spe <- computeQScore(spe)
     ff <- computeThresholdFlags(spe,
-                            total_threshold = 10,
-                            ctrl_tot_ratio_threshold = 0.2)
+                            totalThreshold = 10,
+                            ctrlTotRatioThreshold = 0.2)
     cd_ff <- colData(ff)
     # expect logical columns and combined filter_out
     expect_true(all(c("is_zero_counts", "is_ctrl_tot_outlier",

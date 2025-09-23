@@ -5,50 +5,50 @@
 \title{readMerfishSPE}
 \usage{
 readMerfishSPE(
-  dirname,
-  sample_name = "sample01",
-  compute_missing_metrics = TRUE,
-  keep_polygons = FALSE,
-  boundaries_type = c("HDF5", "parquet"),
-  countmatfpattern = "cell_by_gene.csv",
-  metadatafpattern = "cell_metadata.csv",
-  polygonsfpattern = "cell_boundaries.parquet",
-  coord_names = c("center_x", "center_y"),
+  dirName,
+  sampleName = "sample01",
+  computeMissingMetrics = TRUE,
+  keepPolygons = FALSE,
+  boundariesType = c("HDF5", "parquet"),
+  countmatFPattern = "cell_by_gene.csv",
+  metadataFPattern = "cell_metadata.csv",
+  polygonsFPattern = "cell_boundaries.parquet",
+  coordNames = c("center_x", "center_y"),
   polygonsCol = "polygons"
 )
 }
 \arguments{
-\item{dirname}{`character(1)`
+\item{dirName}{`character(1)`
 Path to a folder containing MERFISH output files.}
 
-\item{sample_name}{`character(1)`
+\item{sampleName}{`character(1)`
 Identifier to assign to the `sample_id` field in the returned object.
 Default: `"sample01"`.}
 
-\item{compute_missing_metrics}{`logical(1)`
+\item{computeMissingMetrics}{`logical(1)`
 If `TRUE`, compute area and aspect‐ratio metrics from the cell boundary
 polygons. Default: `TRUE`.}
 
-\item{keep_polygons}{`logical(1)`
+\item{keepPolygons}{`logical(1)`
 If `TRUE`, attach raw polygon geometries as extra columns in `colData`.
 Default: `FALSE`.}
 
-\item{boundaries_type}{`character(1)`
+\item{boundariesType}{`character(1)`
 One of `"HDF5"` or `"parquet"`. If `"HDF5"`, uses a folder of HDF5
 polygon files; if `"parquet"`, reads a single Parquet file of boundaries.}
 
-\item{countmatfpattern}{`character(1)`
+\item{countmatFPattern}{`character(1)`
 Regex passed to `list.files()` to find the count matrix CSV. Default:
 `"cell_by_gene.csv"`.}
 
-\item{metadatafpattern}{`character(1)`
+\item{metadataFPattern}{`character(1)`
 Pattern to find the cell metadata CSV. Default: `"cell_metadata.csv"`.}
 
-\item{polygonsfpattern}{`character(1)`
+\item{polygonsFPattern}{`character(1)`
 Pattern to find the cell boundaries file. Default:
 `"cell_boundaries.parquet"`.}
 
-\item{coord_names}{`character(2)`
+\item{coordNames}{`character(2)`
 Names of the columns in `colData` that store X/Y spatial coordinates.
 Default: `c("center_x", "center_y")`.}
 
@@ -59,26 +59,26 @@ add into the colData (default is `polygons`).}
 A `SpatialExperiment` object with:
   - `assays$counts`: gene × cell count matrix
   - `colData`: per‐cell metadata (including computed metrics)
-  - spatial coordinates named by `coord_names`
+  - spatial coordinates named by `coordNames`
   - `metadata$polygons`: path to the boundaries file
   - `metadata$technology`: `"Vizgen_MERFISH"`.
 }
 \description{
-`readMerfishSPE()` imports MERFISH outputs (counts, metadata, and optionally
-cell boundary polygons) from a directory and builds a SpatialExperiment
-object.
+`readMerfishSPE()` imports MERFISH/Merscore outputs (counts, metadata,
+and optionally cell boundary polygons) from a directory and builds a
+SpatialExperiment object.
 }
 \examples{
 path <- system.file("extdata", "Merfish_Tiny",
                     package = "SpaceTrooper")
 spe <- readMerfishSPE(
-  dirname = path,
-  sample_name = "Patient2",
-  keep_polygons = TRUE,
-  boundaries_type = "parquet"
+  dirName = path,
+  sampleName = "Patient2",
+  keepPolygons = TRUE,
+  boundariesType = "parquet"
 )
 spe
 }
 \author{
-Estella Yixing Dong, Dario Righelli
+Dario Righelli, Benedetta Banzi
 }
