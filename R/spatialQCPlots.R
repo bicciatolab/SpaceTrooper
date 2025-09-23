@@ -475,20 +475,30 @@ plotQScoreTerms <- function(spe, sampleId=unique(spe$sample_id), size=0.05,
     color
 }
 
-.make_outlier_plot <- function(polygons, fov, fillvar, pal, title=NULL,
-                            leg=FALSE) {
+.make_outlier_plot <- function(polygons, fov, fillvar, pal, title = NULL,
+                                leg = FALSE) {
     p <- ggplot2::ggplot() +
         ggplot2::geom_sf(
             data = polygons[polygons$fov %in% fov, ],
-            mapping = ggplot2::aes_string(fill=fillvar, color=fillvar),
-            lwd=0, show.legend="polygon"
+            mapping = ggplot2::aes(
+                fill  = .data[[fillvar]],
+                color = .data[[fillvar]]
+            ),
+            lwd = 0,
+            show.legend = "polygon"
         ) +
-        ggplot2::scale_fill_manual(values=pal) +
-        ggplot2::scale_color_manual(values=pal)
-    if (!leg) p <- p + ggplot2::theme(legend.position="none")
-    if (!is.null(title)) p <- p + ggplot2::ggtitle(title)
-    p
+        ggplot2::scale_fill_manual(values = pal) +
+        ggplot2::scale_color_manual(values = pal)
+
+    if (!leg) {
+        p <- p + ggplot2::theme(legend.position = "none")
+    }
+    if (!is.null(title)) {
+        p <- p + ggplot2::ggtitle(title)
+    }
+    return(p)
 }
+
 
 
 #' qcFlagPlots
