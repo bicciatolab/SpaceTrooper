@@ -1,75 +1,66 @@
 name: PR CMD check & build site
 
 on:
+  pull_request:
   push:
-<<<<<<< HEAD
-=======
     paths:
       - 'DESCRIPTION'
       - '**.yml'
     branches:
+      - devel
       - RELEASE_3_21
-      - pkgdown
->>>>>>> 2bddaf4ad90b7da0d21c35102609dfb01c9f985e
 
 env:
   R_REMOTES_NO_ERRORS_FROM_WARNINGS: true
   GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
   CRAN: https://p3m.dev/cran/__linux__/noble/latest
-<<<<<<< HEAD
-  BIOC_RELEASE: RELEASE_3_20
-=======
   BIOC_RELEASE: RELEASE_3_21
->>>>>>> 2bddaf4ad90b7da0d21c35102609dfb01c9f985e
 
 jobs:
+  set-matrix:
+    runs-on: ubuntu-24.04
+    outputs:
+      matrix: ${{ steps.set.outputs.matrix }}
+    steps:
+      - name: Set Matrix Bioconductor Version
+        id: set
+        run: |
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            bioc_version="devel"
+          else
+            bioc_version="${GITHUB_REF_NAME}"
+          fi
+          MATRIX="{\"include\":[{\"bioc_version\":\"$bioc_version\"}]}"
+          echo "matrix=$MATRIX" >> $GITHUB_OUTPUT
   check:
+    needs: set-matrix
     runs-on: ubuntu-latest
-<<<<<<< HEAD
-    container: bioconductor/bioconductor_docker:RELEASE_3_20
-
-=======
-    container: bioconductor/bioconductor_docker:RELEASE_3_21
-    
-  native-check:
-    name: Bioc Build & Check (macOS & Windows)
-    runs-on: ${{ matrix.os }}
     strategy:
-      matrix:
-        os: [macos-latest, windows-latest]
->>>>>>> 2bddaf4ad90b7da0d21c35102609dfb01c9f985e
+      matrix: ${{ fromJson(needs.set-matrix.outputs.matrix) }}
+    container: bioconductor/bioconductor_docker:${{ matrix.bioc_version }}
+
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
         with:
-          ref: ${{ env.BIOC_RELEASE }}
-<<<<<<< HEAD
-
-=======
->>>>>>> 2bddaf4ad90b7da0d21c35102609dfb01c9f985e
-      - name: Copy .github and _pkgdown.yml
-        run: |
-          git config --global --add safe.directory /__w/${{ github.event.repository.name }}/${{ github.event.repository.name }}
-          git fetch origin pkgdown
-          git checkout origin/pkgdown -- .github
-          git checkout origin/pkgdown -- _pkgdown.yml
+          ref: ${{ matrix.bioc_version }}
 
       - name: Query dependencies
         run: |
           BiocManager::install(c("covr", "BiocCheck"))
           saveRDS(remotes::dev_package_deps(dependencies = TRUE), ".github/depends.Rds", version = 2)
         shell: Rscript {0}
-<<<<<<< HEAD
 
-=======
-        
->>>>>>> 2bddaf4ad90b7da0d21c35102609dfb01c9f985e
       - name: Cache R packages
         uses: actions/cache@v4
         with:
           path: /usr/local/lib/R/site-library
-          key: ${{ runner.os }}-r-${{ env.BIOC_RELEASE }}-${{ hashFiles('.github/depends.Rds') }}
-          restore-keys: ${{ runner.os }}-r-${{ env.BIOC_RELEASE }}-
+          key: ${{ runner.os }}-r-${{ matrix.bioc_version }}-${{ hashFiles('.github/depends.Rds') }}
+          restore-keys: ${{ runner.os }}-r-${{ matrix.bioc_version }}-
+
+      - name: Install GPG
+        if: ${{ github.ref == 'refs/heads/devel' && github.event_name != 'pull_request' }}
+        run: sudo apt-get update && sudo apt-get install -y gpg
 
       - name: Install Dependencies
         run: |
@@ -83,6 +74,31 @@ jobs:
         run: rcmdcheck::rcmdcheck(args = "--no-manual", error_on = "error", check_dir = "check")
         shell: Rscript {0}
 
+      - name: Test coverage
+        if: ${{ success() && github.ref == 'refs/heads/devel' && github.event_name != 'pull_request' }}
+        run: |
+          cov <- covr::package_coverage(
+            quiet = FALSE,
+            clean = FALSE,
+            type = "all",
+            install_path = file.path(
+              normalizePath(Sys.getenv("RUNNER_TEMP"), winslash = "/"),
+              "package"
+            )
+          )
+          covr::to_cobertura(cov)
+        shell: Rscript {0}
+
+      - name: Upload test results to Codecov
+        if: ${{ success() && github.ref == 'refs/heads/devel' && github.event_name != 'pull_request' }}
+        uses: codecov/codecov-action@v4
+        with:
+          fail_ci_if_error: ${{ github.event_name != 'pull_request' && true || false }}
+          file: ./cobertura.xml
+          plugin: noop
+          disable_search: true
+          token: ${{ secrets.CODECOV_TOKEN }}
+
       - name: Run BiocCheck
         id: bioccheck
         run: |
@@ -91,8 +107,27 @@ jobs:
             `quit-with-status` = TRUE, `no-check-bioc-help` = TRUE
           )
         shell: Rscript {0}
-<<<<<<< HEAD
 
-=======
->>>>>>> 2bddaf4ad90b7da0d21c35102609dfb01c9f985e
+      - name: Build pkgdown
+        if: ${{ github.ref == format('refs/heads/{0}', env.BIOC_RELEASE) && github.event_name != 'pull_request' }}
+        run: |
+           PATH=$PATH:$HOME/bin/ Rscript -e 'pkgdown::build_site()'
+      - name: Upload pkgdown artifact
+        if: github.ref == format('refs/heads/{0}', env.BIOC_RELEASE)
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: docs
 
+  deploy:
+    needs: check
+    permissions:
+      contents: write
+      pages: write
+      id-token: write
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Deploy to GitHub Pages
+        if: ${{ github.ref == format('refs/heads/{0}', env.BIOC_RELEASE) && github.event_name != 'pull_request' }}
+        id: deployment
+        uses: actions/deploy-pages@v4
