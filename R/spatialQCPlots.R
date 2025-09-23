@@ -564,15 +564,53 @@ qcFlagPlots <- function(spe, fov=unique(spe$fov),
                             outlier_palette, "Area in um") + plot_func()
     ggp3 <- .make_outlier_plot(spe$polygons, fov, "dapi_outlier_color",
                             outlier_palette, "Mean DAPI") + plot_func()
+    # legp <- .make_outlier_plot(spe$polygons, fov, "collapsed_color",
+    #                         outlier_palette, leg=TRUE) + plot_func() +
+    #     ggplot2::theme(legend.title=element_blank())
+    # ggp4 <- cowplot::get_legend(legp)
+    # final <- cowplot::plot_grid(ggp1, ggp2, ggp3, ggp4, ncol=2)
+    # if(theme[1]=="dark")
+    # final <- final +
+    #     ggplot2::theme(panel.background=element_rect(fill="black"))
+    # final
     legp <- .make_outlier_plot(spe$polygons, fov, "collapsed_color",
-                            outlier_palette, leg=TRUE) + plot_func() +
-        ggplot2::theme(legend.title=element_blank())
-    ggp4 <- cowplot::get_legend(legp)
-    final <- cowplot::plot_grid(ggp1, ggp2, ggp3, ggp4, ncol=2)
-    if(theme[1]=="dark")
+                               outlier_palette, leg = TRUE) +
+        plot_func() +
+        ggplot2::theme(legend.title = ggplot2::element_blank()) +
+        # scale "robuste" per evitare il drop delle classi assenti
+        ggplot2::scale_fill_manual(
+            values = outlier_palette,
+            limits = names(outlier_palette),
+            drop   = FALSE,
+            na.value = "grey80"
+        ) +
+        ggplot2::scale_color_manual(
+            values = outlier_palette,
+            limits = names(outlier_palette),
+            drop   = FALSE,
+            na.value = "grey80"
+        )
+
+    # Estrazione sicura della legenda
+    ggp4 <- tryCatch(
+        cowplot::get_legend(legp),
+        error = function(e) NULL
+    )
+
+    # Composizione finale
+    if (!is.null(ggp4)) {
+        final <- cowplot::plot_grid(ggp1, ggp2, ggp3, ggp4, ncol = 2)
+    } else {
+        final <- cowplot::plot_grid(ggp1, ggp2, ggp3, ncol = 2)
+    }
+
+    if (theme[1] == "dark") {
         final <- final +
-            ggplot2::theme(panel.background=element_rect(fill="black"))
+            ggplot2::theme(panel.background = ggplot2::element_rect(fill = "black"))
+    }
     final
+
+
 }
 
 
