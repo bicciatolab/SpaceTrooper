@@ -6,9 +6,6 @@ on:
     paths:
       - 'DESCRIPTION'
       - '**.yml'
-    branches:
-      - devel
-      - RELEASE_3_21
 
 env:
   R_REMOTES_NO_ERRORS_FROM_WARNINGS: true
