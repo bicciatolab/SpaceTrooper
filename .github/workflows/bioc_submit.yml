@@ -6,6 +6,9 @@ on:
     paths:
       - 'DESCRIPTION'
       - '**.yml'
+    branches:
+      - devel
+      - RELEASE_3_21
 
 env:
   R_REMOTES_NO_ERRORS_FROM_WARNINGS: true
@@ -25,7 +28,7 @@ jobs:
           if [ "${{ github.event_name }}" = "pull_request" ]; then
             bioc_version="devel"
           else
-            bioc_version="${GITHUB_REF_NAME}"
+            bioc_version="devel"
           fi
           MATRIX="{\"include\":[{\"bioc_version\":\"$bioc_version\"}]}"
           echo "matrix=$MATRIX" >> $GITHUB_OUTPUT
