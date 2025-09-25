@@ -477,9 +477,23 @@ plotQScoreTerms <- function(spe, sampleId=unique(spe$sample_id), size=0.05,
 
 .make_outlier_plot <- function(polygons, fov, fillvar, pal, title = NULL,
                                 leg = FALSE) {
+    # Filter polygons data
+    filtered_polygons <- polygons[polygons$fov %in% fov, ]
+    
+    # Check if filtered data is empty or fillvar column doesn't exist
+    if (nrow(filtered_polygons) == 0 || !fillvar %in% names(filtered_polygons)) {
+        # Create an empty plot with appropriate theme
+        p <- ggplot2::ggplot() +
+            ggplot2::theme_void()
+        if (!is.null(title)) {
+            p <- p + ggplot2::ggtitle(title)
+        }
+        return(p)
+    }
+    
     p <- ggplot2::ggplot() +
         ggplot2::geom_sf(
-            data = polygons[polygons$fov %in% fov, ],
+            data = filtered_polygons,
             mapping = ggplot2::aes(
                 fill  = .data[[fillvar]],
                 color = .data[[fillvar]]
@@ -525,7 +539,7 @@ plotQScoreTerms <- function(spe, sampleId=unique(spe$sample_id), size=0.05,
 #'
 #' @importFrom dplyr case_when
 #' @importFrom ggplot2 ggplot geom_sf aes scale_fill_manual scale_color_manual
-#' @importFrom ggplot2 ggtitle theme
+#' @importFrom ggplot2 ggtitle theme theme_void
 #' @importFrom cowplot get_legend plot_grid
 #' @export
 #'
