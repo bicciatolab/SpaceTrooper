@@ -2,7 +2,6 @@ name: PR CMD check & build site
 
 on:
   pull_request:
-  push:
     paths:
       - 'DESCRIPTION'
       - '**.yml'
@@ -22,7 +21,7 @@ jobs:
         id: set
         run: |
           if [ "${{ github.event_name }}" = "pull_request" ]; then
-            bioc_version="devel-R-4.5.1"
+            bioc_version="devel"
           fi
           MATRIX="{\"include\":[{\"bioc_version\":\"$bioc_version\"}]}"
           echo "matrix=$MATRIX" >> $GITHUB_OUTPUT
