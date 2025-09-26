@@ -11,7 +11,6 @@ env:
   R_REMOTES_NO_ERRORS_FROM_WARNINGS: true
   GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
   CRAN: https://p3m.dev/cran/__linux__/noble/latest
-  BIOC_RELEASE: RELEASE_3_21
 
 jobs:
   set-matrix:
@@ -23,9 +22,7 @@ jobs:
         id: set
         run: |
           if [ "${{ github.event_name }}" = "pull_request" ]; then
-            bioc_version="devel"
-          else
-            bioc_version="devel"
+            bioc_version="devel_R_4.5.1"
           fi
           MATRIX="{\"include\":[{\"bioc_version\":\"$bioc_version\"}]}"
           echo "matrix=$MATRIX" >> $GITHUB_OUTPUT
