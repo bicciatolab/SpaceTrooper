@@ -1,3 +1,4 @@
+
 name: PR CMD check & build site
 
 on:
@@ -6,6 +7,9 @@ on:
     paths:
       - 'DESCRIPTION'
       - '**.yml'
+    branches:
+      - devel
+      - RELEASE_3_21
 
 env:
   R_REMOTES_NO_ERRORS_FROM_WARNINGS: true
@@ -25,7 +29,7 @@ jobs:
           if [ "${{ github.event_name }}" = "pull_request" ]; then
             bioc_version="devel"
           else
-            bioc_version="devel"
+            bioc_version="${GITHUB_REF_NAME}"
           fi
           MATRIX="{\"include\":[{\"bioc_version\":\"$bioc_version\"}]}"
           echo "matrix=$MATRIX" >> $GITHUB_OUTPUT
@@ -104,27 +108,3 @@ jobs:
             `quit-with-status` = TRUE, `no-check-bioc-help` = TRUE
           )
         shell: Rscript {0}
-
-      - name: Build pkgdown
-        if: ${{ github.ref == format('refs/heads/{0}', env.BIOC_RELEASE) && github.event_name != 'pull_request' }}
-        run: |
-           PATH=$PATH:$HOME/bin/ Rscript -e 'pkgdown::build_site()'
-      - name: Upload pkgdown artifact
-        if: github.ref == format('refs/heads/{0}', env.BIOC_RELEASE)
-        uses: actions/upload-pages-artifact@v3
-        with:
-          path: docs
-
-  deploy:
-    needs: check
-    permissions:
-      contents: write
-      pages: write
-      id-token: write
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Deploy to GitHub Pages
-        if: ${{ github.ref == format('refs/heads/{0}', env.BIOC_RELEASE) && github.event_name != 'pull_request' }}
-        id: deployment
-        uses: actions/deploy-pages@v4
