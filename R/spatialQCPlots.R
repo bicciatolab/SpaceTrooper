@@ -477,11 +477,9 @@ plotQScoreTerms <- function(spe, sampleId=unique(spe$sample_id), size=0.05,
 
 .make_outlier_plot <- function(polygons, fov, fillvar, pal, title = NULL,
                                 leg = FALSE) {
-    # Filter polygons data
     filtered_polygons <- polygons[polygons$fov %in% fov, ]
-    
-    # Check if filtered data is empty or fillvar column doesn't exist
-    if (nrow(filtered_polygons) == 0 || !fillvar %in% names(filtered_polygons)) {
+
+    if (nrow(filtered_polygons) == 0 || !fillvar %in% names(filtered_polygons)){
         # Create an empty plot with appropriate theme
         p <- ggplot2::ggplot() +
             ggplot2::theme_void()
@@ -490,7 +488,7 @@ plotQScoreTerms <- function(spe, sampleId=unique(spe$sample_id), size=0.05,
         }
         return(p)
     }
-    
+    newpal <- pal[which(names(pal)%in%unique(filtered_polygons[[fillvar]]))]
     p <- ggplot2::ggplot() +
         ggplot2::geom_sf(
             data = filtered_polygons,
@@ -499,10 +497,10 @@ plotQScoreTerms <- function(spe, sampleId=unique(spe$sample_id), size=0.05,
                 color = .data[[fillvar]]
             ),
             lwd = 0,
-            show.legend = "polygon"
+            show.legend = TRUE
         ) +
-        ggplot2::scale_fill_manual(values = pal) +
-        ggplot2::scale_color_manual(values = pal)
+        ggplot2::scale_fill_manual(values = newpal) +
+        ggplot2::scale_color_manual(values = newpal)
 
     if (!leg) {
         p <- p + ggplot2::theme(legend.position = "none")
