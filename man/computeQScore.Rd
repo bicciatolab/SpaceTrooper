@@ -17,11 +17,15 @@ computeQScore(spe, bestLambda = NULL, verbose = FALSE)
 The `SpatialExperiment` object with added quality score in `colData`.
 }
 \description{
+DEPRECATED - use computeQCScore instead
 Compute quality score and automatically define weights for quality score
 through glm training. This function computes quality score with a formula
 that depends on the technology.
 }
 \details{
+DEPRECATED - use computeQCScore instead - this will be removed starting next
+release.
+
 For CosMx datasets, the Quality Score formula is defined as follows:
 
 quality score ~ count density - aspect ratio - interaction term

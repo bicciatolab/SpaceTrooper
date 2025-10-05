@@ -339,11 +339,15 @@ computeLambda <- function(technology, trainDF) {
 #' @name computeQScore
 #' @rdname computeQScore
 #' @description
+#' DEPRECATED - use computeQCScore instead
 #' Compute quality score and automatically define weights for quality score
 #' through glm training. This function computes quality score with a formula
 #' that depends on the technology.
 #'
 #' @details
+#' DEPRECATED - use computeQCScore instead - this will be removed starting next
+#' release.
+#'
 #' For CosMx datasets, the Quality Score formula is defined as follows:
 #'
 #' quality score ~ count density - aspect ratio - interaction term
@@ -660,6 +664,8 @@ getModelFormula <- function(technology)
 #' @name computeQScoreFlags
 #' @rdname computeQScoreFlags
 #' @description
+#' DEPRECATED - use computeQCScoreFlags instead - this will be removed starting
+#' next release.
 #' Compute flagged cells based on a manually chosen threshold on quality score
 #'
 #' This function Compute flagged cells based on a manually chosen threshold on

@@ -19,6 +19,8 @@ percentile.}
 The `SpatialExperiment` object with added filter flags in `colData`.
 }
 \description{
+DEPRECATED - use computeQCScoreFlags instead - this will be removed starting
+next release.
 Compute flagged cells based on a manually chosen threshold on quality score
 
 This function Compute flagged cells based on a manually chosen threshold on
