@@ -375,7 +375,9 @@ computeLambda <- function(technology, trainDF) {
 #' summary(spe$quality_score)
 computeQScore <- function(spe, bestLambda=NULL, verbose=FALSE) {
     stopifnot(is(spe, "SpatialExperiment"))
-
+    msg <- paste0("Use computeQCScore instead, which can provide different",
+        "results!\n This will be removed in the next cycle!")
+    .Deprecated("computeQCScore", msg=msg)
     trainDF <- computeTrainDF(spe, verbose)
     model_formula <- getModelFormula(metadata(spe)$technology)
     model_matrix <- model.matrix(as.formula(model_formula), data=trainDF)
@@ -685,7 +687,9 @@ getModelFormula <- function(technology)
 computeQScoreFlags <- function(spe, qsThreshold=0.5, useQSQuantiles=FALSE) {
     stopifnot(is(spe, "SpatialExperiment"))
     stopifnot("quality_score" %in% names(colData(spe)))
-
+    msg <- paste0("Use computeQCScoreFlags instead, which can provide different",
+                  "results!\n This will be removed in the next cycle!")
+    .Deprecated("computeQCScoreFlags", msg=msg)
     if(useQSQuantiles) {
         spe$low_qscore <- ifelse(
             spe$quality_score < quantile(spe$quality_score, probs=qsThreshold),
