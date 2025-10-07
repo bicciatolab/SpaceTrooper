@@ -97,10 +97,10 @@ readXeniumSPE <- function(dirName, sampleName="sample01",
     pex <- paste0(polygonsFPattern, switch(boundariesType, parquet=".parquet",
                                                             csv=".csv.gz"))
     polfile <- list.files(dirName, pex, full.names=TRUE)
-
+    cd <- colData(spe)
     if (computeMissingMetrics) {
         message("Computing missing metrics, this could take some time...")
-        cd <- computeMissingMetricsXenium(polfile, colData(spe), keepPolygons,
+        cd <- computeMissingMetricsXenium(polfile, cd, keepPolygons,
                                         polygonsCol)
     }
     if (addFOVs) {
@@ -108,7 +108,7 @@ readXeniumSPE <- function(dirName, sampleName="sample01",
                     cd)
     }
 
-    colData(spe) <- cd
+    if (!identical(colData(spe), cd)) colData(spe) <- cd
     metadata(spe) <- list(polygons=polfile, technology="10X_Xenium")
     return(spe)
 }
