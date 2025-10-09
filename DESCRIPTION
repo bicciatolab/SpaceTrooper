@@ -40,7 +40,6 @@ Imports:
     scuttle,
     sf,
     sfheaders,
-    tmap,
     cowplot,
     glmnet,
     rhdf5,

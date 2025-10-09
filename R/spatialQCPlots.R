@@ -349,7 +349,6 @@ plotPolygons <- function(spe, colourBy="darkgrey", colourLog=FALSE,
 #' adds a title to the combined plot.
 #'
 #' @importFrom ggpubr ggarrange annotate_figure
-#' @importFrom tmap tmap_grob
 #' @export
 #'
 #' @examples
