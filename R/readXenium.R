@@ -209,6 +209,7 @@ computeMissingMetricsXenium <- function(polFile, colData, keepPolygons=FALSE,
 #'
 #' @param cd A \linkS4class{DataFrame} (typically \code{colData(spe)})
 #' containing per-cell metadata.
+#' @param polygons An `sf` object with matching `fov` and `cellID` columns.
 #'
 #' @return The same \code{cd} object with a column \code{Area_um} added
 #' or replaced.
@@ -225,7 +226,7 @@ computeMissingMetricsXenium <- function(polFile, colData, keepPolygons=FALSE,
 #' cd <- DataFrame(cell_area = c(10, 20, 30))
 #' cd <- .checkAndFixArea(cd)
 #' head(cd$Area_um)
-.checkAndFixArea <- function(cd)
+.checkAndFixArea <- function(cd, polygons)
 {
     idx <- which(names(cd) == "cell_area")
     if (length(idx) != 0) {
