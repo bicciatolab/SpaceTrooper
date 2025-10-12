@@ -154,7 +154,7 @@ computeMissingMetricsXenium <- function(polFile, colData, keepPolygons=FALSE,
     polygons <- readPolygonsXenium(polFile, keepMultiPol=TRUE)
     cd <- colData
     cd$AspectRatio <- computeAspectRatioFromPolygons(polygons)
-    cd <- .checkAndFixArea(cd, polygons)
+    cd <- .checkAndFixAreaXenium(cd, polygons)
     if(keepPolygons) cd <- .addPolygonsToCD(cd, polygons, polygonsCol)
     return(cd)
 }
@@ -226,7 +226,7 @@ computeMissingMetricsXenium <- function(polFile, colData, keepPolygons=FALSE,
 #' cd <- DataFrame(cell_area = c(10, 20, 30))
 #' cd <- .checkAndFixArea(cd)
 #' head(cd$Area_um)
-.checkAndFixArea <- function(cd, polygons)
+.checkAndFixAreaXenium <- function(cd, polygons)
 {
     idx <- which(names(cd) == "cell_area")
     if (length(idx) != 0) {
