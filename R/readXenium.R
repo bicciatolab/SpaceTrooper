@@ -154,6 +154,7 @@ computeMissingMetricsXenium <- function(polFile, colData, keepPolygons=FALSE,
     polygons <- readPolygonsXenium(polFile, keepMultiPol=TRUE)
     cd <- colData
     cd$AspectRatio <- computeAspectRatioFromPolygons(polygons)
+    cd <- .checkAndFixArea(cd, polygons)
     if(keepPolygons) cd <- .addPolygonsToCD(cd, polygons, polygonsCol)
     return(cd)
 }
@@ -196,3 +197,42 @@ computeMissingMetricsXenium <- function(polFile, colData, keepPolygons=FALSE,
     return(colData)
 }
 
+#' .checkAndFixArea
+#' @description
+#' Check and fix cell area column in colData
+#'
+#' This internal helper verifies whether a \code{colData} table
+#' contains a column named \code{"cell_area"}. If found, it copies that
+#' column into a new standardized column named \code{"Area_um"}.
+#' If the column is missing, the function computes cell areas using
+#' \code{\link{computeAreaFromPolygons}}.
+#'
+#' @param cd A \linkS4class{DataFrame} (typically \code{colData(spe)})
+#' containing per-cell metadata.
+#'
+#' @return The same \code{cd} object with a column \code{Area_um} added
+#' or replaced.
+#'
+#' @details
+#' This function ensures consistent naming of the cell area field.
+#' It is intended for internal use within quality control or preprocessing
+#' steps of \code{SpatialExperiment} objects.
+#'
+#' @seealso [computeAreaFromPolygons()]
+#'
+#' @keywords internal
+#' @examples
+#' cd <- DataFrame(cell_area = c(10, 20, 30))
+#' cd <- .checkAndFixArea(cd)
+#' head(cd$Area_um)
+.checkAndFixArea <- function(cd)
+{
+    idx <- which(names(cd) == "cell_area")
+    if (length(idx) != 0) {
+        cd$Area_um <- cd[[idx]]
+        cd$cell_area <- NULL
+    } else {
+        cd$Area_um <- computeAreaFromPolygons(polygons)
+    }
+    return(cd)
+}
