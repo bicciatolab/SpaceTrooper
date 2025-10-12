@@ -114,7 +114,6 @@ readCosmxProteinSPE <- function(dirName, sampleName="sample01",
 #'
 #' @keywords internal
 #' @noRd
-
 .checkFovPositionVersion <- function(spe)
 {
     fovpos <- metadata(spe)$fov_positions

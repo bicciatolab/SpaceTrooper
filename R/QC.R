@@ -710,3 +710,49 @@ computeQScoreFlags <- function(spe, qsThreshold=0.5, useQSQuantiles=FALSE) {
     }
     return(spe)
 }
+
+#' .checkSkw
+#' @name .checkSkw
+#' @rdname dot-checkSkw
+#' @description
+#' Check skewness of metrics to choose outlier detection method.
+#'
+#' @param cd colData of `SpatialExperiment` object.
+#' @param metricList A character vector specifying the metrics to include in
+#' the QC score formula. Default is `c("log2CountArea", "Area_um",
+#' "log2AspectRatio", "log2Ctrl_total_ratio")`.
+#'
+#' @return
+#' A vector containing the list of chosen outlier detection method for each
+#' metric.
+#'
+#' @examples
+#' example(readCosmxSPE)
+#' .checkSkw(colData(spe))`.
+#'
+#' @importFrom e1071 skewness
+#' @keywords internal
+.checkSkw <- function(cd, metricList=c("log2CountArea", "Area_um",
+    "log2AspectRatio", "log2Ctrl_total_ratio")){
+    stopifnot(all(metricList %in% names(cd)))
+    method <- c()
+    for (i in metricList) {
+        skw <- e1071::skewness(cd[[i]], na.rm = TRUE)
+        method[i] <- ifelse((skw>-1 & skw<1), "sc", "mc")
+    }
+    for (submeth in c("log2CountArea", "log2Ctrl_total_ratio"))
+    {
+        if (!submeth %in% names(method)) next
+        idx <- switch(submeth,
+                      "log2CountArea"        = cd[["total"]] > 0,
+                      "log2Ctrl_total_ratio" = cd[["ctrl_total_ratio"]] != 0,
+                      rep(TRUE, nrow(cd))
+        )
+        if (!any(idx, na.rm = TRUE)) next
+        skw <- e1071::skewness(cd[[submeth]][idx], na.rm=TRUE)
+        newm <- ifelse((skw>-1 & skw<1), "sc", "mc")
+        if (!is.na(newm)) method[[submeth]] <- newm
+    }
+    return(method)
+}
+
