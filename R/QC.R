@@ -756,9 +756,9 @@ computeQScoreFlags <- function(spe, qsThreshold=0.5, useQSQuantiles=FALSE) {
     return(method)
 }
 
-#' checkOutliers
+#' .checkOutliers
 #' @name checkOutliers
-#' @rdname checkOutliers
+#' @rdname dot-checkOutliers
 #' @description
 #' Checks if computed outliers meet the minimum numerical requirement, being
 #' at least 0.1% of total cells for each metric to be used in QC score formula.
@@ -777,12 +777,12 @@ computeQScoreFlags <- function(spe, qsThreshold=0.5, useQSQuantiles=FALSE) {
 #' metric.
 #'
 #' @importFrom SummarizedExperiment colData
-#' @export
+#' @keywords internal
 #' @examples
-#' example(computeOutliersQCScore)
-#' spe <- checkOutliers(spe, verbose = TRUE)
+#' example(.computeOutliersQCScore)
+#' spe <- .checkOutliers(spe, verbose = TRUE)
 #' metadata(spe)$formula_variables
-checkOutliers <- function(spe, verbose = FALSE) {
+.checkOutliers <- function(spe, verbose = FALSE) {
     warnstopmsg <- function(var, warnstop=c("w","s")) {
         warnstop <- match.arg(warnstop)
         m1 <- paste0("Not enough outlier cells for ", var, ".\n")
