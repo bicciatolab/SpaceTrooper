@@ -756,3 +756,100 @@ computeQScoreFlags <- function(spe, qsThreshold=0.5, useQSQuantiles=FALSE) {
     return(method)
 }
 
+#' checkOutliers
+#' @name checkOutliers
+#' @rdname checkOutliers
+#' @description
+#' Checks if computed outliers meet the minimum numerical requirement, being
+#' at least 0.1% of total cells for each metric to be used in QC score formula.
+#' If the requirement is not met, the variable is removed from the formula.
+#'
+#' @param spe A `SpatialExperiment` object with spatial omics data.
+#' @param verbose Logical. If `TRUE`, prints how many outliers were found for
+#' each metric.
+#'
+#' @return The `SpatialExperiment` object with added QCScore metric variables
+#'  in the `metadata`.
+#'
+#' @details The function checks if computed outliers for each metric meet
+#' the minimum number to get the metric included in the QC score formula.
+#' If verbose is TRUE, it also prints how many outliers were found for each
+#' metric.
+#'
+#' @importFrom SummarizedExperiment colData
+#' @export
+#' @examples
+#' example(computeOutliersQCScore)
+#' spe <- checkOutliers(spe, verbose = TRUE)
+#' metadata(spe)$formula_variables
+checkOutliers <- function(spe, verbose = FALSE) {
+    warnstopmsg <- function(var, warnstop=c("w","s")) {
+        warnstop <- match.arg(warnstop)
+        m1 <- paste0("Not enough outlier cells for ", var, ".\n")
+        m2=switch(warnstop,
+                s="QC score computation cannot be performed",
+                w="This variable will not be used in the final formula")
+        return(paste0(m1,m2))
+    }
+    out_var <- metadata(spe)$formula_variables
+    cd <- colData(spe)
+    if (verbose) {
+        for (i in names(out_var)) {
+            message("Outliers found for ", i, ":")
+            print(table(cd[[out_var[i]]]))
+        }
+    }
+    stopifnot(
+        "log2CountArea is not included in the QC score formula.\n
+        QC score cannot be computed"=
+            "log2CountArea" %in% names(out_var)
+    )
+    cfg <- list(
+        log2CountArea=list(pattern="log2CountArea_outlier",
+            remove="log2CountArea_outlier_train", label="LOW", act=stop,
+            code="s"),
+        Area_um=list(pattern="Area_um_outlier", remove="Area_um_outlier",
+            label="HIGH", act=warning, code="w"),
+        log2Ctrl_total_ratio=list(pattern="log2Ctrl_total_ratio_outlier",
+            remove="log2Ctrl_total_ratio_outlier_train", label="HIGH",
+            act=warning, code="w")
+    )
+    for (v in intersect(names(cfg), names(out_var))) {
+        r <- cfg[[v]]
+        gi <- grep(r$pattern, out_var)
+        if (length(gi)==0L) next
+        col <- out_var[gi]
+        tab <- table(cd[[col]])
+        cnt <- tab[[r$label]]
+        if (is.null(cnt) || is.na(cnt)) cnt <- 0L
+        if (cnt < ncol(spe)*0.001) {
+            r$act(warnstopmsg(v, r$code))
+            out_var <- out_var[-grep(r$remove, out_var)]
+        }
+    }
+    var <- "log2AspectRatio"
+    pat <- paste0(var, "_outlier")
+    is_cosmx <- metadata(spe)$technology %in%
+                c("Nanostring_CosMx", "Nanostring_CosMx_Protein")
+    if (is_cosmx && (var %in% names(out_var))) {
+        idx <- grep(pat, out_var)
+        if (length(idx)) {
+            col <- out_var[idx]
+            tab <- table(cd[[col]])
+            nmin <- ncol(spe) * 0.001
+
+            low  <- tab[["LOW"]];  if (is.na(low))  low  <- 0L
+            high <- tab[["HIGH"]]; if (is.na(high)) high <- 0L
+
+            if (low < nmin && high < nmin) {
+                warning(warnstopmsg(var, "w"))
+                out_var <- out_var[-grep(pat, out_var)]
+            }
+        }
+    } else {
+        out_var <- out_var[-grep(pat, out_var)]
+    }
+    metadata(spe)$formula_variables <- out_var
+    return(spe)
+}
+
