@@ -63,9 +63,11 @@ spatialPerCellQC <- function(spe, micronConvFact=0.12, rmZeros=TRUE,
 
     spe$ctrl_total_ratio <- spe$control_sum/spe$total
     spe$ctrl_total_ratio[which(is.na(spe$ctrl_total_ratio))] <- 0
+    # using eps avoids NaNs and 0 in further computations
+    eps <- .Machine$double.xmin
+    spe$log2Ctrl_total_ratio <- log2(spe$ctrl_total_ratio+eps)
     if(metadata(spe)$technology == "Nanostring_CosMx_Protein") {
-        # Only for proteins will be included in QScore
-        spe$log2Ctrl_total_ratio <- log2(spe$ctrl_total_ratio)
+        # Only for proteins will be included in QCScore
         idx <- which(names(colData(spe)) == "Area.um2")
         if(length(idx)!=0) { names(colData(spe))[idx] <- "Area_um" }
     }
@@ -319,7 +321,7 @@ computeThresholdFlags <- function(spe, totalThreshold=0,
 #' @examples
 #' example(spatialPerCellQC)
 #' withr::with_seed(1998, trainDF <- computeTrainDF(spe))
-#' best_lambda <- computeLambda(metadata(spe)$technology, trainDF)
+#' best_lambda <- computeLambda(metadata(spe)$technology, trainDF) #### this fails now and with benedetta example
 #' print(best_lambda)
 #'
 #' @seealso
@@ -329,7 +331,7 @@ computeThresholdFlags <- function(spe, totalThreshold=0,
 computeLambda <- function(trainDF, modelFormula) {
     # model_formula <- getModelFormula(technology)
     model_matrix <- model.matrix(as.formula(modelFormula), data=trainDF)
-    ridge_cv <- cv.glmnet(model_matrix, trainDF$qscore_train,
+    ridge_cv <- cv.glmnet(model_matrix, trainDF$qcscore_train,
                         family="binomial", alpha=0, lambda=NULL)
     bestLambda <- ridge_cv$lambda.min
     return(bestLambda)
@@ -383,19 +385,19 @@ computeLambda <- function(trainDF, modelFormula) {
 #' spe <- computeQCScore(spe)
 #' summary(spe$training_status)
 #' summary(spe$QC_score)
-computeQCScore <- function(spe, bestLambda=NULL, verbose=FALSE){
+computeQCScore <- function(spe, bestLambda=NULL, verbose=FALSE) {
     stopifnot(is(spe, "SpatialExperiment"))
-    if(dim(spe[,spe$total==0])[2]!=0){
-        warning(paste0(dim(spe[,spe$total==0])[2],
+    if (dim(spe[,spe$total == 0])[2] != 0) {
+        warning(paste0(dim(spe[,spe$total == 0])[2],
             " cells with 0 counts were found. These cells will be removed."))
-        spe <- spe[,spe$total>0]
+        spe <- spe[,spe$total > 0]
     }
     metricList = c("log2CountArea", "Area_um",
                    "log2AspectRatio", "log2Ctrl_total_ratio")
-    spe <- .computeOutliersQCScore(spe, metricList)
-    spe <- .checkOutliers(spe, verbose)
-    train_df <- computeTrainDF(spe, verbose)
-    model_formula <- getModelFormula(spe, verbose)
+    spe_temp <- .computeOutliersQCScore(spe, metricList)
+    spe_temp <- .checkOutliers(spe_temp, verbose)
+    train_df <- computeTrainDF(spe_temp, verbose)
+    model_formula <- getModelFormula(spe_temp, verbose)
     model_matrix <- model.matrix(as.formula(model_formula), data=train_df)
     model <- trainModel(model_matrix, train_df)
     if(is.null(bestLambda)) {
@@ -406,7 +408,7 @@ computeQCScore <- function(spe, bestLambda=NULL, verbose=FALSE){
         message("Model coefficients for every term used in the formula:")
         print(round(predict(model, s=bestLambda, type="coefficients"),2))
     }
-    cd <- data.frame(colData(spe))
+    cd <- data.frame(colData(spe_temp))
     full_matrix <- model.matrix(as.formula(model_formula), data=cd)
     cd$QC_score <- as.vector(predict(model, s=bestLambda,
                                      newx = full_matrix,
@@ -452,7 +454,7 @@ computeQCScore <- function(spe, bestLambda=NULL, verbose=FALSE){
 #' @export
 trainModel <- function(modelMatrix, trainDF)
 {
-    model <- glmnet(x=modelMatrix, y=trainDF$qscore_train,
+    model <- glmnet(x=modelMatrix, y=trainDF$qcscore_train,
                     family="binomial", lambda=NULL, alpha=0)
     return(model)
 }
@@ -742,12 +744,10 @@ getModelFormula <- function(spe, verbose=FALSE)
 }
 
 
-#' computeQScoreFlags
-#' @name computeQScoreFlags
-#' @rdname computeQScoreFlags
+#' computeQCScoreFlags
+#' @name computeQCScoreFlags
+#' @rdname computeQCScoreFlags
 #' @description
-#' DEPRECATED - use computeQCScoreFlags instead - this will be removed starting
-#' next release.
 #' Compute flagged cells based on a manually chosen threshold on quality score
 #'
 #' This function Compute flagged cells based on a manually chosen threshold on
@@ -772,7 +772,7 @@ getModelFormula <- function(spe, verbose=FALSE)
 #' spe <- computeThresholdFlags(spe)
 #' spe <- computeQCScoreFlags(spe)
 #' table(spe$low_threshold_qcscore)
-computeQScoreFlags <- function(spe, qsThreshold=0.5, useQSQuantiles=FALSE) {
+computeQCScoreFlags <- function(spe, qsThreshold=0.5, useQSQuantiles=FALSE) {
     stopifnot(is(spe, "SpatialExperiment"))
     stopifnot("QC_score" %in% names(colData(spe)))
 
@@ -814,7 +814,7 @@ computeQScoreFlags <- function(spe, qsThreshold=0.5, useQSQuantiles=FALSE) {
 #' @keywords internal
 .checkSkw <- function(cd, metricList=c("log2CountArea", "Area_um",
     "log2AspectRatio", "log2Ctrl_total_ratio")) {
-    print(names(cd))
+    stopifnot(is(cd, "DataFrame"))
     stopifnot(all(metricList %in% names(cd)))
     method <- c()
     for (i in metricList) {
@@ -885,9 +885,9 @@ computeQScoreFlags <- function(spe, qsThreshold=0.5, useQSQuantiles=FALSE) {
 .computeOutliersQCScore <- function(spe, metricList=c("log2CountArea", "Area_um",
     "log2AspectRatio", "log2Ctrl_total_ratio")) {
     stopifnot(is(spe, "SpatialExperiment"))
-    cd <- colData(spe)
 
-    method <- .checkSkw(spe, metricList)
+    cd <- colData(spe)
+    method <- .checkSkw(cd, metricList)
 
     spec <- list(
         log2CountArea = list(
@@ -905,8 +905,7 @@ computeQScoreFlags <- function(spe, qsThreshold=0.5, useQSQuantiles=FALSE) {
         s <- spec[[var]]
         spe_temp <- computeSpatialOutlier(spe[, s$idx], computeBy=var,
                                         method=method[[var]])
-        cd1 <- colData(spe_temp)
-        out_var <- cd1[[paste0(var, "_outlier_", method[[var]])]]
+        out_var <- paste0(var, "_outlier_", method[[var]])
         low_thr  <- getFencesOutlier(spe_temp, out_var, "lower")
         high_thr <- getFencesOutlier(spe_temp, out_var, "higher")
         if (isTRUE(s$tweak_lower)) {

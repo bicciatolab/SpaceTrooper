@@ -46,7 +46,7 @@ Internally, the function:
 \examples{
 example(spatialPerCellQC)
 withr::with_seed(1998, trainDF <- computeTrainDF(spe))
-best_lambda <- computeLambda(metadata(spe)$technology, trainDF)
+best_lambda <- computeLambda(metadata(spe)$technology, trainDF) #### this fails now and with benedetta example
 print(best_lambda)
 
 }
