@@ -489,55 +489,168 @@ trainModel <- function(modelMatrix, trainDF)
 #' table(df_train$qscore_train)
 #'
 #' @export
-computeTrainDF <- function(spe, verbose=FALSE)
-{
-    spe_temp <- computeSpatialOutlier(spe[,spe$total>0],
-        computeBy="log2CountArea", method="both")
 
-    if(getFencesOutlier(spe_temp, "log2CountArea_outlier_mc", "lower") <
-        min(spe_temp$log2CountArea)) {
-            low_thr <- quantile(spe$log2CountArea, probs = 0.01)
-    } else {
-        low_thr <- getFencesOutlier(spe_temp, "log2CountArea_outlier_mc",
-                                    "lower")
+#' computeTrainDF
+#' @name computeTrainDF
+#' @rdname computeTrainDF
+#' @description
+#' Build a Balanced Training Data Frame from a SpatialExperiment
+#'
+#' \code{computeTrainDF} takes a \linkS4class{SpatialExperiment} object
+#' and assembles a balanced training set of “good” vs “bad” cells for
+#' subsequent model fitting.
+#'
+#' @param spe \linkS4class{SpatialExperiment}
+#'   A SpatialExperiment containing at least:
+#'   \itemize{
+#'     \item assay(s) with nonzero \code{total} counts,
+#'     \item \code{colData(spe)} columns including \code{log2CountArea},
+#'     \code{Area_um}, \code{log2Ctrl_total_ratio}, etc.
+#'   }
+#'
+#' @param verbose \[logical(1)\] (default \code{FALSE})
+#'   If \code{TRUE}, prints the number of “bad” and “good” cells selected.
+#'
+#' @return
+#' A \code{data.frame} with one row per cell, including:
+#' \itemize{
+#'   \item \code{qcscore_train} (0/1) indicating “bad” vs “good”,
+#'   \item relevant \code{colData} columns used for modeling.
+#'   \item Deduplicates and down-samples “good” cells to match the number of
+#'    “bad” cells.
+#' }
+#'
+#' @details The function builds a training set using the variables specified
+#' in the `metadata` of the `SpatialExperiment` object.
+#'
+#' @examples
+#' example(spatialPerCellQC)
+#' df_train <- computeTrainDF(spe, verbose = TRUE)
+#' table(df_train$qcscore_train)
+#'
+#' @importFrom SummarizedExperiment colData
+#' @importFrom dplyr filter mutate distinct pull
+#' @importFrom glmnet glmnet cv.glmnet
+#' @importFrom stats as.formula model.matrix quantile predict
+#'
+#' @export
+computeTrainDF <- function(spe, verbose=FALSE) {
+    out_var <- metadata(spe)$formula_variables
+    df <- as.data.frame(colData(spe))
+
+    train_bad_var <- character()
+    train_good_var <- character()
+
+    stopifnot(
+        "log2CountArea is not included in the QC score formula.\n
+        QC score cannot be computed"=
+            "log2CountArea" %in% names(out_var)
+    )
+
+    cfg <- list(
+        log2CountArea=list(bad="LOW", good=c(0.90,0.99)),
+        Area_um=list(bad="HIGH", good=c(0.25,0.75)),
+        log2Ctrl_total_ratio=list(bad="HIGH", good=NULL)
+    )
+
+    vars <- intersect(names(cfg), names(out_var))
+
+    for (v in vars) {
+        r <- cfg[[v]]
+        out_col <- out_var[names(out_var) == v]
+        if (length(out_col) == 0L) next
+
+        # BAD ids
+        bad_ids <- df |>
+            dplyr::filter(.data[[out_col]] == r$bad) |>
+            dplyr::pull(cell_id)
+        train_bad_var <- unique(c(train_bad_var, bad_ids))
+
+        # GOOD ids (if a band is defined)
+        if (!is.null(r$good)) {
+            qs <- stats::quantile(df[[v]], probs=r$good)
+            good_ids <- df |>
+                dplyr::filter(.data[[v]] > qs[1] & .data[[v]] < qs[2]) |>
+                dplyr::pull(cell_id)
+            train_good_var <- unique(c(train_good_var, good_ids))
+        }
     }
 
-    high_thr <- getFencesOutlier(spe_temp, "log2CountArea_outlier_mc", "higher")
-    spe$log2CountArea_outlier_train <- case_when(spe$total==0 ~ "NO",
-        spe$log2CountArea<low_thr ~ "LOW",spe$log2CountArea>high_thr ~ "HIGH",
-        TRUE ~ "NO")
+    # CosMx-specific handling for log2AspectRatio
+    is_cosmx <- metadata(spe)$technology %in%
+        c("Nanostring_CosMx", "Nanostring_CosMx_Protein")
 
-    attr(spe$log2CountArea_outlier_train, "thresholds") <-
-        getFencesOutlier(spe_temp, "log2CountArea_outlier_mc")
-    attr(spe$log2CountArea_outlier_train, "thresholds")[1] <- low_thr
+    if (is_cosmx && "log2AspectRatio" %in% names(out_var)) {
 
-    if(metadata(spe)$technology == "Nanostring_CosMx") {
-        ts <- .computeCosmxTrainSet(spe)
+        if (!("dist_border" %in% colnames(df))) {
+            stop("dist_border column is required for CosMx handling")
+        }
+
+        out_col <- out_var[names(out_var) == "log2AspectRatio"]
+
+        bad_ids <- df |>
+            dplyr::filter(.data[[out_col]] %in% c("HIGH","LOW") &
+                              dist_border < 50) |>
+            dplyr::pull(cell_id)
+        train_bad_var <- unique(c(train_bad_var, bad_ids))
+
+        qs <- stats::quantile(df$log2AspectRatio, probs=c(0.25,0.75))
+        good_ids <- df |>
+            dplyr::filter(log2AspectRatio > qs[1] &
+                              log2AspectRatio < qs[2] &
+                              dist_border > 50) |>
+            dplyr::pull(cell_id)
+        train_good_var <- unique(c(train_good_var, good_ids))
+
+        idx <- grep(pattern="log2AspectRatio_outlier", x=out_var)
+        if (length(idx)) {
+            names(out_var)[idx] <-
+                "I(abs(log2AspectRatio) * as.numeric(dist_border < 50))"
+        }
     }
-    if(metadata(spe)$technology == "Nanostring_CosMx_Protein") {
-        ts <- .computeCosmxProteinTrainSet(spe)
-    }
-    if(any(metadata(spe)$technology %in% c("10X_Xenium", "Vizgen_MERFISH"))) {
-        ts <- .computeXenMerTrainSet(spe)
-    }
-    train_bad <- ts$bad
-    train_good <- ts$good
-    train_bad <- train_bad |> distinct(cell_id, .keep_all = TRUE)
 
-    if(verbose) message("Chosen low quality examples: ", dim(train_bad)[1])
+    train_bad <- df |>
+        dplyr::filter(cell_id %in% train_bad_var) |>
+        dplyr::mutate(qcscore_train=0)
 
-    train_good <- train_good |> distinct(cell_id, .keep_all = TRUE)
-    train_good <- train_good[!train_good$is_a_bad_boy,]
-    # set.seed(1998) # not needed if run is encapsulated in with_seed funct
-    train_good <- train_good[sample(rownames(train_good), dim(train_bad)[1],
-                                    replace=FALSE),]
-    if(verbose) message("Chosen good quality examples: ", dim(train_good)[1])
+    train_good <- df |>
+        dplyr::filter(cell_id %in% train_good_var) |>
+        dplyr::mutate(
+            qcscore_train=1,
+            is_a_bad_boy=cell_id %in% train_bad$cell_id
+        )
+
+    train_bad <- train_bad |>
+        dplyr::distinct(cell_id, .keep_all=TRUE)
+
+    if (verbose) message(paste0("Chosen low qual examples: ", nrow(train_bad)))
+
+    # good example duplicates removal without any warning to the user
+    train_good <- train_good |>
+        dplyr::distinct(cell_id, .keep_all=TRUE)
+
+    train_good <- train_good[!train_good$is_a_bad_boy, ]
+
+    n_bad <- nrow(train_bad)
+    stopifnot("Not enough good examples to match bad examples"=
+                  nrow(train_good) > n_bad)
+    idx <- sample(seq_len(nrow(train_good)), n_bad, replace=FALSE)
+    train_good <- train_good[idx, ]
+
+    if (verbose) {
+        message(paste0(
+            "Chosen good quality examples (should match bad): ",
+            nrow(train_good)
+        ))
+    }
 
     train_good$is_a_bad_boy <- NULL
-    trainDF <- rbind(train_bad, train_good)
-    trainDF <- trainDF |> distinct(cell_id, .keep_all = TRUE)
-    return(trainDF)
+    train_df <- rbind(train_bad, train_good)
+    train_df <- train_df |>
+        dplyr::distinct(cell_id, .keep_all=TRUE)
+    return(train_df)
 }
+
 
 #' getModelFormula
 #' @name getModelFormula
@@ -779,7 +892,7 @@ computeQScoreFlags <- function(spe, qsThreshold=0.5, useQSQuantiles=FALSE) {
 #' @importFrom SummarizedExperiment colData
 #' @keywords internal
 #' @examples
-#' example(.computeOutliersQCScore)
+#' example(computeOutliersQCScore)
 #' spe <- .checkOutliers(spe, verbose = TRUE)
 #' metadata(spe)$formula_variables
 .checkOutliers <- function(spe, verbose = FALSE) {
