@@ -652,36 +652,35 @@ computeTrainDF <- function(spe, verbose=FALSE) {
 }
 
 
+
 #' getModelFormula
 #' @name getModelFormula
 #' @rdname getModelFormula
 #' @description
-#' Returns the right‐hand side of a model formula string based on technology.
-#' @param technology \[character\]
-#'   Technology name to decide which predictors to include.
+#' Returns the right‐hand side of a model formula string based on formula variables
+#' found in the `metadata` of a `SpatialExperiment` object.
+#' @param spe A `SpatialExperiment` object with spatial omics data.
+#' @param verbose Logical. If `TRUE`, prints the final formula used for QC score
 #' @return \[character\]
 #'   A one‐sided formula as a string (e.g. "~ log2CountArea + ...").
 #' @export
 #' @examples
-#' example(spatialPerCellQC)
-#' getModelFormula(metadata(spe)$technology)
-getModelFormula <- function(technology)
+#' example(checkOutliers)
+#' getModelFormula(spe, verbose=TRUE)
+getModelFormula <- function(spe, verbose=FALSE)
 {
-    model_formula <- "~log2CountArea" # xen and merf
-    if(technology == "Nanostring_CosMx") {
-        model_formula <- paste0("~ log2CountArea + I(abs(log2AspectRatio) ",
-                                "* as.numeric(dist_border<50)) + ",
-                                " log2CountArea:I(abs(log2AspectRatio)",
-                                "* as.numeric(dist_border<50))") #for cosmx
+    out_var <- metadata(spe)$formula_variables
+    if ("log2AspectRatio"%in%names(out_var)) {
+        names(out_var)[grep(out_var, pattern = "log2AspectRatio_outlier")] <-
+            "I(abs(log2AspectRatio) * as.numeric(dist_border<50))"
     }
-    if(technology == "Nanostring_CosMx_Protein") {
-    model_formula <- paste0("~ log2CountArea + I(abs(log2AspectRatio) ",
-        "*as.numeric(dist_border<50)) + log2Ctrl_total_ratio + ",
-        " log2CountArea:I(abs(log2AspectRatio) ",
-        "* as.numeric(dist_border<50)) + log2CountArea:log2Ctrl_total_ratio ",
-        " + log2Ctrl_total_ratio:I(abs(log2AspectRatio) ",
-        " * as.numeric(dist_border<50))")
+    model_formula <- paste0("~(", paste(names(out_var), collapse = " + "), ")^2", sep = "")
+
+    if(verbose){
+        message("Final formula used for QC score computation:")
+        print(model_formula)
     }
+
     return(model_formula)
 }
 
