@@ -657,7 +657,8 @@ computeTrainDF <- function(spe, verbose=FALSE) {
 #' @name getModelFormula
 #' @rdname getModelFormula
 #' @description
-#' Returns the right‐hand side of a model formula string based on formula variables
+#' Returns the right‐hand side of a model formula string based on formula
+#' variables
 #' found in the `metadata` of a `SpatialExperiment` object.
 #' @param spe A `SpatialExperiment` object with spatial omics data.
 #' @param verbose Logical. If `TRUE`, prints the final formula used for QC score
@@ -665,18 +666,19 @@ computeTrainDF <- function(spe, verbose=FALSE) {
 #'   A one‐sided formula as a string (e.g. "~ log2CountArea + ...").
 #' @export
 #' @examples
-#' example(checkOutliers)
-#' getModelFormula(spe, verbose=TRUE)
+#' example(.checkOutliers)
+#' getModelFormula(spe)
 getModelFormula <- function(spe, verbose=FALSE)
 {
     out_var <- metadata(spe)$formula_variables
-    if ("log2AspectRatio"%in%names(out_var)) {
+    if ("log2AspectRatio" %in% names(out_var)) {
         names(out_var)[grep(out_var, pattern = "log2AspectRatio_outlier")] <-
             "I(abs(log2AspectRatio) * as.numeric(dist_border<50))"
     }
-    model_formula <- paste0("~(", paste(names(out_var), collapse = " + "), ")^2", sep = "")
+    model_formula <- paste0("~(", paste(names(out_var), collapse = " + "),
+                        ")^2", sep = "")
 
-    if(verbose){
+    if (verbose) {
         message("Final formula used for QC score computation:")
         print(model_formula)
     }
@@ -867,6 +869,114 @@ computeQScoreFlags <- function(spe, qsThreshold=0.5, useQSQuantiles=FALSE) {
     }
     return(method)
 }
+
+#' .computeOutliersQCScore
+#' @name dot-computeOutliersQCScore
+#' @rdname dot-computeOutliersQCScore
+#' @description
+#' Compute outlier cells for each metric that can be used in QC score formula
+#' for SpatialExperiment.
+#'
+#' This function calculates outlier cells for each variable specified
+#' in `metricList` for a `SpatialExperiment`. Log2CountArea must be present in
+#' the `colData` of the `SpatialExperiment` object as a minimum requirement.
+#' The user can choose which metrics to include among the following: Area_um,
+#' log2Ctrl_total_ratio, log2AspectRatio. For Xenium and Merfish datasets,
+#' log2AspectRatio is automatically removed from the formula.
+#'
+#' @param spe A `SpatialExperiment` object with spatial omics data.
+#' @param metricList A character vector specifying the metrics to include in
+#' the QC score formula. Default is `c("log2CountArea", "Area_um",
+#' "log2AspectRatio", "log2Ctrl_total_ratio")`.
+#'
+#' @return The `SpatialExperiment` object with added outlier variables in
+#' `colData` and the temporary QCScore metric variables that in the
+#' `metadata`.
+#'
+#' @details The function computes outliers for each specified metric after
+#' automatically choosing the appropriate method according to the skewness of
+#' the distribution.
+#' Internally the function:
+#' \enumerate{
+#'    \item Calls \code{.checkSkw()} to choose the proper outlier detection
+#'     method according to the variable skewness,
+#'    \item Calls \code{computeSpatialOutlier()} on each included metric to get
+#'    fences,
+#'    \item Labels cells as “LOW”/“HIGH” outliers or “NO”
+#' }
+#'
+#' @importFrom SummarizedExperiment colData
+#' @importFrom dplyr case_when
+#' @importFrom scuttle outlier.filter
+#' @importFrom stats quantile
+#' @export
+#' @examples
+#' example(readCosmxSPE)
+#' spe <- spatialPerCellQC(spe)
+#' spe <- .computeOutliersQCScore(spe)
+#' table(spe$log2CountArea_outlier_train)
+.computeOutliersQCScore <- function(spe, metricList=c("log2CountArea", "Area_um",
+                                                      "log2AspectRatio", "log2Ctrl_total_ratio")) {
+    stopifnot(is(spe, "SpatialExperiment"))
+    cd <- colData(spe)
+
+    method <- .checkSkw(spe, metricList)
+
+    spec <- list(
+        log2CountArea = list(
+            idx  = spe$total > 0,
+            zero = spe$total == 0,
+            tweak_lower = TRUE
+        ),
+        log2Ctrl_total_ratio = list(
+            idx  = spe$ctrl_total_ratio != 0,
+            zero = spe$ctrl_total_ratio == 0,
+            tweak_lower = FALSE
+        )
+    )
+    for (var in intersect(names(method), names(spec))) {
+        s <- spec[[var]]
+        spe_temp <- computeSpatialOutlier(spe[, s$idx], computeBy=var,
+                                        method=method[[var]])
+        cd1 <- colData(spe_temp)
+        out_var <- cd1[[paste0(var, "_outlier_", method[[var]])]]
+        low_thr  <- getFencesOutlier(spe_temp, out_var, "lower")
+        high_thr <- getFencesOutlier(spe_temp, out_var, "higher")
+        if (isTRUE(s$tweak_lower)) {
+            if (low_thr < min(spe_temp[[var]], na.rm = TRUE)) {
+                low_thr <- stats::quantile(spe[[var]], probs=0.01)
+            }
+        }
+        tgt <- paste0(var, "_outlier_train")
+        spe[[tgt]] <- dplyr::case_when(
+            s$zero ~ "NO",
+            spe[[var]] < low_thr  ~ "LOW",
+            spe[[var]] > high_thr ~ "HIGH",
+            TRUE ~ "NO"
+        )
+        spe[[tgt]] <- scuttle::outlier.filter(spe[[tgt]])##is this really needed?
+        thr <- getFencesOutlier(spe_temp, out_var)
+        if (isTRUE(s$tweak_lower)) thr[1] <- low_thr
+        attr(spe[[tgt]], "thresholds") <- thr
+    }
+
+    submethod <- method[!names(method) %in% c("log2CountArea", "log2Ctrl_total_ratio")]
+
+    for(j in names(submethod)){
+        spe <- computeSpatialOutlier(spe, computeBy=j, method=submethod[j])
+    }
+
+    out_var <- paste0(names(method), "_outlier_", method)
+    names(out_var) <- names(method)
+    # gives warning if one of the variables is missing, but still works!
+    out_var[names(out_var) %in% c("log2CountArea", "log2Ctrl_total_ratio")] <-
+        c("log2CountArea_outlier_train", "log2Ctrl_total_ratio_outlier_train")
+
+    metadata(spe)$formula_variables <- out_var
+
+    return(spe)
+}
+
 
 #' .checkOutliers
 #' @name checkOutliers
