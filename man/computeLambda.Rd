@@ -4,13 +4,9 @@
 \alias{computeLambda}
 \title{computeLambda}
 \usage{
-computeLambda(technology, trainDF)
+computeLambda(trainDF, modelFormula)
 }
 \arguments{
-\item{technology}{\[character\]
-The name of the experimental technology. Passed to
-\code{getModelFormula()} to retrieve the corresponding model formula.}
-
 \item{trainDF}{\[data.frame\]
 A data frame for training that must include:
 \describe{
@@ -18,6 +14,10 @@ A data frame for training that must include:
   by \code{getModelFormula()}.}
   \item{\code{qscore_train}}{A binary (0/1) response vector to be modeled.}
 }}
+
+\item{technology}{\[character\]
+The name of the experimental technology. Passed to
+\code{getModelFormula()} to retrieve the corresponding model formula.}
 }
 \value{
 \[numeric\]

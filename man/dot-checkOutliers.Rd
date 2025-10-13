@@ -29,7 +29,7 @@ If verbose is TRUE, it also prints how many outliers were found for each
 metric.
 }
 \examples{
-example(.computeOutliersQCScore)
+example(computeOutliersQCScore)
 spe <- .checkOutliers(spe, verbose = TRUE)
 metadata(spe)$formula_variables
 }

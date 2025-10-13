@@ -227,38 +227,38 @@ If we want, we can already use these fences to remove the computed outliers.
 
 # The Quality Score
 
-Next, we use `computeQScore` to calculate a flag score based on previously
+Next, we use `computeQCScore` to calculate a flag score based on previously
 computed metrics. 
 The quality score combines **transcript counts** related to 
 **cell area**, the **aspect ratio** of each cell, and its 
 **distance from the FoV border** (only for CosMx, this last one is not used 
 otherwise).
 
-See the `help(computeQScore)` details section for additional details.
+See the `help(computeQCScore)` details section for additional details.
 
 ```{r cosmx-analysis-score}
 # Calculate quality scores for each cell
-spe <- computeQScore(spe)
+spe <- computeQCScore(spe)
 names(colData(spe))
 ```
 
-Logical filters can then be computed using `computeQScoreFlags`, which requires
+Logical filters can then be computed using `computeQCScoreFlags`, which requires
 thresholds for various metrics. Currently, the function considers:
 
-* **Quality Score (`qs_threshold`)**: Cells with scores below this threshold
+* **Quality Score (`qsThreshold`)**: Cells with scores below this threshold
     (default 0.5) are flagged for exclusion. This value can be used to indicate 
-    the quantile for the filtering when setting the `use_fs_quantiles` argument 
+    the quantile for the filtering when setting the `useQSQuantiles` argument 
     to `TRUE`.
     
-* **Quality Score Quantiles (`use_qs_quantiles`)**: Option to filter based on
+* **Quality Score Quantiles (`useQSQuantiles`)**: Option to filter based on
     quantiles (default `FALSE`).
 
 
 ```{r cosmx-analysis-score2}
 # Compute flags to identify cells for filtering
-spe <- computeQScoreFlags(spe, qsThreshold=0.5)
+spe <- computeQCScoreFlags(spe, qsThreshold=0.5)
 names(colData(spe))
-table(spe$low_qscore)
+table(spe$low_qcscore)
 ```
 
 We detected 88 cells to be removed.
@@ -268,9 +268,9 @@ We detected 88 cells to be removed.
 While for other metrics such as the total counts and the negative prob ratio, 
 the function `computeThresholdFlags` considers:
 
-* **Total Counts (`total_threshold`)**: Minimum count threshold (default 0).
+* **Total Counts (`totalThreshold`)**: Minimum count threshold (default 0).
 
-* **Negative Probe Ratio (`ctrl_tot_ratio_threshold`)**: Minimum ratio of
+* **Negative Probe Ratio (`ctrlTotRatioThreshold`)**: Minimum ratio of
     negative probes to total counts (default 0.1).
     
 ```{r threshold-outlier}
@@ -320,8 +320,8 @@ We can see in `yellow` and `darkviolet` that there are few cells with extreme
 values of `log2AspectRatio` and `Area_um` in micron.
 
 ```{r plot-polygons-fov-3}
-plotPolygons(spe, colourBy="quality_score")
-plotPolygons(spe, colourBy="low_qscore")
+plotPolygons(spe, colourBy="QC_score")
+plotPolygons(spe, colourBy="low_qcscore")
 ```
 
 We can see that the quality score is able to detect both these aspects and 
@@ -337,8 +337,8 @@ The `plotZoomFovsMap` function allows you to visualize a map of the FoVs with
 a zoom-in of selected FoVs, colored by the `colour_by` argument.
 
 ```{r plot-zoom-fov}
-plotZoomFovsMap(spe, fovs=16, colourBy="quality_score")
-plotZoomFovsMap(spe, fovs=16, colourBy="low_qscore")
+plotZoomFovsMap(spe, fovs=16, colourBy="QC_score")
+plotZoomFovsMap(spe, fovs=16, colourBy="low_qcscore")
 ```
 
 We see on the left side the map of all the FoVs (only the FoV 16 in this case),

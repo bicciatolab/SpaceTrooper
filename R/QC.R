@@ -326,83 +326,99 @@ computeThresholdFlags <- function(spe, totalThreshold=0,
 #' \code{\link[glmnet]{cv.glmnet}}
 #'
 #' @export
-computeLambda <- function(technology, trainDF) {
-    model_formula <- getModelFormula(technology)
-    model_matrix <- model.matrix(as.formula(model_formula), data=trainDF)
+computeLambda <- function(trainDF, modelFormula) {
+    # model_formula <- getModelFormula(technology)
+    model_matrix <- model.matrix(as.formula(modelFormula), data=trainDF)
     ridge_cv <- cv.glmnet(model_matrix, trainDF$qscore_train,
                         family="binomial", alpha=0, lambda=NULL)
     bestLambda <- ridge_cv$lambda.min
     return(bestLambda)
 }
 
-#' computeQScore
-#' @name computeQScore
-#' @rdname computeQScore
+
+#' computeQCScore
+#' @name computeQCScore
+#' @rdname computeQCScore
 #' @description
-#' DEPRECATED - use computeQCScore instead
-#' Compute quality score and automatically define weights for quality score
-#' through glm training. This function computes quality score with a formula
-#' that depends on the technology.
+#' Compute QC score and automatically define weights for QC score
+#' through glm training. This function computes QC score with a formula
+#' that is defined based on the metrics specified in metric_list and on the
+#' number of available outliers for each metric.
 #'
 #' @details
-#' DEPRECATED - use computeQCScore instead - this will be removed starting next
-#' release.
+#' For CosMx datasets, also CosMx Protein, the QC Score formula is
+#' defined as follows:
 #'
-#' For CosMx datasets, the Quality Score formula is defined as follows:
-#'
-#' quality score ~ count density - aspect ratio - interaction term
+#' QC score ~ count density - aspect ratio - control-total ratio
 #'
 #' count density is total counts-to-area ratio, aspect ratio represents
-#' border effect typical of CosMx datasets and the last one is the
-#' interaction term of the previous two terms.
+#' FOV border effect typical of CosMx datasets and control-total ratio is
+#' the aspecific signal. For each couple of variables interaction terms are
+#' computed.
 #'
-#' For Xenium and Merscope datasets, quality score depends solely on count
-#' density, as no border effect has been observed for these two technologies.
+#' For Xenium and Merscope datasets, QC score cannot depend on aspect ratio
+#' as no FOV border effect was captured through this metric.
+#'
+#' Inclusion of metrics in the formula depends also on the number of available
+#' outliers. If the number of outliers for each metric is < 0.1% out of the
+#' entire dataset, the metric will be excluded from the QC score formula.
 #'
 #' To automatically define the formula coefficient weights, model training
 #' is performed through ridge regression.
 #'
 #' @param spe A `SpatialExperiment` object with spatial transcriptomics data.
+#' @param metric_list A character vector containing the list of metrics to compute
+#' QC score on. log2CountArea must be always included.
 #' @param verbose logical for having a verbose output. Default is FALSE.
-#' @param bestLambda the best lambda typically computed using `computeLambda`.
+#' @param best_lambda the best lambda typically computed using `computeLambda`.
 #'
-#' @return The `SpatialExperiment` object with added quality score in `colData`.
+#' @return The `SpatialExperiment` object with added QC score in `colData`.
 #' @export
-#' @importFrom dplyr case_when filter mutate distinct
+#' @importFrom dplyr case_when filter mutate distinct pull
 #' @importFrom glmnet glmnet cv.glmnet
-#' @importFrom stats as.formula model.matrix predict quantile
+#' @importFrom stats as.formula model.matrix quantile predict
 #' @examples
 #' example(spatialPerCellQC)
 #' set.seed(1998)
-#' spe <- computeQScore(spe)
+#' spe <- computeQCScore(spe)
 #' summary(spe$training_status)
-#' summary(spe$quality_score)
-computeQScore <- function(spe, bestLambda=NULL, verbose=FALSE) {
+#' summary(spe$QC_score)
+computeQCScore <- function(spe, bestLambda=NULL, verbose=FALSE){
     stopifnot(is(spe, "SpatialExperiment"))
-    msg <- paste0("Use computeQCScore instead, which can provide different",
-        "results!\n This will be removed in the next cycle!")
-    .Deprecated("computeQCScore", msg=msg)
-    trainDF <- computeTrainDF(spe, verbose)
-    model_formula <- getModelFormula(metadata(spe)$technology)
-    model_matrix <- model.matrix(as.formula(model_formula), data=trainDF)
-    model <- trainModel(model_matrix, trainDF)
+    if(dim(spe[,spe$total==0])[2]!=0){
+        warning(paste0(dim(spe[,spe$total==0])[2],
+            " cells with 0 counts were found. These cells will be removed."))
+        spe <- spe[,spe$total>0]
+    }
+    metricList = c("log2CountArea", "Area_um",
+                   "log2AspectRatio", "log2Ctrl_total_ratio")
+    spe <- .computeOutliersQCScore(spe, metricList)
+    spe <- .checkOutliers(spe, verbose)
+    train_df <- computeTrainDF(spe, verbose)
+    model_formula <- getModelFormula(spe, verbose)
+    model_matrix <- model.matrix(as.formula(model_formula), data=train_df)
+    model <- trainModel(model_matrix, train_df)
     if(is.null(bestLambda)) {
-        bestLambda <- computeLambda(metadata(spe)$technology,
-                                trainDF)
+        bestLambda <- computeLambda(train_df, model_formula)
+    }
+
+    if (verbose) {
+        message("Model coefficients for every term used in the formula:")
+        print(round(predict(model, s=bestLambda, type="coefficients"),2))
     }
     cd <- data.frame(colData(spe))
-    full_matrix <- model.matrix(as.formula(model_formula), data = cd)
-    cd$quality_score <- as.vector(predict(model, s=bestLambda,
-                                        newx = full_matrix,
-                                        type = "response"))
-    spe$quality_score <- cd$quality_score
-    train_identity <- rep("TEST", dim(spe)[2])
-    train_bad <- trainDF$cell_id[trainDF$qscore_train==0]
-    train_good <- trainDF$cell_id[trainDF$qscore_train==1]
-    spe$training_status <- dplyr::case_when(
-        spe$cell_id %in% train_bad ~ "BAD",
-        spe$cell_id %in% train_good ~ "GOOD",
-        TRUE ~ train_identity)
+    full_matrix <- model.matrix(as.formula(model_formula), data=cd)
+    cd$QC_score <- as.vector(predict(model, s=bestLambda,
+                                     newx = full_matrix,
+                                     type = "response"))
+    spe$QC_score <- cd$QC_score
+    # train_identity <- rep("TEST", dim(spe)[2])
+    # train_bad <- train_df$cell_id[train_df$qcscore_train==0]
+    # train_good <- train_df$cell_id[train_df$qcscore_train==1]
+    # spe$training_status <- dplyr::case_when(
+    #     spe$cell_id %in% train_bad ~ "BAD",
+    #     spe$cell_id %in% train_good ~ "GOOD",
+    #     TRUE ~ train_identity)
     return(spe)
 }
 
@@ -442,57 +458,9 @@ trainModel <- function(modelMatrix, trainDF)
 }
 
 #' computeTrainDF
-#' @name computeTrainDF
+#'
 #' @rdname computeTrainDF
-#' @description
-#' Build a Balanced Training Data Frame from a SpatialExperiment
 #'
-#' \code{computeTrainDF} takes a \linkS4class{SpatialExperiment} object,
-#' flags spatial outliers on “log2CountArea”, then assembles a
-#' balanced training set of “good” vs “bad” cells for subsequent model fitting.
-#'
-#' @param spe \linkS4class{SpatialExperiment}
-#'   A SpatialExperiment containing at least:
-#'   \itemize{
-#'     \item assay(s) with nonzero \code{total} counts,
-#'     \item \code{colData(spe)} columns including \code{log2CountArea},
-#'     \code{dist_border}, etc.,
-#'     \item \code{metadata(spe)$technology} indicating the platform.
-#'   }
-#'
-#' @param verbose \[logical(1)\] (default \code{FALSE})
-#'   If \code{TRUE}, prints the number of “bad” and “good” cells selected.
-#'
-#' @return
-#' A \code{data.frame} with one row per cell, including:
-#' \itemize{
-#'   \item \code{qscore_train} (0/1) indicating “bad” vs “good”,
-#'   \item relevant \code{colData} columns used for modeling.
-#' }
-#'
-#' @details
-#' Internally the function:
-#' \enumerate{
-#'    \item Filters out zero-count cells,
-#'    \item Calls \code{computeSpatialOutlier()} on “log2CountArea” to get
-#'    fences,
-#'    \item Labels cells as “LOW”/“HIGH” outliers or “NO”,
-#'    \item Delegates to either \code{.computeCosmxTrainSet()} or
-#'    \code{.computeXenMerTrainSet()} based on \code{metadata(spe)$technology},
-#'    \item Deduplicates and down-samples “good” cells to match the number of
-#'    “bad” cells.
-#' }
-#'
-#' @examples
-#' example(spatialPerCellQC)
-#' df_train <- computeTrainDF(spe, verbose = TRUE)
-#' table(df_train$qscore_train)
-#'
-#' @export
-
-#' computeTrainDF
-#' @name computeTrainDF
-#' @rdname computeTrainDF
 #' @description
 #' Build a Balanced Training Data Frame from a SpatialExperiment
 #'
@@ -523,15 +491,15 @@ trainModel <- function(modelMatrix, trainDF)
 #' @details The function builds a training set using the variables specified
 #' in the `metadata` of the `SpatialExperiment` object.
 #'
-#' @examples
-#' example(spatialPerCellQC)
-#' df_train <- computeTrainDF(spe, verbose = TRUE)
-#' table(df_train$qcscore_train)
-#'
 #' @importFrom SummarizedExperiment colData
 #' @importFrom dplyr filter mutate distinct pull
 #' @importFrom glmnet glmnet cv.glmnet
 #' @importFrom stats as.formula model.matrix quantile predict
+#'
+#' @examples
+#' example(spatialPerCellQC)
+#' df_train <- computeTrainDF(spe)
+#' table(df_train$qcscore_train)
 #'
 #' @export
 computeTrainDF <- function(spe, verbose=FALSE) {
@@ -797,44 +765,42 @@ getModelFormula <- function(spe, verbose=FALSE)
 #' @importFrom SummarizedExperiment colData
 #' @export
 #' @examples
-#' example(computeQScore)
-#' spe <- computeQScoreFlags(spe)
-#' table(spe$low_qscore)
+#' example(computeQCScore)
+#' spe <- computeQCScoreFlags(spe)
+#' table(spe$low_qcscore)
 #' # if fixed filters are defined we have an additional column
 #' spe <- computeThresholdFlags(spe)
-#' spe <- computeQScoreFlags(spe)
-#' table(spe$low_threshold_qscore)
+#' spe <- computeQCScoreFlags(spe)
+#' table(spe$low_threshold_qcscore)
 computeQScoreFlags <- function(spe, qsThreshold=0.5, useQSQuantiles=FALSE) {
     stopifnot(is(spe, "SpatialExperiment"))
-    stopifnot("quality_score" %in% names(colData(spe)))
-    msg <- paste0("Use computeQCScoreFlags instead, which can provide different",
-                  "results!\n This will be removed in the next cycle!")
-    .Deprecated("computeQCScoreFlags", msg=msg)
+    stopifnot("QC_score" %in% names(colData(spe)))
+
     if(useQSQuantiles) {
-        spe$low_qscore <- ifelse(
-            spe$quality_score < quantile(spe$quality_score, probs=qsThreshold),
+        spe$low_qcscore <- ifelse(
+            spe$QC_score < quantile(spe$QC_score, probs=qsThreshold),
             TRUE, FALSE)
     } else {
-        spe$low_qscore <- spe$quality_score < qsThreshold
+        spe$low_qcscore <- spe$QC_score < qsThreshold
     }
 
     if("threshold_flags" %in% names(colData(spe))) {
-        spe$low_threshold_qscore <- (spe$low_qscore &
+        spe$low_threshold_qcscore <- (spe$low_qscore &
                                         spe$threshold_flags)
     }
     return(spe)
 }
 
 #' .checkSkw
-#' @name .checkSkw
+#' @name dot-checkSkw
 #' @rdname dot-checkSkw
 #' @description
 #' Check skewness of metrics to choose outlier detection method.
 #'
 #' @param cd colData of `SpatialExperiment` object.
 #' @param metricList A character vector specifying the metrics to include in
-#' the QC score formula. Default is `c("log2CountArea", "Area_um",
-#' "log2AspectRatio", "log2Ctrl_total_ratio")`.
+#' the QC score formula. Defaults are "log2CountArea", "Area_um",
+#' "log2AspectRatio", "log2Ctrl_total_ratio".
 #'
 #' @return
 #' A vector containing the list of chosen outlier detection method for each
@@ -842,12 +808,13 @@ computeQScoreFlags <- function(spe, qsThreshold=0.5, useQSQuantiles=FALSE) {
 #'
 #' @examples
 #' example(readCosmxSPE)
-#' .checkSkw(colData(spe))`.
+#' .checkSkw(colData(spe))
 #'
 #' @importFrom e1071 skewness
 #' @keywords internal
 .checkSkw <- function(cd, metricList=c("log2CountArea", "Area_um",
-    "log2AspectRatio", "log2Ctrl_total_ratio")){
+    "log2AspectRatio", "log2Ctrl_total_ratio")) {
+    print(names(cd))
     stopifnot(all(metricList %in% names(cd)))
     method <- c()
     for (i in metricList) {
@@ -916,7 +883,7 @@ computeQScoreFlags <- function(spe, qsThreshold=0.5, useQSQuantiles=FALSE) {
 #' spe <- .computeOutliersQCScore(spe)
 #' table(spe$log2CountArea_outlier_train)
 .computeOutliersQCScore <- function(spe, metricList=c("log2CountArea", "Area_um",
-                                                      "log2AspectRatio", "log2Ctrl_total_ratio")) {
+    "log2AspectRatio", "log2Ctrl_total_ratio")) {
     stopifnot(is(spe, "SpatialExperiment"))
     cd <- colData(spe)
 

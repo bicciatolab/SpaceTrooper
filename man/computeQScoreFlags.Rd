@@ -27,11 +27,11 @@ This function Compute flagged cells based on a manually chosen threshold on
 quality score stored in `SpatialExperiment` object.
 }
 \examples{
-example(computeQScore)
-spe <- computeQScoreFlags(spe)
-table(spe$low_qscore)
+example(computeQCScore)
+spe <- computeQCScoreFlags(spe)
+table(spe$low_qcscore)
 # if fixed filters are defined we have an additional column
 spe <- computeThresholdFlags(spe)
-spe <- computeQScoreFlags(spe)
-table(spe$low_threshold_qscore)
+spe <- computeQCScoreFlags(spe)
+table(spe$low_threshold_qcscore)
 }
