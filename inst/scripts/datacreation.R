@@ -83,7 +83,7 @@ spe <- readCosmxProteinSPE("~/Downloads/CosMx_data/S0_prot")
 # spe <- spe1
 spe1 <- spe
 # x_shift_px <- 1
-y_shift_px <- 180
+y_shift_px <- 80
 fov_px <- 4239.291
 
 metadata(spe)$fov_positions <- metadata(spe)$fov_positions |>
@@ -94,27 +94,39 @@ metadata(spe)$fov_positions <- metadata(spe)$fov_positions |>
 fovs <- c(16,17,28,29)
 fovs <- c(30:100)
 fovs <- c(59,60,71,72)
+fovs <- 201
 spe10<-spe[, spe$fov%in%fovs]
 metadata(spe10)$fov_positions <- metadata(spe10)$fov_positions[metadata(spe10)$fov_positions$fov%in%fovs,]
 plotCellsFovs(spe10)
 
+fovs <- c(200:201)
+spe11<-spe[, spe$fov%in%fovs]
+spe11
+metadata(spe11)$fov_positions <- metadata(spe11)$fov_positions[metadata(spe11)$fov_positions$fov%in%fovs,]
+plotCellsFovs(spe11)
+
+spe11 <- spatialPerCellQC(spe11)
+spe11 <- computeSpatialOutlier(spe11, "log2CountArea", method="both")
+spe11 <- computeQCScore(spe11)
+
+table(spe10$fov)
 fovs <- c(60)
 cospath <- "~/Downloads/CosMx_data/S0_prot"
 countmat_file <- list.files(cospath, "exprMat_file.csv", full.names=TRUE)
 countmat <- data.table::fread(countmat_file, showProgress=FALSE) # cell count matrix
 c1 <- countmat[countmat$fov%in%fovs,]
 # c1 <- c1[c1$cell_ID%in%c,1:12]
-write.csv(x=c1, file=file.path(outfolder, "/SpaceTrooper/inst/extdata/S0_prot/S0_exprMat_file.csv.gz"), row.names=FALSE)
+write.csv(x=c1, file=file.path(outfolder, "/SpaceTrooper/inst/extdata/S0_prot/S01_exprMat_file.csv.gz"), row.names=FALSE)
 
 metadata_file <- list.files(cospath, "metadata_file.csv", full.names=TRUE)
 metadata <- data.table::fread(metadata_file, showProgress=FALSE) # cell metadata
 m1 <- metadata[metadata$fov==fovs,]
-write.csv(x=m1, file=file.path(outfolder,"/SpaceTrooper/inst/extdata/S0_prot/S0_metadata_file.csv"), row.names=FALSE)
+write.csv(x=m1, file=file.path(outfolder,"/SpaceTrooper/inst/extdata/S0_prot/S01_metadata_file.csv"), row.names=FALSE)
 
 fovpos_file <- list.files(cospath, "fov_positions_file.csv", full.names=TRUE)
 fov_positions <- as.data.frame(data.table::fread(fovpos_file, header=TRUE))
-f1 <- fov_positions[fov_positions$FOV==fovs,]
-y_shift_px <- 180
+f1 <- fov_positions[fov_positions$FOV %in%fovs,]
+y_shift_px <- 80
 fov_px <- 4239.291
 
 f1 <- f1 |>
@@ -122,12 +134,12 @@ f1 <- f1 |>
         # x_global_px = x_global_mm / 0.12028 * 1000 + x_shift_px,
         y_global_px = y_global_mm / 0.12028 * 1000 - fov_px + y_shift_px
     )
-write.csv(x=f1, file=file.path(outfolder,"/SpaceTrooper/inst/extdata/S0_prot/S0_fov_positions_file.csv"), row.names=FALSE)
+write.csv(x=f1, file=file.path(outfolder,"/SpaceTrooper/inst/extdata/S0_prot/S01_fov_positions_file.csv"), row.names=FALSE)
 
 pol_file <- metadata(spe)$polygons
 
 spat_obj <- data.table::fread(pol_file)
-s1 <- spat_obj[spat_obj$fov==fovs, ]
-write.csv(x=s1, file=file.path(outfolder,"/SpaceTrooper/inst/extdata/S0_prot/S0-polygons.csv"), row.names=FALSE)
+s1 <- spat_obj[spat_obj$fov %in% fovs, ]
+write.csv(x=s1, file=file.path(outfolder,"/SpaceTrooper/inst/extdata/S0_prot/S01-polygons.csv"), row.names=FALSE)
 
-spe60 <- readCosmxProteinSPE("~/Library/CloudStorage/GoogleDrive-drighelli@gmail.com/My\ Drive/works/coding/SpaceTrooper/inst/extdata/S0_prot")
+spe200 <- readCosmxProteinSPE("~/Library/CloudStorage/GoogleDrive-drighelli@gmail.com/My\ Drive/works/coding/SpaceTrooper/inst/extdata/S01_prot")

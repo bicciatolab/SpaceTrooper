@@ -52,7 +52,7 @@ polygons in the `colData` of the `SpatialExperiment`.
 library(SpaceTrooper)
 
 # Load Xenium data into a Spatial Experiment object (SPE)
-protfolder <- system.file( "extdata", "S0_prot", package="SpaceTrooper")
+protfolder <- system.file( "extdata", "S01_prot", package="SpaceTrooper")
 (spe <- readCosmxProteinSPE(protfolder))
 colData(spe)
 ```
@@ -218,7 +218,7 @@ thresholds for various metrics. Currently, the function considers:
 # Compute flags to identify cells for filtering
 spe <- computeQCScoreFlags(spe, qsThreshold=0.5)
 names(colData(spe))
-table(spe$low_qscore)
+table(spe$low_qcscore)
 ```
 
 We detected 61 cells to be removed.
@@ -297,8 +297,8 @@ The `plotZoomFovsMap` function allows you to visualize a map of the FoVs with
 a zoom-in of selected FoVs, colored by the `colour_by` argument.
 
 ```{r plot-zoom-fov}
-plotZoomFovsMap(spe, fovs=60, colourBy="QC_score")
-plotZoomFovsMap(spe, fovs=60, colourBy="low_qcscore")
+plotZoomFovsMap(spe, fovs=c(201), colourBy="QC_score")
+plotZoomFovsMap(spe, fovs=c(201), colourBy="low_qcscore")
 ```
 
 We see on the left side the map of all the FoVs (only the FoV 16 in this case),

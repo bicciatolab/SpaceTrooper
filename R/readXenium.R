@@ -226,6 +226,7 @@ computeMissingMetricsXenium <- function(polFile, colData, keepPolygons=FALSE,
 #' cd <- DataFrame(cell_area = c(10, 20, 30))
 #' cd <- .checkAndFixArea(cd)
 #' head(cd$Area_um)
+#' @noRd
 .checkAndFixAreaXenium <- function(cd, polygons)
 {
     idx <- which(names(cd) == "cell_area")

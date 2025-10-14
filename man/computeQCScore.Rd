@@ -9,12 +9,9 @@ computeQCScore(spe, bestLambda = NULL, verbose = FALSE)
 \arguments{
 \item{spe}{A `SpatialExperiment` object with spatial transcriptomics data.}
 
+\item{bestLambda}{the best lambda typically computed using `computeLambda`.}
+
 \item{verbose}{logical for having a verbose output. Default is FALSE.}
-
-\item{metric_list}{A character vector containing the list of metrics to compute
-QC score on. log2CountArea must be always included.}
-
-\item{best_lambda}{the best lambda typically computed using `computeLambda`.}
 }
 \value{
 The `SpatialExperiment` object with added QC score in `colData`.
@@ -50,6 +47,5 @@ is performed through ridge regression.
 example(spatialPerCellQC)
 set.seed(1998)
 spe <- computeQCScore(spe)
-summary(spe$training_status)
 summary(spe$QC_score)
 }

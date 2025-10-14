@@ -4,12 +4,12 @@
 \alias{getModelFormula}
 \title{getModelFormula}
 \usage{
-getModelFormula(spe, verbose = FALSE)
+getModelFormula(formulaVars, verbose = FALSE)
 }
 \arguments{
-\item{spe}{A `SpatialExperiment` object with spatial omics data.}
-
 \item{verbose}{Logical. If `TRUE`, prints the final formula used for QC score}
+
+\item{spe}{A `SpatialExperiment` object with spatial omics data.}
 }
 \value{
 \[character\]
@@ -22,5 +22,5 @@ found in the `metadata` of a `SpatialExperiment` object.
 }
 \examples{
 example(.checkOutliers)
-getModelFormula(spe)
+getModelFormula(metadata(spe)$formula_variables)
 }

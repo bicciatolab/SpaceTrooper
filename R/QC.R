@@ -290,16 +290,18 @@ computeThresholdFlags <- function(spe, totalThreshold=0,
 #' cross-validation to identify the optimal regularization parameter
 #' \eqn{\lambda} for a binary response.
 #'
-#' @param technology  \[character\]
-#'   The name of the experimental technology. Passed to
-#'   \code{getModelFormula()} to retrieve the corresponding model formula.
-#'
 #' @param trainDF  \[data.frame\]
 #'   A data frame for training that must include:
 #'   \describe{
 #'     \item{Predictor columns}{All columns referenced in the formula returned
 #'     by \code{getModelFormula()}.}
 #'     \item{\code{qscore_train}}{A binary (0/1) response vector to be modeled.}
+#'   }
+#' @param modelFormula \[character\]
+#'   A character string representing the model formula
+#'   \describe{
+#'    "\code{~ log2CountArea + ...}"), as returned by
+#'   \code{getModelFormula()}.
 #'   }
 #'
 #' @return
@@ -319,9 +321,9 @@ computeThresholdFlags <- function(spe, totalThreshold=0,
 #' }
 #'
 #' @examples
-#' example(spatialPerCellQC)
-#' withr::with_seed(1998, trainDF <- computeTrainDF(spe))
-#' best_lambda <- computeLambda(metadata(spe)$technology, trainDF) #### this fails now and with benedetta example
+#' example(computeTrainDF)
+#' modform <- getModelFormula(metadata(spe)$formula_variables)
+#' best_lambda <- computeLambda(df_train, modform)
 #' print(best_lambda)
 #'
 #' @seealso
@@ -336,7 +338,6 @@ computeLambda <- function(trainDF, modelFormula) {
     bestLambda <- ridge_cv$lambda.min
     return(bestLambda)
 }
-
 
 #' computeQCScore
 #' @name computeQCScore
@@ -369,10 +370,8 @@ computeLambda <- function(trainDF, modelFormula) {
 #' is performed through ridge regression.
 #'
 #' @param spe A `SpatialExperiment` object with spatial transcriptomics data.
-#' @param metric_list A character vector containing the list of metrics to compute
-#' QC score on. log2CountArea must be always included.
 #' @param verbose logical for having a verbose output. Default is FALSE.
-#' @param best_lambda the best lambda typically computed using `computeLambda`.
+#' @param bestLambda the best lambda typically computed using `computeLambda`.
 #'
 #' @return The `SpatialExperiment` object with added QC score in `colData`.
 #' @export
@@ -383,7 +382,6 @@ computeLambda <- function(trainDF, modelFormula) {
 #' example(spatialPerCellQC)
 #' set.seed(1998)
 #' spe <- computeQCScore(spe)
-#' summary(spe$training_status)
 #' summary(spe$QC_score)
 computeQCScore <- function(spe, bestLambda=NULL, verbose=FALSE) {
     stopifnot(is(spe, "SpatialExperiment"))
@@ -394,10 +392,14 @@ computeQCScore <- function(spe, bestLambda=NULL, verbose=FALSE) {
     }
     metricList = c("log2CountArea", "Area_um",
                    "log2AspectRatio", "log2Ctrl_total_ratio")
-    spe_temp <- .computeOutliersQCScore(spe, metricList)
-    spe_temp <- .checkOutliers(spe_temp, verbose)
-    train_df <- computeTrainDF(spe_temp, verbose)
-    model_formula <- getModelFormula(spe_temp, verbose)
+
+    ctx <- .prepQCContext(spe, metricList, verbose)
+    df <- ctx$df; out_var <- ctx$out_var; tech <- ctx$tech
+
+    train_df <- computeTrainDF(df, out_var, tech, verbose)
+
+    model_formula <- getModelFormula(out_var, verbose)
+
     model_matrix <- model.matrix(as.formula(model_formula), data=train_df)
     model <- trainModel(model_matrix, train_df)
     if(is.null(bestLambda)) {
@@ -408,8 +410,9 @@ computeQCScore <- function(spe, bestLambda=NULL, verbose=FALSE) {
         message("Model coefficients for every term used in the formula:")
         print(round(predict(model, s=bestLambda, type="coefficients"),2))
     }
-    cd <- data.frame(colData(spe_temp))
-    full_matrix <- model.matrix(as.formula(model_formula), data=cd)
+
+    full_matrix <- model.matrix(as.formula(model_formula), data=df)
+    cd <- colData(spe)
     cd$QC_score <- as.vector(predict(model, s=bestLambda,
                                      newx = full_matrix,
                                      type = "response"))
@@ -444,14 +447,13 @@ computeQCScore <- function(spe, bestLambda=NULL, verbose=FALSE) {
 #' \code{family="binomial"}, \code{alpha=0} (ridge), and a sequence of
 #' \eqn{\lambda} values.
 #'
+#' @export
 #' @examples
 #' example(computeTrainDF)
-#' model_formula <- getModelFormula(metadata(spe)$technology)
+#' model_formula <- getModelFormula(metadata(spe)$formula_variables)
 #' model_matrix <- model.matrix(as.formula(model_formula), data=df_train)
 #' fit <- trainModel(model_matrix, df_train)
 #' coef(fit, s = 0.01)
-#'
-#' @export
 trainModel <- function(modelMatrix, trainDF)
 {
     model <- glmnet(x=modelMatrix, y=trainDF$qcscore_train,
@@ -500,14 +502,16 @@ trainModel <- function(modelMatrix, trainDF)
 #'
 #' @examples
 #' example(spatialPerCellQC)
-#' df_train <- computeTrainDF(spe)
+#' spe <- .computeOutliersQCScore(spe)
+#' spe <- .checkOutliers(spe)
+#' df_train <- computeTrainDF(colData(spe), metadata(spe)$formula_variables,
+#'     metadata(spe)$technology)
 #' table(df_train$qcscore_train)
 #'
 #' @export
-computeTrainDF <- function(spe, verbose=FALSE) {
-    out_var <- metadata(spe)$formula_variables
-    df <- as.data.frame(colData(spe))
-
+computeTrainDF <- function(colData, formulaVars, tech, verbose=FALSE) {
+    out_var <- formulaVars
+    df <- as.data.frame(colData)
     train_bad_var <- character()
     train_good_var <- character()
 
@@ -637,10 +641,10 @@ computeTrainDF <- function(spe, verbose=FALSE) {
 #' @export
 #' @examples
 #' example(.checkOutliers)
-#' getModelFormula(spe)
-getModelFormula <- function(spe, verbose=FALSE)
+#' getModelFormula(metadata(spe)$formula_variables)
+getModelFormula <- function(formulaVars, verbose=FALSE)
 {
-    out_var <- metadata(spe)$formula_variables
+    out_var <- formulaVars
     if ("log2AspectRatio" %in% names(out_var)) {
         names(out_var)[grep(out_var, pattern = "log2AspectRatio_outlier")] <-
             "I(abs(log2AspectRatio) * as.numeric(dist_border<50))"
@@ -785,7 +789,7 @@ computeQCScoreFlags <- function(spe, qsThreshold=0.5, useQSQuantiles=FALSE) {
     }
 
     if("threshold_flags" %in% names(colData(spe))) {
-        spe$low_threshold_qcscore <- (spe$low_qscore &
+        spe$low_threshold_qcscore <- (spe$low_qcscore &
                                         spe$threshold_flags)
     }
     return(spe)
@@ -805,11 +809,6 @@ computeQCScoreFlags <- function(spe, qsThreshold=0.5, useQSQuantiles=FALSE) {
 #' @return
 #' A vector containing the list of chosen outlier detection method for each
 #' metric.
-#'
-#' @examples
-#' example(readCosmxSPE)
-#' .checkSkw(colData(spe))
-#'
 #' @importFrom e1071 skewness
 #' @keywords internal
 .checkSkw <- function(cd, metricList=c("log2CountArea", "Area_um",
@@ -965,12 +964,12 @@ computeQCScoreFlags <- function(spe, qsThreshold=0.5, useQSQuantiles=FALSE) {
 #' metric.
 #'
 #' @importFrom SummarizedExperiment colData
-#' @keywords internal
+#' @export
 #' @examples
-#' example(computeOutliersQCScore)
+#' example(.computeOutliersQCScore)
 #' spe <- .checkOutliers(spe, verbose = TRUE)
 #' metadata(spe)$formula_variables
-.checkOutliers <- function(spe, verbose = FALSE) {
+.checkOutliers <- function(spe, verbose=FALSE) {
     warnstopmsg <- function(var, warnstop=c("w","s")) {
         warnstop <- match.arg(warnstop)
         m1 <- paste0("Not enough outlier cells for ", var, ".\n")
@@ -1041,5 +1040,29 @@ computeQCScoreFlags <- function(spe, qsThreshold=0.5, useQSQuantiles=FALSE) {
     }
     metadata(spe)$formula_variables <- out_var
     return(spe)
+}
+
+
+.prepQCContext <- function(spe, metricList=c("log2CountArea", "Area_um",
+    "log2AspectRatio", "log2Ctrl_total_ratio"), verbose=FALSE) {
+
+    stopifnot(is(spe,"SpatialExperiment"))
+
+    # remove zero-count cells once
+    zerocells <- spe$total==0
+    if (sum(zerocells) > 0) {
+        warning(paste0(zerocells,
+            " cells with 0 counts were found. These cells will be removed."))
+        spe <- spe[, sum(zerocells)]
+    }
+
+    spe1 <- .computeOutliersQCScore(spe, metricList)
+    spe1 <- .checkOutliers(spe1, verbose)
+
+    out_var <- metadata(spe1)$formula_variables
+    df <- as.data.frame(colData(spe1))
+    tech <- metadata(spe1)$technology
+
+    return(list(df=df, out_var=out_var, tech=tech))
 }
 

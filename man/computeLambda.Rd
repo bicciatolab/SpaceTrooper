@@ -15,9 +15,12 @@ A data frame for training that must include:
   \item{\code{qscore_train}}{A binary (0/1) response vector to be modeled.}
 }}
 
-\item{technology}{\[character\]
-The name of the experimental technology. Passed to
-\code{getModelFormula()} to retrieve the corresponding model formula.}
+\item{modelFormula}{\[character\]
+A character string representing the model formula
+\describe{
+ "\code{~ log2CountArea + ...}"), as returned by
+\code{getModelFormula()}.
+}}
 }
 \value{
 \[numeric\]
@@ -44,9 +47,9 @@ Internally, the function:
 }
 }
 \examples{
-example(spatialPerCellQC)
-withr::with_seed(1998, trainDF <- computeTrainDF(spe))
-best_lambda <- computeLambda(metadata(spe)$technology, trainDF) #### this fails now and with benedetta example
+example(computeTrainDF)
+modform <- getModelFormula(metadata(spe)$formula_variables)
+best_lambda <- computeLambda(df_train, modform)
 print(best_lambda)
 
 }

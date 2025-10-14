@@ -24,9 +24,4 @@ metric.
 \description{
 Check skewness of metrics to choose outlier detection method.
 }
-\examples{
-example(readCosmxSPE)
-.checkSkw(colData(spe))
-
-}
 \keyword{internal}

@@ -4,9 +4,12 @@
 \alias{computeTrainDF}
 \title{computeTrainDF}
 \usage{
-computeTrainDF(spe, verbose = FALSE)
+computeTrainDF(colData, formulaVars, tech, verbose = FALSE)
 }
 \arguments{
+\item{verbose}{\[logical(1)\] (default \code{FALSE})
+If \code{TRUE}, prints the number of “bad” and “good” cells selected.}
+
 \item{spe}{\linkS4class{SpatialExperiment}
 A SpatialExperiment containing at least:
 \itemize{
@@ -14,9 +17,6 @@ A SpatialExperiment containing at least:
   \item \code{colData(spe)} columns including \code{log2CountArea},
   \code{Area_um}, \code{log2Ctrl_total_ratio}, etc.
 }}
-
-\item{verbose}{\[logical(1)\] (default \code{FALSE})
-If \code{TRUE}, prints the number of “bad” and “good” cells selected.}
 }
 \value{
 A \code{data.frame} with one row per cell, including:
@@ -40,7 +40,10 @@ in the `metadata` of the `SpatialExperiment` object.
 }
 \examples{
 example(spatialPerCellQC)
-df_train <- computeTrainDF(spe)
+spe <- .computeOutliersQCScore(spe)
+spe <- .checkOutliers(spe)
+df_train <- computeTrainDF(colData(spe), metadata(spe)$formula_variables,
+    metadata(spe)$technology)
 table(df_train$qcscore_train)
 
 }

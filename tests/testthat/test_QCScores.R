@@ -6,9 +6,9 @@ spe0 <- example(readCosmxSPE)$value
 
 test_that("QC functions are exported", {
     expect_true(exists("spatialPerCellQC",   mode = "function"))
-    expect_true(exists("computeQScore",      mode = "function"))
+    expect_true(exists("computeQCScore",      mode = "function"))
     expect_true(exists("computeSpatialOutlier", mode = "function"))
-    expect_true(exists("computeQScoreFlags",  mode = "function"))
+    expect_true(exists("computeQCScoreFlags",  mode = "function"))
     expect_true(exists("computeThresholdFlags",  mode = "function"))
 })
 
@@ -23,12 +23,12 @@ test_that("spatialPerCellQC adds per‐cell metrics to colData", {
     expect_true(all(required %in% colnames(cd)))
 })
 
-test_that("computeQScore adds a flag_score between 0 and 1", {
+test_that("computeQCScore adds a flag_score between 0 and 1", {
     spe <- spatialPerCellQC(spe0)
-    spe2 <- computeQScore(spe)
+    spe2 <- computeQCScore(spe)
     cd2 <- colData(spe2)
-    expect_true("quality_score" %in% colnames(cd2))
-    fs <- cd2$quality_score
+    expect_true("QC_score" %in% colnames(cd2))
+    fs <- cd2$QC_score
     expect_true(is.numeric(fs))
     expect_true(all(fs >= 0 & fs <= 1))
 })
@@ -44,9 +44,9 @@ test_that("computeSpatialOutlier flags outliers for a chosen metric", {
 })
 
 
-test_that("computeQScoreFlags combines filters and returns filter_out", {
+test_that("computeQCScoreFlags combines filters and returns filter_out", {
     spe <- spatialPerCellQC(spe0)
-    spe <- computeQScore(spe)
+    spe <- computeQCScore(spe)
     ff <- computeThresholdFlags(spe,
                             totalThreshold = 10,
                             ctrlTotRatioThreshold = 0.2)
@@ -61,24 +61,3 @@ test_that("computeQScoreFlags combines filters and returns filter_out", {
     combined <- (ff$is_zero_counts & ff$is_ctrl_tot_outlier)
     expect_identical(combined, cd_ff$threshold_flags)
 })
-
-
-# test_that("computeQScoreMods identical to computeQScore on CosMx", {
-#     sample_dir <- system.file(file.path("extdata", "CosMx_DBKero_Tiny"),
-#                                package="SpaceTrooper")
-#     skip_if(sample_dir == "" || !dir.exists(sample_dir),
-#             "no CosMx example data found in inst/extdata; salto il test")
-#
-#     spe <- readCosmxSPE(sample_dir)
-#
-#     spe <- spatialPerCellQC(spe)
-#     library(withr)
-#     with_seed(1998,
-#         qs_orig <- computeQScore(spe)
-#     )
-#     with_seed(1998,
-#         qs_mod  <- computeQScoreMods(spe)
-#     )
-#
-#     expect_equal(qs_mod$quality_score, qs_orig$quality_score, tolerance = 1e-8)
-# })

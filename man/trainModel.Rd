@@ -27,9 +27,8 @@ using \pkg{glmnet}, given a design matrix and a training data frame.
 }
 \examples{
 example(computeTrainDF)
-model_formula <- getModelFormula(metadata(spe)$technology)
+model_formula <- getModelFormula(metadata(spe)$formula_variables)
 model_matrix <- model.matrix(as.formula(model_formula), data=df_train)
 fit <- trainModel(model_matrix, df_train)
 coef(fit, s = 0.01)
-
 }
