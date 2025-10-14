@@ -7,9 +7,12 @@
 getModelFormula(formulaVars, verbose = FALSE)
 }
 \arguments{
-\item{verbose}{Logical. If `TRUE`, prints the final formula used for QC score}
+\item{formulaVars}{A named character vector mapping variable names
+(e.g. `"log2CountArea"`, `"Area_um"`, etc.) to their corresponding
+outlier label columns, typically from
+`metadata(spe)$formula_variables`.}
 
-\item{spe}{A `SpatialExperiment` object with spatial omics data.}
+\item{verbose}{Logical. If `TRUE`, prints the final formula used for QC score}
 }
 \value{
 \[character\]
@@ -17,8 +20,7 @@ getModelFormula(formulaVars, verbose = FALSE)
 }
 \description{
 Returns the right‐hand side of a model formula string based on formula
-variables
-found in the `metadata` of a `SpatialExperiment` object.
+variables found in the `metadata` of a `SpatialExperiment` object.
 }
 \examples{
 example(.checkOutliers)

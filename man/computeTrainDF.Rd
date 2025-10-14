@@ -7,16 +7,23 @@
 computeTrainDF(colData, formulaVars, tech, verbose = FALSE)
 }
 \arguments{
+\item{colData}{A per-cell metadata table. Typically
+`as.data.frame(colData(spe))`. Must include at least:
+`cell_id`, raw metric columns named in `formulaVars` (e.g.
+`log2CountArea`, `Area_um`, `log2Ctrl_total_ratio`,
+optionally `log2AspectRatio`), and the corresponding outlier-label
+columns referenced by `formulaVars`.}
+
+\item{formulaVars}{A named character vector mapping variable name to
+its outlier label column name, e.g.
+`c(log2CountArea="log2CountArea_outlier_train", ...)`.}
+
+\item{tech}{Character string with the acquisition technology. Used to
+enable CosMx-specific handling for `log2AspectRatio`. Expected
+values include `"Nanostring_CosMx"` or `"Nanostring_CosMx_Protein"`.}
+
 \item{verbose}{\[logical(1)\] (default \code{FALSE})
 If \code{TRUE}, prints the number of “bad” and “good” cells selected.}
-
-\item{spe}{\linkS4class{SpatialExperiment}
-A SpatialExperiment containing at least:
-\itemize{
-  \item assay(s) with nonzero \code{total} counts,
-  \item \code{colData(spe)} columns including \code{log2CountArea},
-  \code{Area_um}, \code{log2Ctrl_total_ratio}, etc.
-}}
 }
 \value{
 A \code{data.frame} with one row per cell, including:

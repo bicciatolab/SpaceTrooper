@@ -595,7 +595,7 @@ qcFlagPlots <- function(spe, fov=unique(spe$fov),
     #     ggplot2::theme(panel.background=element_rect(fill="black"))
     # final
     legp <- .make_outlier_plot(spe$polygons, fov, "collapsed_color",
-                               outlier_palette, leg = TRUE) +
+                                outlier_palette, leg = TRUE) +
         plot_func() +
         ggplot2::theme(legend.title = ggplot2::element_blank()) +
         # scale "robuste" per evitare il drop delle classi assenti

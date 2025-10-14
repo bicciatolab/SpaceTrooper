@@ -63,7 +63,7 @@ readPolygons <- function(polygonsFile, type=c("csv", "parquet", "h5"),
         if(any(as.vector(table(spat_obj$cell_id)<4)))
         {
             warning(paste0("Removing ",table(table(spat_obj$cell_id)<4)["TRUE"],
-                           " polygons with less than 4 points."))
+                            " polygons with less than 4 points."))
             spat_obj <- spat_obj |> group_by(cell_id) |> mutate(n_points = n()) |>
                 ungroup() |>  filter(n_points >= 4)
         }

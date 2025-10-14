@@ -390,7 +390,7 @@ computeQCScore <- function(spe, bestLambda=NULL, verbose=FALSE) {
             " cells with 0 counts were found. These cells will be removed."))
         spe <- spe[,spe$total > 0]
     }
-    metricList = c("log2CountArea", "Area_um",
+    metricList <- c("log2CountArea", "Area_um",
                    "log2AspectRatio", "log2Ctrl_total_ratio")
 
     ctx <- .prepQCContext(spe, metricList, verbose)
@@ -408,7 +408,7 @@ computeQCScore <- function(spe, bestLambda=NULL, verbose=FALSE) {
 
     if (verbose) {
         message("Model coefficients for every term used in the formula:")
-        print(round(predict(model, s=bestLambda, type="coefficients"),2))
+        message(round(predict(model, s=bestLambda, type="coefficients"),2))
     }
 
     full_matrix <- model.matrix(as.formula(model_formula), data=df)
@@ -471,14 +471,19 @@ trainModel <- function(modelMatrix, trainDF)
 #' \code{computeTrainDF} takes a \linkS4class{SpatialExperiment} object
 #' and assembles a balanced training set of “good” vs “bad” cells for
 #' subsequent model fitting.
-#'
-#' @param spe \linkS4class{SpatialExperiment}
-#'   A SpatialExperiment containing at least:
-#'   \itemize{
-#'     \item assay(s) with nonzero \code{total} counts,
-#'     \item \code{colData(spe)} columns including \code{log2CountArea},
-#'     \code{Area_um}, \code{log2Ctrl_total_ratio}, etc.
-#'   }
+#' @param colData A per-cell metadata table. Typically
+#'   `as.data.frame(colData(spe))`. Must include at least:
+#'   `cell_id`, raw metric columns named in `formulaVars` (e.g.
+#'   `log2CountArea`, `Area_um`, `log2Ctrl_total_ratio`,
+#'   optionally `log2AspectRatio`), and the corresponding outlier-label
+#'   columns referenced by `formulaVars`.
+#' @param formulaVars A named character vector mapping variable name to
+#'   its outlier label column name, e.g.
+#'   `c(log2CountArea="log2CountArea_outlier_train", ...)`.
+#' @param tech Character string with the acquisition technology. Used to
+#'   enable CosMx-specific handling for `log2AspectRatio`. Expected
+#'   values include `"Nanostring_CosMx"` or `"Nanostring_CosMx_Protein"`.
+#' @param verbose Logical; print progress messages.
 #'
 #' @param verbose \[logical(1)\] (default \code{FALSE})
 #'   If \code{TRUE}, prints the number of “bad” and “good” cells selected.
@@ -632,9 +637,11 @@ computeTrainDF <- function(colData, formulaVars, tech, verbose=FALSE) {
 #' @rdname getModelFormula
 #' @description
 #' Returns the right‐hand side of a model formula string based on formula
-#' variables
-#' found in the `metadata` of a `SpatialExperiment` object.
-#' @param spe A `SpatialExperiment` object with spatial omics data.
+#' variables found in the `metadata` of a `SpatialExperiment` object.
+#' @param formulaVars A named character vector mapping variable names
+#'   (e.g. `"log2CountArea"`, `"Area_um"`, etc.) to their corresponding
+#'   outlier label columns, typically from
+#'   `metadata(spe)$formula_variables`.
 #' @param verbose Logical. If `TRUE`, prints the final formula used for QC score
 #' @return \[character\]
 #'   A one‐sided formula as a string (e.g. "~ log2CountArea + ...").
@@ -654,7 +661,7 @@ getModelFormula <- function(formulaVars, verbose=FALSE)
 
     if (verbose) {
         message("Final formula used for QC score computation:")
-        print(model_formula)
+        message(model_formula)
     }
 
     return(model_formula)
@@ -973,17 +980,17 @@ computeQCScoreFlags <- function(spe, qsThreshold=0.5, useQSQuantiles=FALSE) {
     warnstopmsg <- function(var, warnstop=c("w","s")) {
         warnstop <- match.arg(warnstop)
         m1 <- paste0("Not enough outlier cells for ", var, ".\n")
-        m2=switch(warnstop,
+        m2 <- switch(warnstop,
                 s="QC score computation cannot be performed",
                 w="This variable will not be used in the final formula")
-        return(paste0(m1,m2))
+        return(paste0(m1, m2))
     }
     out_var <- metadata(spe)$formula_variables
     cd <- colData(spe)
     if (verbose) {
         for (i in names(out_var)) {
             message("Outliers found for ", i, ":")
-            print(table(cd[[out_var[i]]]))
+            message(table(cd[[out_var[i]]]))
         }
     }
     stopifnot(
