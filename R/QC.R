@@ -1007,8 +1007,9 @@ computeQCScoreFlags <- function(spe, qsThreshold=0.5, useQSQuantiles=FALSE) {
         gi <- grep(r$pattern, out_var)
         if (length(gi)==0L) next
         col <- out_var[gi]
-        tab <- table(cd[[col]])
-        cnt <- tab[[r$label]]
+        labs <- factor(cd[[col]], levels=c("LOW","HIGH","NO"))
+        tab <- table(labs)
+        cnt <- tab[r$label]
         if (is.null(cnt) || is.na(cnt)) cnt <- 0L
         if (cnt < ncol(spe)*0.001) {
             r$act(warnstopmsg(v, r$code))
@@ -1023,7 +1024,8 @@ computeQCScoreFlags <- function(spe, qsThreshold=0.5, useQSQuantiles=FALSE) {
         idx <- grep(pat, out_var)
         if (length(idx)) {
             col <- out_var[idx]
-            tab <- table(cd[[col]])
+            labs <- factor(cd[[col]], levels=c("LOW","HIGH","NO"))
+            tab <- table(labs)
             nmin <- ncol(spe) * 0.001
 
             low  <- tab[["LOW"]];  if (is.na(low))  low  <- 0L
