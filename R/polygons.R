@@ -188,7 +188,7 @@ readAndAddPolygonsToSPE <- function(spe, polygonsCol="polygons",
     stopifnot("technology" %in% names(metadata(spe)))
     tech <- metadata(spe)$technology
     switch(tech,
-           "Nanostring_CosMx_Protein"=,
+            "Nanostring_CosMx_Protein"=,
             "Nanostring_CosMx"={
                 polygons <- readPolygonsCosmx(metadata(spe)$polygons)
             },

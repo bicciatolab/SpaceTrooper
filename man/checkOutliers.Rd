@@ -2,10 +2,9 @@
 % Please edit documentation in R/QC.R
 \name{checkOutliers}
 \alias{checkOutliers}
-\alias{.checkOutliers}
-\title{.checkOutliers}
+\title{checkOutliers}
 \usage{
-.checkOutliers(spe, verbose = FALSE)
+checkOutliers(spe, verbose = FALSE)
 }
 \arguments{
 \item{spe}{A `SpatialExperiment` object with spatial omics data.}
@@ -29,7 +28,7 @@ If verbose is TRUE, it also prints how many outliers were found for each
 metric.
 }
 \examples{
-example(.computeOutliersQCScore)
-spe <- .checkOutliers(spe, verbose = TRUE)
+example(computeOutliersQCScore)
+spe <- checkOutliers(spe, verbose = TRUE)
 metadata(spe)$formula_variables
 }

@@ -37,7 +37,7 @@ A \code{data.frame} with one row per cell, including:
 \description{
 Build a Balanced Training Data Frame from a SpatialExperiment
 
-\code{computeTrainDF} takes a \linkS4class{SpatialExperiment} object
+\code{computeTrainDF} takes a \code{SpatialExperiment} object
 and assembles a balanced training set of “good” vs “bad” cells for
 subsequent model fitting.
 }
@@ -47,8 +47,8 @@ in the `metadata` of the `SpatialExperiment` object.
 }
 \examples{
 example(spatialPerCellQC)
-spe <- .computeOutliersQCScore(spe)
-spe <- .checkOutliers(spe)
+spe <- computeOutliersQCScore(spe)
+spe <- checkOutliers(spe)
 df_train <- computeTrainDF(colData(spe), metadata(spe)$formula_variables,
     metadata(spe)$technology)
 table(df_train$qcscore_train)

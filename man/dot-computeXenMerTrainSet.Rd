@@ -8,7 +8,7 @@
 .computeXenMerTrainSet(spe)
 }
 \arguments{
-\item{spe}{\linkS4class{SpatialExperiment}}
+\item{spe}{\code{SpatialExperiment}}
 }
 \value{
 A list with elements \code{bad} and \code{good}, each a data.frame

@@ -23,6 +23,6 @@ Returns the right‐hand side of a model formula string based on formula
 variables found in the `metadata` of a `SpatialExperiment` object.
 }
 \examples{
-example(.checkOutliers)
+example(checkOutliers)
 getModelFormula(metadata(spe)$formula_variables)
 }

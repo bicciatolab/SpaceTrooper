@@ -23,10 +23,9 @@ spatialPerCellQC(
 
 \item{negProbList}{Character vector of patterns to identify negative probes.
 Defaults include:
-- Nanostring CosMx: `"NegPrb"`, `"Negative"`, `"SystemControl"`
-- Xenium: `"NegControlProbe"`, `"NegControlCodeword"`,
-  `"UnassignedCodeword"`
-- MERFISH: `"Blank"`}
+  Nanostring CosMx: `"NegPrb"`, `"Negative"`, `"SystemControl"`
+  Xenium: `"NegControlProbe"`, `"NegControlCodeword"`, `"UnassignedCodeword"`
+  MERFISH: `"Blank"`}
 
 \item{use_altexps}{logical for `use_altexps` in `scuttle` package.
 If TRUE uses the altexps for computing some metrics on it.

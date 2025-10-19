@@ -6,14 +6,13 @@
 #'
 #' @param spe A `SpatialExperiment` object containing spatial data.
 #' @param micronConvFact Numeric factor to convert pixels to microns. Default
-#'   `0.12`.
+#'    `0.12`.
 #' @param rmZeros logical for removing zero counts cells (default is TRUE).
 #' @param negProbList Character vector of patterns to identify negative probes.
-#'   Defaults include:
-#'   - Nanostring CosMx: `"NegPrb"`, `"Negative"`, `"SystemControl"`
-#'   - Xenium: `"NegControlProbe"`, `"NegControlCodeword"`,
-#'     `"UnassignedCodeword"`
-#'   - MERFISH: `"Blank"`
+#' Defaults include:
+#'   Nanostring CosMx: `"NegPrb"`, `"Negative"`, `"SystemControl"`
+#'   Xenium: `"NegControlProbe"`, `"NegControlCodeword"`, `"UnassignedCodeword"`
+#'   MERFISH: `"Blank"`
 #' @param use_altexps logical for `use_altexps` in `scuttle` package.
 #' If TRUE uses the altexps for computing some metrics on it.
 #' Useful for interoperability with `SpatialExperimentIO`.
@@ -391,7 +390,7 @@ computeQCScore <- function(spe, bestLambda=NULL, verbose=FALSE) {
         spe <- spe[,spe$total > 0]
     }
     metricList <- c("log2CountArea", "Area_um",
-                   "log2AspectRatio", "log2Ctrl_total_ratio")
+                    "log2AspectRatio", "log2Ctrl_total_ratio")
 
     ctx <- .prepQCContext(spe, metricList, verbose)
     df <- ctx$df; out_var <- ctx$out_var; tech <- ctx$tech
@@ -414,8 +413,8 @@ computeQCScore <- function(spe, bestLambda=NULL, verbose=FALSE) {
     full_matrix <- model.matrix(as.formula(model_formula), data=df)
     cd <- colData(spe)
     cd$QC_score <- as.vector(predict(model, s=bestLambda,
-                                     newx = full_matrix,
-                                     type = "response"))
+                                    newx = full_matrix,
+                                    type = "response"))
     spe$QC_score <- cd$QC_score
     # train_identity <- rep("TEST", dim(spe)[2])
     # train_bad <- train_df$cell_id[train_df$qcscore_train==0]
@@ -468,7 +467,7 @@ trainModel <- function(modelMatrix, trainDF)
 #' @description
 #' Build a Balanced Training Data Frame from a SpatialExperiment
 #'
-#' \code{computeTrainDF} takes a \linkS4class{SpatialExperiment} object
+#' \code{computeTrainDF} takes a \code{SpatialExperiment} object
 #' and assembles a balanced training set of “good” vs “bad” cells for
 #' subsequent model fitting.
 #' @param colData A per-cell metadata table. Typically
@@ -507,8 +506,8 @@ trainModel <- function(modelMatrix, trainDF)
 #'
 #' @examples
 #' example(spatialPerCellQC)
-#' spe <- .computeOutliersQCScore(spe)
-#' spe <- .checkOutliers(spe)
+#' spe <- computeOutliersQCScore(spe)
+#' spe <- checkOutliers(spe)
 #' df_train <- computeTrainDF(colData(spe), metadata(spe)$formula_variables,
 #'     metadata(spe)$technology)
 #' table(df_train$qcscore_train)
@@ -556,8 +555,7 @@ computeTrainDF <- function(colData, formulaVars, tech, verbose=FALSE) {
     }
 
     # CosMx-specific handling for log2AspectRatio
-    is_cosmx <- metadata(spe)$technology %in%
-        c("Nanostring_CosMx", "Nanostring_CosMx_Protein")
+    is_cosmx <- tech %in% c("Nanostring_CosMx", "Nanostring_CosMx_Protein")
 
     if (is_cosmx && "log2AspectRatio" %in% names(out_var)) {
 
@@ -569,15 +567,15 @@ computeTrainDF <- function(colData, formulaVars, tech, verbose=FALSE) {
 
         bad_ids <- df |>
             dplyr::filter(.data[[out_col]] %in% c("HIGH","LOW") &
-                              dist_border < 50) |>
+                            dist_border < 50) |>
             dplyr::pull(cell_id)
         train_bad_var <- unique(c(train_bad_var, bad_ids))
 
         qs <- stats::quantile(df$log2AspectRatio, probs=c(0.25,0.75))
         good_ids <- df |>
             dplyr::filter(log2AspectRatio > qs[1] &
-                              log2AspectRatio < qs[2] &
-                              dist_border > 50) |>
+                            log2AspectRatio < qs[2] &
+                            dist_border > 50) |>
             dplyr::pull(cell_id)
         train_good_var <- unique(c(train_good_var, good_ids))
 
@@ -612,7 +610,7 @@ computeTrainDF <- function(colData, formulaVars, tech, verbose=FALSE) {
 
     n_bad <- nrow(train_bad)
     stopifnot("Not enough good examples to match bad examples"=
-                  nrow(train_good) > n_bad)
+                nrow(train_good) > n_bad)
     idx <- sample(seq_len(nrow(train_good)), n_bad, replace=FALSE)
     train_good <- train_good[idx, ]
 
@@ -647,7 +645,7 @@ computeTrainDF <- function(colData, formulaVars, tech, verbose=FALSE) {
 #'   A one‐sided formula as a string (e.g. "~ log2CountArea + ...").
 #' @export
 #' @examples
-#' example(.checkOutliers)
+#' example(checkOutliers)
 #' getModelFormula(metadata(spe)$formula_variables)
 getModelFormula <- function(formulaVars, verbose=FALSE)
 {
@@ -674,7 +672,7 @@ getModelFormula <- function(formulaVars, verbose=FALSE)
 #' Internal: Build Training Set for Xenium & MERFISH
 #' Splits a SpatialExperiment into “bad” vs “good” cells based on
 #' pre-computed outlier labels on log2CountArea.
-#' @param spe \linkS4class{SpatialExperiment}
+#' @param spe \code{SpatialExperiment}
 #' @return
 #' A list with elements \code{bad} and \code{good}, each a data.frame
 #' with \code{qscore_train} and (for “good”) an \code{is_a_bad_boy} flag.
@@ -697,7 +695,7 @@ getModelFormula <- function(formulaVars, verbose=FALSE)
 #' Internal: Build Training Set for CosMx
 #' Splits a SpatialExperiment into “bad” vs “good” cells based on
 #' outliers in aspect ratio near tissue border or low count area.
-#' @param spe \linkS4class{SpatialExperiment}
+#' @param spe \code{SpatialExperiment}
 #' @return
 #' A list with elements \code{bad} and \code{good}, each a data.frame
 #' with \code{qscore_train} and (for “good”) an \code{is_a_bad_boy} flag.
@@ -728,7 +726,7 @@ getModelFormula <- function(formulaVars, verbose=FALSE)
 #' Internal: Build Training Set for CosMx-Protein
 #' Splits a SpatialExperiment into “bad” vs “good” cells based on
 #' outliers in aspect ratio near tissue border or low count area.
-#' @param spe \linkS4class{SpatialExperiment}
+#' @param spe \code{SpatialExperiment}
 #' @return
 #' A list with elements \code{bad} and \code{good}, each a data.frame
 #' with \code{qscore_train} and (for “good”) an \code{is_a_bad_boy} flag.
@@ -771,7 +769,6 @@ getModelFormula <- function(formulaVars, verbose=FALSE)
 #'   percentile.
 #'
 #' @return The `SpatialExperiment` object with added filter flags in `colData`.
-#'
 #'
 #' @importFrom SummarizedExperiment colData
 #' @export
@@ -831,9 +828,9 @@ computeQCScoreFlags <- function(spe, qsThreshold=0.5, useQSQuantiles=FALSE) {
     {
         if (!submeth %in% names(method)) next
         idx <- switch(submeth,
-                      "log2CountArea"        = cd[["total"]] > 0,
-                      "log2Ctrl_total_ratio" = cd[["ctrl_total_ratio"]] != 0,
-                      rep(TRUE, nrow(cd))
+                    "log2CountArea"        = cd[["total"]] > 0,
+                    "log2Ctrl_total_ratio" = cd[["ctrl_total_ratio"]] != 0,
+                    rep(TRUE, nrow(cd))
         )
         if (!any(idx, na.rm = TRUE)) next
         skw <- e1071::skewness(cd[[submeth]][idx], na.rm=TRUE)
@@ -843,9 +840,9 @@ computeQCScoreFlags <- function(spe, qsThreshold=0.5, useQSQuantiles=FALSE) {
     return(method)
 }
 
-#' .computeOutliersQCScore
-#' @name dot-computeOutliersQCScore
-#' @rdname dot-computeOutliersQCScore
+#' computeOutliersQCScore
+#' @name computeOutliersQCScore
+#' @rdname computeOutliersQCScore
 #' @description
 #' Compute outlier cells for each metric that can be used in QC score formula
 #' for SpatialExperiment.
@@ -886,10 +883,11 @@ computeQCScoreFlags <- function(spe, qsThreshold=0.5, useQSQuantiles=FALSE) {
 #' @examples
 #' example(readCosmxSPE)
 #' spe <- spatialPerCellQC(spe)
-#' spe <- .computeOutliersQCScore(spe)
+#' spe <- computeOutliersQCScore(spe)
 #' table(spe$log2CountArea_outlier_train)
-.computeOutliersQCScore <- function(spe, metricList=c("log2CountArea", "Area_um",
+computeOutliersQCScore <- function(spe, metricList=c("log2CountArea","Area_um",
     "log2AspectRatio", "log2Ctrl_total_ratio")) {
+
     stopifnot(is(spe, "SpatialExperiment"))
 
     cd <- colData(spe)
@@ -926,13 +924,14 @@ computeQCScoreFlags <- function(spe, qsThreshold=0.5, useQSQuantiles=FALSE) {
             spe[[var]] > high_thr ~ "HIGH",
             TRUE ~ "NO"
         )
-        spe[[tgt]] <- scuttle::outlier.filter(spe[[tgt]])##is this really needed?
+        spe[[tgt]] <- scuttle::outlier.filter(spe[[tgt]])#is this really needed?
         thr <- getFencesOutlier(spe_temp, out_var)
         if (isTRUE(s$tweak_lower)) thr[1] <- low_thr
         attr(spe[[tgt]], "thresholds") <- thr
     }
 
-    submethod <- method[!names(method) %in% c("log2CountArea", "log2Ctrl_total_ratio")]
+    submethod <- method[!names(method) %in%
+        c("log2CountArea", "log2Ctrl_total_ratio")]
 
     for(j in names(submethod)){
         spe <- computeSpatialOutlier(spe, computeBy=j, method=submethod[j])
@@ -950,9 +949,9 @@ computeQCScoreFlags <- function(spe, qsThreshold=0.5, useQSQuantiles=FALSE) {
 }
 
 
-#' .checkOutliers
+#' checkOutliers
 #' @name checkOutliers
-#' @rdname dot-checkOutliers
+#' @rdname checkOutliers
 #' @description
 #' Checks if computed outliers meet the minimum numerical requirement, being
 #' at least 0.1% of total cells for each metric to be used in QC score formula.
@@ -973,10 +972,10 @@ computeQCScoreFlags <- function(spe, qsThreshold=0.5, useQSQuantiles=FALSE) {
 #' @importFrom SummarizedExperiment colData
 #' @export
 #' @examples
-#' example(.computeOutliersQCScore)
-#' spe <- .checkOutliers(spe, verbose = TRUE)
+#' example(computeOutliersQCScore)
+#' spe <- checkOutliers(spe, verbose = TRUE)
 #' metadata(spe)$formula_variables
-.checkOutliers <- function(spe, verbose=FALSE) {
+checkOutliers <- function(spe, verbose=FALSE) {
     warnstopmsg <- function(var, warnstop=c("w","s")) {
         warnstop <- match.arg(warnstop)
         m1 <- paste0("Not enough outlier cells for ", var, ".\n")
@@ -1063,8 +1062,8 @@ computeQCScoreFlags <- function(spe, qsThreshold=0.5, useQSQuantiles=FALSE) {
         spe <- spe[, sum(zerocells)]
     }
 
-    spe1 <- .computeOutliersQCScore(spe, metricList)
-    spe1 <- .checkOutliers(spe1, verbose)
+    spe1 <- computeOutliersQCScore(spe, metricList)
+    spe1 <- checkOutliers(spe1, verbose)
 
     out_var <- metadata(spe1)$formula_variables
     df <- as.data.frame(colData(spe1))
