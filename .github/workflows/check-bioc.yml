@@ -16,7 +16,7 @@ env:
   run_covr: 'false'
   run_pkgdown: 'false'
   has_RUnit: 'false'
-  cache-version: 'cache-v1'
+  cache-version: 'cache-v2'
   run_docker: 'false'
   bioc_version: 'bioc-devel'
   ## Valid options are:
@@ -109,6 +109,23 @@ jobs:
           R_LIBS_USER=/__w/_temp/Library
           echo "R_LIBS_USER=$R_LIBS_USER" >> "$GITHUB_ENV"
           mkdir -p $R_LIBS_USER
+      
+      ## Create R_LIBS_USER on macOS
+      - name: Create R_LIBS_USER on macOS
+        if: runner.os == 'macOS'
+        run: |
+          R_LIBS_USER=$HOME/Library/R/${{ matrix.config.r }}/library
+          echo "R_LIBS_USER=$R_LIBS_USER" >> "$GITHUB_ENV"
+          mkdir -p "$R_LIBS_USER"
+
+      ## Create R_LIBS_USER on Windows
+      - name: Create R_LIBS_USER on Windows
+        if: runner.os == 'Windows'
+        shell: bash
+        run: |
+          R_LIBS_USER=${R_USER_PROFILE-}/R/${{ matrix.config.r }}/library
+          echo "R_LIBS_USER=$R_LIBS_USER" >> "$GITHUB_ENV"
+          mkdir -p "$R_LIBS_USER"
 
       ## Use cached R packages
       - name: Restore R package cache
@@ -116,8 +133,9 @@ jobs:
         uses: actions/cache@v4
         with:
           path: ${{ env.R_LIBS_USER }}
-          key: ${{ matrix.config.os }}-${{ matrix.config.r }}-${{ matrix.config.bioc }}-${{ inputs.cache-version }}
-          restore-keys: ${{ matrix.config.os }}-${{ matrix.config.r }}-${{ matrix.config.bioc }}--${{ inputs.cache-version }}
+          key: ${{ matrix.config.os }}-${{ matrix.config.r }}-${{ matrix.config.bioc }}-${{ env.cache-version }}
+          restore-keys: |
+            ${{ matrix.config.os }}-${{ matrix.config.r }}-${{ matrix.config.bioc }}-${{ env.cache-version }}
 
       ## remotes is needed for isntalling the Linux system dependencies
       ## as well as other R packages later on.
