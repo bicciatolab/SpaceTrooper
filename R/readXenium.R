@@ -92,24 +92,9 @@ readXeniumSPE <- function(dirName, sampleName="sample01",
             countMatPattern=cfm, metaDataPattern=metadataFPattern,
             coordNames=coordNames, returnType="SPE", addExperimentXenium=FALSE,
             altExps=NULL, addParquetPaths=FALSE)
-    spe$sample_id <- sampleName
-    rownames(colData(spe)) <- spe$cell_id
-    pex <- paste0(polygonsFPattern, switch(boundariesType, parquet=".parquet",
-                                                            csv=".csv.gz"))
-    polfile <- list.files(dirName, pex, full.names=TRUE)
-    cd <- colData(spe)
-    if (computeMissingMetrics) {
-        message("Computing missing metrics, this could take some time...")
-        cd <- computeMissingMetricsXenium(polfile, cd, keepPolygons,
-                                        polygonsCol)
-    }
-    if (addFOVs) {
-        cd <- .addFovFromTx(file.path(dirName, paste0(txPattern, ".parquet")),
-                    cd)
-    }
-
-    if (!identical(colData(spe), cd)) colData(spe) <- cd
-    metadata(spe) <- list(polygons=polfile, technology="10X_Xenium")
+    spe <- .setupXeniumSPE(spe, dirName, sampleName,
+        boundariesType, computeMissingMetrics, keepPolygons,
+        polygonsFPattern, polygonsCol, txPattern, addFOVs)
     return(spe)
 }
 
@@ -148,8 +133,7 @@ readXeniumSPE <- function(dirName, sampleName="sample01",
 #' colData(spe) <- computeMissingMetricsXenium(metadata(spe)$polygons,
 #'     colData(spe), keepPolygons=TRUE)
 computeMissingMetricsXenium <- function(polFile, colData, keepPolygons=FALSE,
-                                polygonsCol="polygons")
-{
+                                polygonsCol="polygons") {
     stopifnot(file.exists(polFile))
     polygons <- readPolygonsXenium(polFile, keepMultiPol=TRUE)
     cd <- colData
@@ -182,7 +166,6 @@ computeMissingMetricsXenium <- function(polFile, colData, keepPolygons=FALSE,
 #' @importFrom arrow read_parquet
 #' @importFrom dplyr group_by select distinct left_join
 #' @keywords internal
-#'
 .addFovFromTx <- function(txFile, colData) {
     stopifnot(file.exists(txFile))
     df <- data.frame(colData)
@@ -227,8 +210,7 @@ computeMissingMetricsXenium <- function(polFile, colData, keepPolygons=FALSE,
 #' cd <- .checkAndFixArea(cd)
 #' head(cd$Area_um)
 #' @noRd
-.checkAndFixAreaXenium <- function(cd, polygons)
-{
+.checkAndFixAreaXenium <- function(cd, polygons) {
     idx <- which(names(cd) == "cell_area")
     if (length(idx) != 0) {
         cd$Area_um <- cd[[idx]]
@@ -237,4 +219,84 @@ computeMissingMetricsXenium <- function(polFile, colData, keepPolygons=FALSE,
         cd$Area_um <- computeAreaFromPolygons(polygons)
     }
     return(cd)
+}
+
+#' @keywords internal
+#' @noRd
+.setupXeniumSPE <- function(spe, dirName, sampleName="sample01",
+    boundariesType=c("parquet", "csv"), computeMissingMetrics=TRUE,
+    keepPolygons=FALSE, polygonsFPattern="cell_boundaries",
+    polygonsCol="polygons", txPattern="transcripts", addFOVs=FALSE) {
+    stopifnot("spe is not a SpatialExperiment"=is(spe, "SpatialExperiment"))
+    stopifnot("dirName not existing"=file.exists(dirName))
+    boundariesType <- match.arg(boundariesType)
+    spe$sample_id <- sampleName
+    rownames(colData(spe)) <- spe$cell_id
+    pex <- paste0(polygonsFPattern, switch(boundariesType, parquet=".parquet",
+                                                            csv=".csv.gz"))
+    polfile <- list.files(dirName, pex, full.names=TRUE)
+    cd <- colData(spe)
+    if (computeMissingMetrics) {
+        message("Computing missing metrics, this could take some time...")
+        cd <- computeMissingMetricsXenium(polfile, cd, keepPolygons,
+                                        polygonsCol)
+    }
+    if (addFOVs) {
+        cd <- .addFovFromTx(file.path(dirName, paste0(txPattern, ".parquet")), cd)
+    }
+
+    if (!identical(colData(spe), cd)) colData(spe) <- cd
+    metadata(spe) <- list(polygons=polfile, technology="10X_Xenium")
+    return(spe)
+}
+
+#' updateXeniumSPE
+#'
+#' @description
+#' Update a SpatialExperiment created from 10x Genomics Xenium outputs by
+#' wiring polygons/boundaries, computing optional QC metrics, and standardizing
+#' metadata and column names. This is a thin wrapper that delegates to the
+#' internal helper `.setupXeniumSPE()`.
+#'
+#' @param spe SpatialExperiment object to update.
+#' @param dirName Directory containing Xenium outputs.
+#' @param sampleName Sample identifier to store (default \code{"sample01"}).
+#' @param polygonsFPattern Character pattern used to locate polygon files when
+#'     boundaries are provided as CSVs (default \code{"polygons.csv"}).
+#' @param boundariesType One of \code{c("parquet","csv")} indicating the source
+#'     format of cell boundaries.
+#' @param computeMissingMetrics Logical; if \code{TRUE}, compute metrics that are
+#'     not already present from transcripts/polygons.
+#' @param keepPolygons Logical; if \code{TRUE}, keep polygons in the resulting
+#'     object (e.g., in metadata or colData, depending on implementation).
+#' @param polygonsCol Name of the geometry/column storing polygons when reading
+#'     from parquet (default \code{"polygons"}).
+#' @param txPattern Pattern (file/glob) for transcript-level files
+#'     (default \code{"transcripts"}).
+#' @param addFOVs Logical; if \code{TRUE}, derive and attach FOV identifiers
+#'     from transcript resources.
+#'
+#' @return Updated SpatialExperiment object.
+#'
+#' @details
+#' This function performs input checks and then calls `.setupXeniumSPE()`,
+#' which does the heavy lifting (I/O, renaming, metadata updates, metrics).
+#'
+#' @export
+#' @examples
+#' xepath <- system.file("extdata", "Xenium_small", package="SpaceTrooper")
+#' (spe <- SpatialExperimentIO::readXeniumSXE(dirName=xepath))
+#' spe <- updateXeniumSPE(spe, dirName=xepath, boundariesType="parquet",
+#'     computeMissingMetrics=TRUE, keepPolygons=TRUE)
+updateXeniumSPE <- function(spe, dirName, sampleName="sample01",
+    boundariesType=c("parquet", "csv"), computeMissingMetrics=TRUE,
+    keepPolygons=FALSE, polygonsFPattern="cell_boundaries",
+    polygonsCol="polygons", txPattern="transcripts", addFOVs=FALSE) {
+    stopifnot("spe is not a SpatialExperiment"=is(spe, "SpatialExperiment"))
+    stopifnot("dirName not existing"=file.exists(dirName))
+    spe <- .setupXeniumSPE(spe=spe, dirName=dirName, sampleName=sampleName,
+        boundariesType=boundariesType, computeMissingMetrics=computeMissingMetrics,
+        keepPolygons=keepPolygons, polygonsFPattern=polygonsFPattern,
+        polygonsCol=polygonsCol, txPattern=txPattern, addFOVs=addFOVs)
+    return(spe)
 }
