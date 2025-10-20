@@ -392,6 +392,9 @@ computeQCScore <- function(spe, bestLambda=NULL, verbose=FALSE) {
     metricList <- c("log2CountArea", "Area_um",
                     "log2AspectRatio", "log2Ctrl_total_ratio")
 
+    stopifnot("Not all required metrics in the colData.\n
+        Please run spatialPerCellQC first."=
+        all(metricList %in% names(colData(spe))))
     ctx <- .prepQCContext(spe, metricList, verbose)
     df <- ctx$df; out_var <- ctx$out_var; tech <- ctx$tech
 
