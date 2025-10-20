@@ -30,11 +30,11 @@ official Release of Bioconductor.
 
 First try to run the following either in R or in a virgin environment:
 
-`BiocManager::install(repo="drighelli/SpaceTrooper", ref="main")`
+`BiocManager::install("drighelli/SpaceTrooper", ref="main")`
 
 If you want a not stable version of the package you can use:
 
-`BiocManager::install(repo="drighelli/SpaceTrooper", ref="devel")`
+`BiocManager::install("drighelli/SpaceTrooper", ref="devel")`
 
 If you were able to install the package correctly, CONGRATULATIONS!!! 🎉🎉🎉
 
