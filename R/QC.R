@@ -378,9 +378,8 @@ computeQCScore <- function(spe, bestLambda=NULL, verbose=FALSE) {
     }
     metricList <- c("log2CountArea", "Area_um",
                     "log2AspectRatio", "log2Ctrl_total_ratio")
-    errmsg <- paste0("Not all required metrics in the colData.\n",
-                    "Please run spatialPerCellQC first.")
-    stopifnot(errmsg=all(metricList %in% names(colData(spe))))
+
+    stopifnot("Not all required metrics in the colData.\nPlease run spatialPerCellQC first." = all(metricList %in% names(colData(spe))))
     ctx <- .prepQCContext(spe, metricList, verbose)
     df <- ctx$df; out_var <- ctx$out_var; tech <- ctx$tech
 
@@ -505,11 +504,7 @@ computeTrainDF <- function(colData, formulaVars, tech, verbose=FALSE) {
     train_bad_var <- character()
     train_good_var <- character()
 
-    stopifnot(
-        "log2CountArea is not included in the QC score formula.\n
-        QC score cannot be computed"=
-            "log2CountArea" %in% names(out_var)
-    )
+    stopifnot("log2CountArea is not included in the QC score formula.\nQC score cannot be computed"="log2CountArea" %in% names(out_var))
 
     cfg <- list(
         log2CountArea=list(bad="LOW", good=c(0.90,0.99)),
@@ -637,7 +632,7 @@ getModelFormula <- function(formulaVars, verbose=FALSE)
 {
     out_var <- formulaVars
     if ("log2AspectRatio" %in% names(out_var)) {
-        names(out_var)[grep(out_var, pattern = "log2AspectRatio_outlier")] <-
+        names(out_var)[grep("log2AspectRatio_outlier", out_var)] <-
             "I(abs(log2AspectRatio) * as.numeric(dist_border<50))"
     }
     model_formula <- paste0("~(", paste(names(out_var), collapse = " + "),
@@ -1043,7 +1038,7 @@ checkOutliers <- function(spe, verbose=FALSE) {
     # remove zero-count cells once
     zerocells <- spe$total==0
     if (sum(zerocells) > 0) {
-        warning(paste0(zerocells,
+        warning(paste0(sum(zerocells),
             " cells with 0 counts were found. These cells will be removed."))
         spe <- spe[, sum(zerocells)]
     }
