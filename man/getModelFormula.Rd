@@ -15,7 +15,7 @@ outlier label columns, typically from
 \item{verbose}{Logical. If `TRUE`, prints the final formula used for QC score}
 }
 \value{
-\[character\]
+`character`
   A one‐sided formula as a string (e.g. "~ log2CountArea + ...").
 }
 \description{

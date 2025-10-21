@@ -22,17 +22,14 @@ its outlier label column name, e.g.
 enable CosMx-specific handling for `log2AspectRatio`. Expected
 values include `"Nanostring_CosMx"` or `"Nanostring_CosMx_Protein"`.}
 
-\item{verbose}{\[logical(1)\] (default \code{FALSE})
+\item{verbose}{`logical(1)` (default \code{FALSE})
 If \code{TRUE}, prints the number of “bad” and “good” cells selected.}
 }
 \value{
 A \code{data.frame} with one row per cell, including:
-\itemize{
-  \item \code{qcscore_train} (0/1) indicating “bad” vs “good”,
-  \item relevant \code{colData} columns used for modeling.
-  \item Deduplicates and down-samples “good” cells to match the number of
-   “bad” cells.
-}
+  \code{qcscore_train} (0/1) indicating “bad” vs “good”,
+  relevant \code{colData} columns used for modeling.
+  Deduplicates and down-samples “good” cells to match the number of “bad” cells.
 }
 \description{
 Build a Balanced Training Data Frame from a SpatialExperiment

@@ -10,9 +10,9 @@ trainModel(modelMatrix, trainDF)
 \item{modelMatrix}{a matrix describing the model variables, tipically created
 with `getModelFormula` and `model.matrix` functions.}
 
-\item{trainDF}{\[data.frame\]
+\item{trainDF}{`data.frame`
 A data frame containing at least the response column
-\code{qscore_train}, coded as 0/1.}
+`qscore_train`, coded as 0/1.}
 }
 \value{
 A \code{\link[glmnet]{glmnet}} model object fitted with

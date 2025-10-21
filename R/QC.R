@@ -289,35 +289,24 @@ computeThresholdFlags <- function(spe, totalThreshold=0,
 #' cross-validation to identify the optimal regularization parameter
 #' \eqn{\lambda} for a binary response.
 #'
-#' @param trainDF  \[data.frame\]
+#' @param trainDF  `data.frame`
 #'   A data frame for training that must include:
-#'   \describe{
-#'     \item{Predictor columns}{All columns referenced in the formula returned
-#'     by \code{getModelFormula()}.}
-#'     \item{\code{qscore_train}}{A binary (0/1) response vector to be modeled.}
-#'   }
-#' @param modelFormula \[character\]
+#'     Predictor columns: All columns referenced in the formula returned by `getModelFormula()`.
+#'     `qscore_train` A binary (0/1) response vector to be modeled.
+#' @param modelFormula `character`
 #'   A character string representing the model formula
-#'   \describe{
-#'    "\code{~ log2CountArea + ...}"), as returned by
-#'   \code{getModelFormula()}.
-#'   }
+#'    `~ log2CountArea + ...`, as returned by `getModelFormula()`.
 #'
 #' @return
-#' \[numeric\]
-#'   The value of \eqn{\lambda} (i.e., \code{lambda.min}) from
-#'   \code{\link[glmnet]{cv.glmnet}} that minimizes the cross-validation error.
+#' `numeric`
+#'   The value of \eqn{\lambda} (i.e., `lambda.min`) from
+#'   `cv.glmnet` that minimizes the cross-validation error.
 #'
 #' @details
 #' Internally, the function:
-#' \enumerate{
-#'   \item Calls \code{getModelFormula(technology)} to obtain a model formula
-#'   as text,
-#'   \item Constructs the design matrix via \code{model.matrix()},
-#'   \item Runs ridge logistic regression cross-validation using
-#'         \code{\link[glmnet]{cv.glmnet}} with \code{alpha = 0},
-#'   \item Extracts and returns \code{ridge_cv$lambda.min}.
-#' }
+#'   Constructs the design matrix via \code{model.matrix()},
+#'   Runs ridge logistic regression cross-validation using `cv.glmnet` with `alpha = 0`,
+#'   Extracts and returns `ridge_cv$lambda.min`.
 #'
 #' @examples
 #' example(computeTrainDF)
@@ -325,8 +314,6 @@ computeThresholdFlags <- function(spe, totalThreshold=0,
 #' best_lambda <- computeLambda(df_train, modform)
 #' print(best_lambda)
 #'
-#' @seealso
-#' \code{\link[glmnet]{cv.glmnet}}
 #'
 #' @export
 computeLambda <- function(trainDF, modelFormula) {
@@ -391,10 +378,9 @@ computeQCScore <- function(spe, bestLambda=NULL, verbose=FALSE) {
     }
     metricList <- c("log2CountArea", "Area_um",
                     "log2AspectRatio", "log2Ctrl_total_ratio")
-
-    stopifnot("Not all required metrics in the colData.\n
-        Please run spatialPerCellQC first."=
-        all(metricList %in% names(colData(spe))))
+    errmsg <- paste0("Not all required metrics in the colData.\n",
+                    "Please run spatialPerCellQC first.")
+    stopifnot(errmsg=all(metricList %in% names(colData(spe))))
     ctx <- .prepQCContext(spe, metricList, verbose)
     df <- ctx$df; out_var <- ctx$out_var; tech <- ctx$tech
 
@@ -438,9 +424,9 @@ computeQCScore <- function(spe, bestLambda=NULL, verbose=FALSE) {
 #' \code{trainModel} fits an L2-regularized (ridge) logistic regression
 #' using \pkg{glmnet}, given a design matrix and a training data frame.
 #'
-#' @param trainDF \[data.frame\]
+#' @param trainDF `data.frame`
 #'   A data frame containing at least the response column
-#'   \code{qscore_train}, coded as 0/1.
+#'   `qscore_train`, coded as 0/1.
 #' @param modelMatrix a matrix describing the model variables, tipically created
 #' with `getModelFormula` and `model.matrix` functions.
 #'
@@ -487,17 +473,14 @@ trainModel <- function(modelMatrix, trainDF)
 #'   values include `"Nanostring_CosMx"` or `"Nanostring_CosMx_Protein"`.
 #' @param verbose Logical; print progress messages.
 #'
-#' @param verbose \[logical(1)\] (default \code{FALSE})
+#' @param verbose `logical(1)` (default \code{FALSE})
 #'   If \code{TRUE}, prints the number of “bad” and “good” cells selected.
 #'
 #' @return
 #' A \code{data.frame} with one row per cell, including:
-#' \itemize{
-#'   \item \code{qcscore_train} (0/1) indicating “bad” vs “good”,
-#'   \item relevant \code{colData} columns used for modeling.
-#'   \item Deduplicates and down-samples “good” cells to match the number of
-#'    “bad” cells.
-#' }
+#'   \code{qcscore_train} (0/1) indicating “bad” vs “good”,
+#'   relevant \code{colData} columns used for modeling.
+#'   Deduplicates and down-samples “good” cells to match the number of “bad” cells.
 #'
 #' @details The function builds a training set using the variables specified
 #' in the `metadata` of the `SpatialExperiment` object.
@@ -644,7 +627,7 @@ computeTrainDF <- function(colData, formulaVars, tech, verbose=FALSE) {
 #'   outlier label columns, typically from
 #'   `metadata(spe)$formula_variables`.
 #' @param verbose Logical. If `TRUE`, prints the final formula used for QC score
-#' @return \[character\]
+#' @return `character`
 #'   A one‐sided formula as a string (e.g. "~ log2CountArea + ...").
 #' @export
 #' @examples

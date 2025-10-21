@@ -7,25 +7,19 @@
 computeLambda(trainDF, modelFormula)
 }
 \arguments{
-\item{trainDF}{\[data.frame\]
+\item{trainDF}{`data.frame`
 A data frame for training that must include:
-\describe{
-  \item{Predictor columns}{All columns referenced in the formula returned
-  by \code{getModelFormula()}.}
-  \item{\code{qscore_train}}{A binary (0/1) response vector to be modeled.}
-}}
+  Predictor columns: All columns referenced in the formula returned by `getModelFormula()`.
+  `qscore_train` A binary (0/1) response vector to be modeled.}
 
-\item{modelFormula}{\[character\]
+\item{modelFormula}{`character`
 A character string representing the model formula
-\describe{
- "\code{~ log2CountArea + ...}"), as returned by
-\code{getModelFormula()}.
-}}
+ `~ log2CountArea + ...`, as returned by `getModelFormula()`.}
 }
 \value{
-\[numeric\]
-  The value of \eqn{\lambda} (i.e., \code{lambda.min}) from
-  \code{\link[glmnet]{cv.glmnet}} that minimizes the cross-validation error.
+`numeric`
+  The value of \eqn{\lambda} (i.e., `lambda.min`) from
+  `cv.glmnet` that minimizes the cross-validation error.
 }
 \description{
 Compute Optimal Ridge Regularization Parameter \eqn{\lambda} via
@@ -37,14 +31,9 @@ cross-validation to identify the optimal regularization parameter
 }
 \details{
 Internally, the function:
-\enumerate{
-  \item Calls \code{getModelFormula(technology)} to obtain a model formula
-  as text,
-  \item Constructs the design matrix via \code{model.matrix()},
-  \item Runs ridge logistic regression cross-validation using
-        \code{\link[glmnet]{cv.glmnet}} with \code{alpha = 0},
-  \item Extracts and returns \code{ridge_cv$lambda.min}.
-}
+  Constructs the design matrix via \code{model.matrix()},
+  Runs ridge logistic regression cross-validation using `cv.glmnet` with `alpha = 0`,
+  Extracts and returns `ridge_cv$lambda.min`.
 }
 \examples{
 example(computeTrainDF)
@@ -52,7 +41,5 @@ modform <- getModelFormula(metadata(spe)$formula_variables)
 best_lambda <- computeLambda(df_train, modform)
 print(best_lambda)
 
-}
-\seealso{
-\code{\link[glmnet]{cv.glmnet}}
+
 }
