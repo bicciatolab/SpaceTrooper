@@ -123,7 +123,7 @@ jobs:
         if: runner.os == 'Windows'
         shell: bash
         run: |
-          R_LIBS_USER=${R_USER_PROFILE-}/R/${{ matrix.config.r }}/library
+          R_LIBS_USER=${USERPROFILE}/R/${{ matrix.config.r }}/library
           echo "R_LIBS_USER=$R_LIBS_USER" >> "$GITHUB_ENV"
           mkdir -p "$R_LIBS_USER"
 
