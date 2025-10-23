@@ -886,6 +886,15 @@ computeOutliersQCScore <- function(spe, metricList=c("log2CountArea","Area_um",
             tweak_lower = FALSE
         )
     )
+    if(any(is.na(method)))
+    {
+        idx <- which(is.na(method))
+        for (i in idx) {
+            message("Metric ", names(method)[i], " produced NA skewness values.",
+                "It will be removed from the QC score formula.")
+            method <- method[-i]
+        }
+    }
     for (var in intersect(names(method), names(spec))) {
         s <- spec[[var]]
         spe_temp <- computeSpatialOutlier(spe[, s$idx], computeBy=var,
@@ -921,11 +930,17 @@ computeOutliersQCScore <- function(spe, metricList=c("log2CountArea","Area_um",
     out_var <- paste0(names(method), "_outlier_", method)
     names(out_var) <- names(method)
     # gives warning if one of the variables is missing, but still works!
-    out_var[names(out_var) %in% c("log2CountArea", "log2Ctrl_total_ratio")] <-
-        c("log2CountArea_outlier_train", "log2Ctrl_total_ratio_outlier_train")
-
+    # out_var[names(out_var) %in% c("log2CountArea", "log2Ctrl_total_ratio")] <-
+    #     c("log2CountArea_outlier_train", "log2Ctrl_total_ratio_outlier_train")
+    mapping <- c(
+        log2CountArea = "log2CountArea_outlier_train",
+        log2Ctrl_total_ratio = "log2Ctrl_total_ratio_outlier_train"
+    )
+    present <- intersect(names(out_var), names(mapping))
+    if (length(present) > 0L) {
+        for (nm in present) out_var[nm] <- mapping[nm]
+    }
     metadata(spe)$formula_variables <- out_var
-
     return(spe)
 }
 
