@@ -306,7 +306,7 @@ plotPolygons <- function(spe, colourBy="darkgrey", colourLog=FALSE,
     p <- p + theme_minimal() + theme(legend.position="right",
         plot.title.position="plot",plot.title=element_text(face="bold",size=14),
             plot.margin=margin(0, 0, 0, 0),
-            panel.background=element_rect(fill=bgColor, color=bgColor, size=1),
+            panel.background=element_rect(fill=bgColor, color=bgColor, linewidth=1),
             panel.border = element_rect(color="black", fill=NA, linewidth=0.1),
             panel.grid.minor=element_blank()
         ) + labs(title=sampleId, fill=colourBy)
@@ -627,7 +627,7 @@ qcFlagPlots <- function(spe, fov=unique(spe$fov),
 
     if (theme[1] == "dark") {
         final <- final +
-            ggplot2::theme(panel.background = ggplot2::element_rect(fill = "black"))
+            ggplot2::theme(panel.background = ggplot2::element_rect(fill="black"))
     }
     final
 

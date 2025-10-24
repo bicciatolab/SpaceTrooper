@@ -25,7 +25,7 @@
         panel.grid=element_blank(),
         panel.grid.minor=element_blank(),
         panel.grid.major=element_blank(),
-        panel.background=element_rect(fill = "transparent", colour = NA),
+        panel.background=element_rect(fill="transparent", colour=NA),
         plot.title=element_text(color=titleCol, hjust=0.5, face="bold"),
         plot.background=element_rect(fill="transparent", colour=backBorder))
 }
@@ -42,7 +42,7 @@
 #' @importFrom ggplot2 theme element_blank element_rect
 #' @keywords internal
 .centroid_image_theme <- function(backBorder=NA) {
-    theme(panel.border=element_rect(color = "black"),
+    theme(panel.border=element_rect(color="black"),
         legend.key=element_blank(),
         axis.line=element_blank(),
         axis.title.x=element_blank(),
@@ -53,7 +53,7 @@
         panel.grid=element_blank(),
         panel.grid.minor=element_blank(),
         panel.grid.major=element_blank(),
-        panel.background=element_rect(fill = "transparent", colour = NA),
+        panel.background=element_rect(fill="transparent", colour=NA),
         plot.title=element_blank(),
         plot.background=element_rect(fill="transparent", colour=backBorder))
 }
@@ -133,7 +133,7 @@
 .dark_theme <- function(fillColor="black", foreColor="white") {
     theme(panel.background=element_rect(fill=fillColor, color=NA),
         plot.background=element_rect(fill=fillColor, color=NA),
-        panel.border=element_rect(color = foreColor, fill = NA, linewidth=0.1),
+        panel.border=element_rect(color=foreColor, fill=NA, linewidth=0.1),
         title=element_text(color=foreColor),
         axis.line=element_blank(),
         axis.title.x=element_blank(),
