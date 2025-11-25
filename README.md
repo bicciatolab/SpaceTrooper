@@ -13,8 +13,10 @@ The package is in Bioconductor since version 3.22, and it can be installed by
 aid of the `BiocManager` package, if you are using the proper Bioconductor 
 version (3.22).
 
-By executing `BiocManager::install("SpaceTrooper)` you will install the 
-latest version of the package on Bioconductor.
+Please install the latest stable version of the package package with 
+
+`BiocManager::install("SpaceTrooper)` 
+
 
 # Installing via Github
 
