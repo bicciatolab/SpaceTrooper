@@ -28,10 +28,6 @@ official Release of Bioconductor.
 
 ## Installation
 
-First try to run the following either in R or in a virgin environment:
-
-`BiocManager::install("drighelli/SpaceTrooper", ref="main")`
-
 If you want a not stable version of the package you can use:
 
 `BiocManager::install("drighelli/SpaceTrooper", ref="devel")`
@@ -40,10 +36,12 @@ If you were able to install the package correctly, CONGRATULATIONS!!! 🎉🎉�
 
 # Introduction to the package 
 
-We provide two additional vignettes for the package usage, first one is focused
+We provide three additional vignettes for the package usage, first one is focused
 on imaging-based Spatial Transcriptomics technologies.
 
 The second one is focused on CosMx protein technologies.
+
+The third one is to describe how to switch from an already-loaded dataset with SpatialExperimentIO package and then upload the object to work with SpaceTrooper.
 
 See the compiled version of the vignettes in the 
 [official Bioconductor landing page](https://bioconductor.org/packages/devel/bioc/html/SpaceTrooper.html)
