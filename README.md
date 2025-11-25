@@ -22,15 +22,11 @@ Please install the latest stable version of the package package with
 
 ## Requirements
 
-On te other hand, if you want to install the package from Github, it could be 
+On the other hand, if you want to install the package from Github, it could be 
 unstable and R version must be at least 4.4.0.
 
 We always suggest to use the latest version of the package present on the 
 official Release of Bioconductor.
-
-## Installation
-
-If you want a not stable version of the package you can use:
 
 `BiocManager::install("drighelli/SpaceTrooper", ref="devel")`
 
