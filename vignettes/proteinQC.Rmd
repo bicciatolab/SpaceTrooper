@@ -125,7 +125,7 @@ plotMetricHist(spe, metric="sum")
 # Plot a histogram of cell areas (Area_um)
 plotMetricHist(spe, metric="Area_um")
 # Plot a histogram of proportion of counts respect to the cell area in micron 
-plotMetricHist(spe, metric="log2CountArea")
+plotMetricHist(spe, metric="log2SignalDensity")
 # Plot a histogram of proportion of negative probe counts respect to the total
 # counts in cells
 plotMetricHist(spe, metric="log2Ctrl_total_ratio")
@@ -133,7 +133,7 @@ plotMetricHist(spe, metric="log2Ctrl_total_ratio")
 
 These plots show, respectively, the distributions of the total counts (`sum`),
 of the Area in micron (`Area_um`), the relationship between the counts and 
-the Area of each cell (`log2CountArea`) and the proportion between the 
+the Area of each cell (`log2SignalDensity`) and the proportion between the 
 negative probes counts and the total counts of each cell 
 (`log2Ctrl_total_ratio`).
 

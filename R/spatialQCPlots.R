@@ -411,7 +411,7 @@ plotQScoreTerms <- function(spe, sampleId=unique(spe$sample_id), size=0.05,
         if(custom==TRUE) {
             ggp <- scater::plotColData(spe, x=spatialCoordsNames(spe)[1],
                                         y=spatialCoordsNames(spe)[2],
-                                        colour_by="cust_log2CountArea",
+                                        colour_by="cust_log2SignalDensity",
                                         point_size=size, point_alpha=alpha)+
                 ggplot2::ggtitle(sampleId)+ .centroid_image_theme() +
                 ggplot2::coord_fixed()
@@ -424,7 +424,7 @@ plotQScoreTerms <- function(spe, sampleId=unique(spe$sample_id), size=0.05,
         } else {
             ggp <- scater::plotColData(spe, x=spatialCoordsNames(spe)[1],
                                         y=spatialCoordsNames(spe)[2],
-                                        colour_by="log2CountArea",
+                                        colour_by="log2SignalDensity",
                                         point_size=size, point_alpha=alpha)+
                 ggtitle(sampleId)+ .centroid_image_theme() + coord_fixed()
             ggp2 <- scater::plotColData(spe, x=spatialCoordsNames(spe)[1],
@@ -445,7 +445,7 @@ plotQScoreTerms <- function(spe, sampleId=unique(spe$sample_id), size=0.05,
         ## check if column variable is logical to impose our colors
         ggp <- ggp1 <- scater::plotColData(spe, x=spatialCoordsNames(spe)[1],
                                             y=spatialCoordsNames(spe)[2],
-                                            colour_by="log2CountArea",
+                                            colour_by="log2SignalDensity",
                                             point_size=size, point_alpha=alpha)+
             ggplot2::ggtitle(sampleId)+ .centroid_image_theme() +
             ggplot2::coord_fixed()

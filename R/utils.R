@@ -93,7 +93,7 @@
 #' @export
 #' @examples
 #' example(computeSpatialOutlier)
-#' getFencesOutlier(spe, fencesOf="log2CountArea_outlier_mc")
+#' getFencesOutlier(spe, fencesOf="log2SignalDensity_outlier_mc")
 getFencesOutlier <- function(spe, fencesOf,
                     highLow=c("both", "lower", "higher"), decimalRound=NULL)
 {

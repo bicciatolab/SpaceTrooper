@@ -171,12 +171,12 @@ plotMetricHist(spe, metric="sum")
 # Plot a histogram of cell areas (Area_um)
 plotMetricHist(spe, metric="Area_um")
 # Plot a histogram of proportion of counts respect to the cell area in micron 
-plotMetricHist(spe, metric="log2CountArea")
+plotMetricHist(spe, metric="log2SignalDensity")
 ```
 
 These plots show, respectively, the distributions of the total counts (`sum`),
 of the Area in micron (`Area_um`) and the relationship between the counts and 
-the Area of each cell (`log2CountArea`).
+the Area of each cell (`log2SignalDensity`).
 
 # Spatial Outlier Detection 
 
