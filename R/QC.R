@@ -364,6 +364,13 @@ computeLambda <- function(trainDF, modelFormula) {
 #' To automatically define the formula coefficient weights, model training
 #' is performed through ridge regression.
 #'
+#' Because of the randomness in the training set selection, results may vary so
+#' that it is possible to set a fixed lambda value previously computed with
+#' `computeLambda` preceeded by `computeTrainDF` and `getModelFormula`.
+#' This is useful for reproducibility across different runs.
+#' Otherwise, an easier way is to let be lambda computed internally, just set
+#' a seed with `set.seed()` before running `computeQCScore`.
+#'
 #' @param spe A `SpatialExperiment` object with spatial transcriptomics data.
 #' @param verbose logical for having a verbose output. Default is FALSE.
 #' @param bestLambda the best lambda typically computed using `computeLambda`.
