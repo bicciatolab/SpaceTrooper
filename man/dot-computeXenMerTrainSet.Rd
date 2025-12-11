@@ -17,6 +17,6 @@ with \code{qscore_train} and (for “good”) an \code{is_a_bad_boy} flag.
 \description{
 Internal: Build Training Set for Xenium & MERFISH
 Splits a SpatialExperiment into “bad” vs “good” cells based on
-pre-computed outlier labels on log2CountArea.
+pre-computed outlier labels on log2SignalDensity.
 }
 \keyword{internal}

@@ -10,13 +10,13 @@ computeTrainDF(colData, formulaVars, tech, verbose = FALSE)
 \item{colData}{A per-cell metadata table. Typically
 `as.data.frame(colData(spe))`. Must include at least:
 `cell_id`, raw metric columns named in `formulaVars` (e.g.
-`log2CountArea`, `Area_um`, `log2Ctrl_total_ratio`,
+`log2SignalDensity`, `Area_um`, `log2Ctrl_total_ratio`,
 optionally `log2AspectRatio`), and the corresponding outlier-label
 columns referenced by `formulaVars`.}
 
 \item{formulaVars}{A named character vector mapping variable name to
 its outlier label column name, e.g.
-`c(log2CountArea="log2CountArea_outlier_train", ...)`.}
+`c(log2SignalDensity="log2SignalDensity_outlier_train", ...)`.}
 
 \item{tech}{Character string with the acquisition technology. Used to
 enable CosMx-specific handling for `log2AspectRatio`. Expected

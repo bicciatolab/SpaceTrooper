@@ -27,7 +27,11 @@ Default: `"sample01"`.}
 
 \item{computeMissingMetrics}{`logical(1)`
 If `TRUE`, compute area and aspect‐ratio metrics from the cell boundary
-polygons. Default: `TRUE`.}
+polygons. Default: `TRUE`.
+In particular for area, if a "volume" column is present in the colData, it
+will be used as area value, otherwise area will be computed from polygons.
+This is relevant for MERFISH as the volume is computed on the entire 3D
+cell available data, while polygons are 2D sections.}
 
 \item{keepPolygons}{`logical(1)`
 If `TRUE`, attach raw polygon geometries as extra columns in `colData`.

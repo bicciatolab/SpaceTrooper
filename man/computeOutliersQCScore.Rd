@@ -6,14 +6,15 @@
 \usage{
 computeOutliersQCScore(
   spe,
-  metricList = c("log2CountArea", "Area_um", "log2AspectRatio", "log2Ctrl_total_ratio")
+  metricList = c("log2SignalDensity", "Area_um", "log2AspectRatio",
+    "log2Ctrl_total_ratio")
 )
 }
 \arguments{
 \item{spe}{A `SpatialExperiment` object with spatial omics data.}
 
 \item{metricList}{A character vector specifying the metrics to include in
-the QC score formula. Default is `c("log2CountArea", "Area_um",
+the QC score formula. Default is `c("log2SignalDensity", "Area_um",
 "log2AspectRatio", "log2Ctrl_total_ratio")`.}
 }
 \value{
@@ -26,7 +27,7 @@ Compute outlier cells for each metric that can be used in QC score formula
 for SpatialExperiment.
 
 This function calculates outlier cells for each variable specified
-in `metricList` for a `SpatialExperiment`. Log2CountArea must be present in
+in `metricList` for a `SpatialExperiment`. log2SignalDensity must be present in
 the `colData` of the `SpatialExperiment` object as a minimum requirement.
 The user can choose which metrics to include among the following: Area_um,
 log2Ctrl_total_ratio, log2AspectRatio. For Xenium and Merfish datasets,
@@ -49,5 +50,5 @@ Internally the function:
 example(readCosmxSPE)
 spe <- spatialPerCellQC(spe)
 spe <- computeOutliersQCScore(spe)
-table(spe$log2CountArea_outlier_train)
+table(spe$log2SignalDensity_outlier_train)
 }

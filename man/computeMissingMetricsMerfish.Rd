@@ -9,7 +9,8 @@ computeMissingMetricsMerfish(
   coldata,
   boundariesType = c("parquet", "HDF5"),
   keepPolygons = FALSE,
-  polygonsCol = "polygons"
+  polygonsCol = "polygons",
+  useVolume = TRUE
 )
 }
 \arguments{
@@ -27,6 +28,8 @@ If `TRUE`, cbinds the raw polygon `sf` columns onto `coldata`.}
 
 \item{polygonsCol}{character indicating the name of the polygons column to
 add into the colData (default is `polygons`).}
+
+\item{useVolume}{`logical(1)` it assigns the area from the "volume" column}
 }
 \value{
 A `DataFrame` (or `data.frame`) with:

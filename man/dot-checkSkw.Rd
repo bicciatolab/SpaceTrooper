@@ -7,14 +7,15 @@
 \usage{
 .checkSkw(
   cd,
-  metricList = c("log2CountArea", "Area_um", "log2AspectRatio", "log2Ctrl_total_ratio")
+  metricList = c("log2SignalDensity", "Area_um", "log2AspectRatio",
+    "log2Ctrl_total_ratio")
 )
 }
 \arguments{
 \item{cd}{colData of `SpatialExperiment` object.}
 
 \item{metricList}{A character vector specifying the metrics to include in
-the QC score formula. Defaults are "log2CountArea", "Area_um",
+the QC score formula. Defaults are "log2SignalDensity", "Area_um",
 "log2AspectRatio", "log2Ctrl_total_ratio".}
 }
 \value{

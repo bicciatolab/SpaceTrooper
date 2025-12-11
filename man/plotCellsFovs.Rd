@@ -10,7 +10,8 @@ plotCellsFovs(
   pointCol = "firebrick",
   numbersCol = "black",
   alphaNumbers = 0.8,
-  fovDim = metadata(spe)$fov_dim
+  fovDim = metadata(spe)$fov_dim,
+  scaleBar = TRUE
 )
 }
 \arguments{
@@ -27,6 +28,9 @@ Default: `unique(spe$sample_id)`.}
 
 \item{fovDim}{numeric with two named dimensions xdim, ydim. (Default is
 metadata(spe)$fov_dim)}
+
+\item{scaleBar}{A logical value indicating whether to add a scale bar to the
+plot. (Default is `TRUE`)}
 }
 \value{
 A `ggplot` object showing cell centroids and FoV boundaries.

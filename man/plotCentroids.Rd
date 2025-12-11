@@ -14,7 +14,8 @@ plotCentroids(
   pointCol = "darkmagenta",
   size = 0.05,
   alpha = 0.8,
-  aspectRatio = 1
+  aspectRatio = 1,
+  scaleBar = TRUE
 )
 }
 \arguments{
@@ -50,6 +51,9 @@ vector of colors used to create a gradient.}
 
 \item{aspectRatio}{A numeric value specifying the aspect ratio of the plot.
 (Default is `1`)}
+
+\item{scaleBar}{A logical value indicating whether to add a scale bar to the
+plot. (Default is `TRUE`)}
 }
 \value{
 A `ggplot` object representing the spatial coordinates plot of

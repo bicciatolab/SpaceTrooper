@@ -38,5 +38,5 @@ from a specified column in the `colData` of a `SpatialExperiment` object.
 }
 \examples{
 example(computeSpatialOutlier)
-getFencesOutlier(spe, fencesOf="log2CountArea_outlier_mc")
+getFencesOutlier(spe, fencesOf="log2SignalDensity_outlier_mc")
 }
