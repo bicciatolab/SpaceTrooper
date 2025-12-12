@@ -63,7 +63,7 @@ spatialPerCellQC <- function(spe, micronConvFact=0.12, rmZeros=TRUE,
     spe$ctrl_total_ratio <- spe$control_sum/spe$total
     spe$ctrl_total_ratio[which(is.na(spe$ctrl_total_ratio))] <- 0
     # using eps avoids NaNs and 0 in further computations
-    eps <- .Machine$double.xmin
+    eps <- 0.0001
     spe$log2Ctrl_total_ratio <- log2(spe$ctrl_total_ratio+eps)
     if(metadata(spe)$technology == "Nanostring_CosMx_Protein") {
         # Only for proteins will be included in QCScore
@@ -122,7 +122,7 @@ spatialPerCellQC <- function(spe, micronConvFact=0.12, rmZeros=TRUE,
                                     ywindim=metadata(spe)$fov_dim[["ydim"]]) {
     stopifnot(is(spe, "SpatialExperiment"))
     cd <- colData(spe)
-    cdf <- left_join(as.data.frame(cd),metadata(spe)$fov_positions,by="fov")
+    cdf <- left_join(as.data.frame(cd), metadata(spe)$fov_positions, by="fov")
     spcn <- spatialCoordsNames(spe)
     fovpn <- colnames(metadata(spe)$fov_positions)[colnames(
         metadata(spe)$fov_positions) %in% c("x_global_px", "y_global_px")]
