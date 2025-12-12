@@ -1,4 +1,4 @@
-# Changes in version 1.1.1
+# Changes in version 1.0.1
 
 * fixing minor bugs in AspectRatio internal computation for technology missing it.
 * fixing merfish reading where colData where not properly sorted and sync with assay cells.
