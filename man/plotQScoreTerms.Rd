@@ -26,7 +26,7 @@ columns in `colData`.}
 
 \item{aspectRatio}{Numeric aspect ratio of the plots. Default: `1`.}
 
-\item{custom}{Logical; if `TRUE`, use custom polygon‐derived metrics.}
+\item{custom}{Logical; if `TRUE`, use custom polygon-derived metrics.}
 }
 \value{
 A combined plot (via `cowplot::plot_grid`) showing spatial maps
@@ -34,7 +34,7 @@ A combined plot (via `cowplot::plot_grid`) showing spatial maps
 }
 \description{
 Plots the individual terms that combine into the quality score formula,
-allowing assessment of each term’s impact on the final score.
+allowing assessment of each term's impact on the final score.
 }
 \examples{
 example(readAndAddPolygonsToSPE)

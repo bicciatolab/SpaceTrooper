@@ -432,7 +432,7 @@ plotZoomFovsMap <- function(spe, fovs=NULL, title=NULL,
 #'
 #' @description
 #' Plots the individual terms that combine into the quality score formula,
-#' allowing assessment of each term’s impact on the final score.
+#' allowing assessment of each term's impact on the final score.
 #'
 #' @param spe A `SpatialExperiment` object with `quality_score` and term
 #'   columns in `colData`.
@@ -441,7 +441,7 @@ plotZoomFovsMap <- function(spe, fovs=NULL, title=NULL,
 #' @param size Numeric point size for the scatter plots. Default: `0.05`.
 #' @param alpha Numeric transparency for the scatter plots. Default: `0.2`.
 #' @param aspectRatio Numeric aspect ratio of the plots. Default: `1`.
-#' @param custom Logical; if `TRUE`, use custom polygon‐derived metrics.
+#' @param custom Logical; if `TRUE`, use custom polygon-derived metrics.
 #'
 #' @return A combined plot (via `cowplot::plot_grid`) showing spatial maps
 #'   of each QS term.
@@ -723,7 +723,8 @@ qcFlagPlots <- function(spe, fov=unique(spe$fov),
     scale_label <- if (scale_length >= 1000) {
         c(as.character(scale_length/2000), paste0(scale_length / 2000, " mm"))
     } else {
-        c(as.character(scale_length/2), paste0(scale_length/2, " µm"))
+        micro <- "\u00B5"
+        c(as.character(scale_length/2), paste0(scale_length/2, " ", micro, "m"))
     }
     if(metadata(spe)$technology %in% c("Nanostring_CosMx",
                                        "Nanostring_CosMx_Protein")){
