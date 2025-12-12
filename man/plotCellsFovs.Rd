@@ -11,7 +11,10 @@ plotCellsFovs(
   numbersCol = "black",
   alphaNumbers = 0.8,
   fovDim = metadata(spe)$fov_dim,
-  scaleBar = TRUE
+  size = 0.05,
+  alpha = 0.8,
+  scaleBar = TRUE,
+  micronConvFact = 0.12
 )
 }
 \arguments{
@@ -29,8 +32,15 @@ Default: `unique(spe$sample_id)`.}
 \item{fovDim}{numeric with two named dimensions xdim, ydim. (Default is
 metadata(spe)$fov_dim)}
 
+\item{size}{Numeric point size for the cell centroids. Default: `0.05`.}
+
+\item{alpha}{Numeric transparency for the cell centroids. Default: `0.8`.}
+
 \item{scaleBar}{A logical value indicating whether to add a scale bar to the
 plot. (Default is `TRUE`)}
+
+\item{micronConvFact}{Numeric conversion factor from pixels to microns.
+DEFAULT is `0.12`.}
 }
 \value{
 A `ggplot` object showing cell centroids and FoV boundaries.

@@ -7,10 +7,15 @@
 plotZoomFovsMap(
   spe,
   fovs = NULL,
+  title = NULL,
   mapPointCol = "darkmagenta",
   mapNumbersCol = "black",
   mapAlphaNumbers = 0.8,
-  title = NULL,
+  csize = 0.05,
+  calpha = 0.8,
+  scaleBars = NULL,
+  scaleBarMap = TRUE,
+  scaleBarPol = TRUE,
   ...
 )
 }
@@ -21,6 +26,9 @@ data.}
 \item{fovs}{A character vector specifying the FOVs to be zoomed in and
 plotted. Must match values in the `fov` column of `colData(spe)`.}
 
+\item{title}{An optional character string specifying the title of the final
+plot. If `NULL`, no title is added. Default is `NULL`.}
+
 \item{mapPointCol}{A character string specifying the color of the points
 in the map. Default is `"darkmagenta"`.}
 
@@ -30,8 +38,24 @@ numbers on the map. Default is `"black"`.}
 \item{mapAlphaNumbers}{A numeric value specifying the transparency of the
 numbers on the map. Default is `0.8`.}
 
-\item{title}{An optional character string specifying the title of the final
-plot. If `NULL`, no title is added. Default is `NULL`.}
+\item{csize}{A numeric value specifying the size of the points in the map.
+Default is `0.05`.}
+
+\item{calpha}{A numeric value specifying the transparency of the points in
+the map. Default is `0.8`.}
+
+\item{scaleBars}{Logical or NULL. Default is `NULL`.
+Master switch controlling the presence of scale bars in both panels.
+If \code{TRUE}, scale bars are shown in both the map and polygon panels.
+If \code{FALSE}, scale bars are hidden in both panels.
+If \code{NULL}, individual settings defined by \code{scaleBarMap} and
+\code{scaleBarPol} are used.}
+
+\item{scaleBarMap, scaleBarPol}{Logical. Default is \code{TRUE}.
+Control the presence of the scale bar in the map (cells/FOV overview)
+and polygon (segmentation) panels, respectively.
+These parameters are only used when \code{scaleBars} is \code{NULL};
+otherwise they are overridden by \code{scaleBars}.}
 
 \item{...}{Additional arguments passed to `plotPolygons`.}
 }

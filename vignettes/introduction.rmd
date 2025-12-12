@@ -37,6 +37,16 @@ if (!requireNamespace("BiocManager", quietly = TRUE))
 BiocManager::install("SpaceTrooper")
 ```
 
+# Load Required Libraries
+
+After installation, load the necessary libraries:
+
+```{r load-libs}
+library(SpatialExperiment)
+# Load the SpaceTrooper library
+library(SpaceTrooper)
+```
+
 # Data Loading
 
 In this section, we load data from various platforms using the package's
@@ -56,9 +66,6 @@ issues in downstream analysis, in case this data structure is not supported
 by the used package.
 
 ```{r load-data}
-library(SpatialExperiment)
-# Load the SpaceTrooper library
-library(SpaceTrooper)
 
 # Load Xenium data into a Spatial Experiment object (SPE)
 xeniumFolder <- system.file( "extdata", "Xenium_small", package="SpaceTrooper")
@@ -108,10 +115,10 @@ This plot is specific to CosMx data and uses cell centroids.
 
 ```{r plot-fovs}
 # Plot the cells within their respective Field of Views (FOVs)
-plotCellsFovs(spe)
+plotCellsFovs(spe, size=0.5)
 ```
 
-Because the dataset is a subset of just one Field of View of the original 
+Because the dataset is a subset of just one Field of View (FoV) of the original 
 experiment, we are able to see the identifier of the FoV in black and the 
 centroids of the cells in purple.
 
@@ -128,9 +135,9 @@ to the values passed in the `colour_by` argument.
 
 ```{r plot-centroids-labels}
 # Plot the centroids of the cells in the SPE
-plotCentroids(spe, colourBy="labels")
+plotCentroids(spe, colourBy="labels", size=0.5)
 # Plot the centroids of the cells in the SPE with personalized labels
-plotCentroids(spe, colourBy="labels", palette="labels_colors")
+plotCentroids(spe, colourBy="labels", size=0.5, palette="labels_colors")
 ```
 
 This allow us to see the cell centroids coloured by their cell types giving us
@@ -337,8 +344,8 @@ The `plotZoomFovsMap` function allows you to visualize a map of the FoVs with
 a zoom-in of selected FoVs, colored by the `colour_by` argument.
 
 ```{r plot-zoom-fov}
-plotZoomFovsMap(spe, fovs=16, colourBy="QC_score")
-plotZoomFovsMap(spe, fovs=16, colourBy="low_qcscore")
+plotZoomFovsMap(spe, fovs=16, colourBy="QC_score", csize=0.5, scaleBarMap=TRUE, scaleBarPol=FALSE)
+plotZoomFovsMap(spe, fovs=16, colourBy="low_qcscore", csize=0.5, scaleBarMap=TRUE, scaleBarPol=FALSE)
 ```
 
 We see on the left side the map of all the FoVs (only the FoV 16 in this case),

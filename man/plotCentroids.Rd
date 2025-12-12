@@ -15,7 +15,8 @@ plotCentroids(
   size = 0.05,
   alpha = 0.8,
   aspectRatio = 1,
-  scaleBar = TRUE
+  scaleBar = TRUE,
+  micronConvFact = 0.12
 )
 }
 \arguments{
@@ -54,6 +55,9 @@ vector of colors used to create a gradient.}
 
 \item{scaleBar}{A logical value indicating whether to add a scale bar to the
 plot. (Default is `TRUE`)}
+
+\item{micronConvFact}{Numeric conversion factor from pixels to microns.
+DEFAULT is `0.12`.}
 }
 \value{
 A `ggplot` object representing the spatial coordinates plot of

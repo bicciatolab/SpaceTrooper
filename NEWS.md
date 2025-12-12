@@ -2,7 +2,8 @@
 
 * adding volume instead of area for MERFISH.
 * refactoring log2CountArea to log2DensitySignal
-
+* added size and alpha arguments to plotCellsFovs
+* added scaleBar argument to plotCellsFovs, plotCentroids, plotPolygons and plotZoomFovsMap
 
 # Changes in version 1.1.1
 

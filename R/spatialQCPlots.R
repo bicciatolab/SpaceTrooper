@@ -15,8 +15,12 @@
 #' @param alphaNumbers Numeric transparency for FoV labels. Default: `0.8`.
 #' @param fovDim numeric with two named dimensions xdim, ydim. (Default is
 #' metadata(spe)$fov_dim)
+#' @param size Numeric point size for the cell centroids. Default: `0.05`.
+#' @param alpha Numeric transparency for the cell centroids. Default: `0.8`.
 #' @param scaleBar A logical value indicating whether to add a scale bar to the
 #' plot. (Default is `TRUE`)
+#' @param micronConvFact Numeric conversion factor from pixels to microns.
+#' DEFAULT is `0.12`.
 #'
 #' @return A `ggplot` object showing cell centroids and FoV boundaries.
 #'
@@ -32,7 +36,8 @@
 plotCellsFovs <- function(spe, sampleId=unique(spe$sample_id),
                         pointCol="firebrick", numbersCol="black",
                         alphaNumbers=0.8, fovDim=metadata(spe)$fov_dim,
-                        scaleBar=TRUE)
+                        size=0.05, alpha=0.8,
+                        scaleBar=TRUE, micronConvFact = 0.12)
 {
     stopifnot(is(spe, "SpatialExperiment"))
     stopifnot("fov" %in% names(colData(spe)))
@@ -46,7 +51,7 @@ plotCellsFovs <- function(spe, sampleId=unique(spe$sample_id),
                                         y=.data[[y_coord]]),
                     colour=pointCol,
                     fill=pointCol,
-                    size=0.05, alpha=0.8) +
+                    size=size, alpha=alpha) +
         annotate("rect",
             xmin=metadata(spe)$fov_positions["x_global_px"][ , , drop=TRUE],
             xmax=metadata(spe)$fov_positions["x_global_px"][ , , drop=TRUE] +
@@ -104,6 +109,8 @@ plotCellsFovs <- function(spe, sampleId=unique(spe$sample_id),
 #' (Default is `1`)
 #' @param scaleBar A logical value indicating whether to add a scale bar to the
 #' plot. (Default is `TRUE`)
+#' @param micronConvFact Numeric conversion factor from pixels to microns.
+#' DEFAULT is `0.12`.
 #'
 #' @return A `ggplot` object representing the spatial coordinates plot of
 #' polygon centroids.
@@ -125,7 +132,7 @@ plotCentroids <- function(spe, colourBy=NULL, colourLog=FALSE,
                         sampleId=unique(spe$sample_id),
                         isNegativeProbe=FALSE, palette=NULL,
                         pointCol="darkmagenta", size=0.05, alpha=0.8,
-                        aspectRatio=1, scaleBar=TRUE) {
+                        aspectRatio=1, scaleBar=TRUE, micronConvFact=0.12) {
     stopifnot(is(spe, "SpatialExperiment"))
     if(is.null(colourBy)) {
         ggp <- ggplot(data.frame(spatialCoords(spe)),
@@ -265,6 +272,8 @@ plotMetricHist <- function(spe, metric, fillColor="#c0c8cf",
 #' (default is "white")
 #' @param scaleBar A logical value indicating whether to add a scale bar to the
 #' plot. (Default is `TRUE`)
+#' @param micronConvFact Numeric conversion factor from pixels to microns.
+#' DEFAULT is `0.12`.
 #'
 #' @return A `ggplot` object representing the polygon plot of the spatial data.
 #' @export
@@ -281,7 +290,8 @@ plotMetricHist <- function(spe, metric, fillColor="#c0c8cf",
 plotPolygons <- function(spe, colourBy="darkgrey", colourLog=FALSE,
     polyColumn="polygons.global", sampleId=unique(spe$sample_id),
     bgColor="white", fillAlpha=1, palette=NULL, borderCol=NA,
-    borderAlpha=1, borderLineWidth=0.1, drawBorders=TRUE, scaleBar=TRUE) {
+    borderAlpha=1, borderLineWidth=0.1, drawBorders=TRUE,
+    scaleBar=TRUE, micronConvFact=0.12) {
     stopifnot(is(spe, "SpatialExperiment"))
     stopifnot("polygons" %in% names(colData(spe)))
     df <- data.frame(colData(spe))
@@ -324,6 +334,9 @@ plotPolygons <- function(spe, colourBy="darkgrey", colourLog=FALSE,
             panel.border = element_rect(color="black", fill=NA, linewidth=0.1),
             panel.grid.minor=element_blank()
         ) + labs(title=sampleId, fill=colourBy)
+    if(scaleBar) {
+        p <- .plotScaleBar(p, spe)
+    }
     return(p)
 }
 
@@ -343,14 +356,29 @@ plotPolygons <- function(spe, colourBy="darkgrey", colourLog=FALSE,
 #' data.
 #' @param fovs A character vector specifying the FOVs to be zoomed in and
 #' plotted. Must match values in the `fov` column of `colData(spe)`.
+#' @param title An optional character string specifying the title of the final
+#' plot. If `NULL`, no title is added. Default is `NULL`.
 #' @param mapPointCol A character string specifying the color of the points
 #' in the map. Default is `"darkmagenta"`.
 #' @param mapNumbersCol A character string specifying the color of the
 #' numbers on the map. Default is `"black"`.
 #' @param mapAlphaNumbers A numeric value specifying the transparency of the
 #' numbers on the map. Default is `0.8`.
-#' @param title An optional character string specifying the title of the final
-#' plot. If `NULL`, no title is added. Default is `NULL`.
+#' @param csize A numeric value specifying the size of the points in the map.
+#' Default is `0.05`.
+#' @param calpha A numeric value specifying the transparency of the points in
+#' the map. Default is `0.8`.
+#' @param scaleBars Logical or NULL. Default is `NULL`.
+#' Master switch controlling the presence of scale bars in both panels.
+#' If \code{TRUE}, scale bars are shown in both the map and polygon panels.
+#' If \code{FALSE}, scale bars are hidden in both panels.
+#' If \code{NULL}, individual settings defined by \code{scaleBarMap} and
+#' \code{scaleBarPol} are used.
+#' @param scaleBarMap,scaleBarPol Logical. Default is \code{TRUE}.
+#' Control the presence of the scale bar in the map (cells/FOV overview)
+#' and polygon (segmentation) panels, respectively.
+#' These parameters are only used when \code{scaleBars} is \code{NULL};
+#' otherwise they are overridden by \code{scaleBars}.
 #' @param ... Additional arguments passed to `plotPolygons`.
 #'
 #' @return A combined plot showing a map of all FOVs with zoomed-in views of
@@ -368,19 +396,28 @@ plotPolygons <- function(spe, colourBy="darkgrey", colourLog=FALSE,
 #' @examples
 #' example(readAndAddPolygonsToSPE)
 #' plotZoomFovsMap(spe, fovs=16, title="FOV 16")
-plotZoomFovsMap <- function(spe, fovs=NULL,
+plotZoomFovsMap <- function(spe, fovs=NULL, title=NULL,
                             mapPointCol="darkmagenta",
                             mapNumbersCol="black",
                             mapAlphaNumbers=0.8,
-                            title=NULL, ...) {
+                            csize=0.05, calpha=0.8,
+                            scaleBars=NULL,
+                            scaleBarMap=TRUE,
+                            scaleBarPol=TRUE,
+                            ...) {
     stopifnot(is(spe, "SpatialExperiment"))
     stopifnot("fov" %in% names(colData(spe)))
     stopifnot(all(fovs %in% spe$fov))
     spefovs <- spe[, spe$fov %in% fovs]
+    if (!is.null(scaleBars)) {
+        stopifnot(is.logical(scaleBars), length(scaleBars) == 1L)
+        scaleBarMap <- scaleBars
+        scaleBarPol <- scaleBars
+  }
     map <- plotCellsFovs(spefovs, pointCol=mapPointCol,
         numbersCol=mapNumbersCol, alphaNumbers=mapAlphaNumbers,
-        sampleId=NULL)
-    g2 <- plotPolygons(spefovs, sampleId=NULL, ...)
+        sampleId=NULL, size=csize, alpha=calpha, scaleBar=scaleBarMap)
+    g2 <- plotPolygons(spefovs, sampleId=NULL, scaleBar=scaleBarPol, ...)
     final_plot <- ggpubr::ggarrange(map, g2, ncol=2)
     if (!is.null(title)) {
         final_plot <- ggpubr::annotate_figure(final_plot,
@@ -700,23 +737,29 @@ qcFlagPlots <- function(spe, fov=unique(spe$fov),
         xmin = x_start - scale_length * 0.05,
         xmax = x_end + scale_length * 0.05,
         ymin = y_pos - scale_length * 0.05,
-        ymax = y_pos + scale_length * 0.3)
+        ymax = y_pos + scale_length * 0.3
+    )
+
     scale_bar_data <- data.frame(
         xmin = c(x_start, x_start + (scale_length/2)),
         xmax = c(x_start + (scale_length/2), x_start + (scale_length)),
         ymin = c(y_pos, y_pos),
         ymax = c(y_pos + (scale_length * 0.05), y_pos + (scale_length * 0.05))
     )
+
     label_data <- data.frame(
         x = c(x_start + (scale_length/4), x_start + 0.7*scale_length),
         y = c(y_pos + (scale_length * 0.2), y_pos + (scale_length * 0.2)),
         label = scale_label)
-    p <- p + geom_rect(data = box_data, aes(xmin = xmin, xmax = xmax,
+
+    p <- p+geom_rect(data = box_data, aes(xmin = xmin, xmax = xmax,
                                             ymin = ymin, ymax = ymax),
-                       fill = "white", color = "grey", alpha = 0.8) +
+                       fill = "white", color = "grey", alpha = 0.8,
+                    inherit.aes = FALSE) +
         geom_rect(data = scale_bar_data, aes(xmin = xmin, xmax = xmax,
                                              ymin = ymin, ymax = ymax),
-                  fill = c("black", "white"), color = "grey") +
+                  fill = c("black", "white"), color = "grey",
+                inherit.aes = FALSE) +
         geom_text(data = label_data,
                   aes(x = x, y = y, label = label), color = "grey40",
                   inherit.aes = FALSE, size = 3, hjust = 0.2)
