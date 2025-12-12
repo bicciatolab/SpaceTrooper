@@ -14,6 +14,10 @@
 #' @param computeMissingMetrics `logical(1)`
 #'   If `TRUE`, compute area and aspect‐ratio metrics from the cell boundary
 #'   polygons. Default: `TRUE`.
+#'   In particular for area, if a "volume" column is present in the colData, it
+#'   will be used as area value, otherwise area will be computed from polygons.
+#'   This is relevant for MERFISH as the volume is computed on the entire 3D
+#'   cell available data, while polygons are 2D sections.
 #' @param keepPolygons `logical(1)`
 #'   If `TRUE`, attach raw polygon geometries as extra columns in `colData`.
 #'   Default: `FALSE`.
@@ -115,6 +119,7 @@ readMerfishSPE <- function(dirName, sampleName="sample01",
 #' @param polygonsCol character indicating the name of the polygons column to
 #' add into the colData (default is `polygons`).
 #' @param polFile path to the polygon file
+#' @param useVolume `logical(1)` it assigns the area from the "volume" column
 #'
 #' @return A `DataFrame` (or `data.frame`) with:
 #'   - all columns of `coldata`
@@ -132,11 +137,24 @@ readMerfishSPE <- function(dirName, sampleName="sample01",
 #' cd
 computeMissingMetricsMerfish <- function(polFile, coldata,
     boundariesType=c("parquet","HDF5"), keepPolygons=FALSE,
-    polygonsCol="polygons") {
+    polygonsCol="polygons", useVolume=TRUE) {
+
     boundariesType <- match.arg(boundariesType)
     polygons <- readPolygonsMerfish(polFile, type=boundariesType)
     cd <- DataFrame(coldata)
-    cd$Area_um <- computeAreaFromPolygons(polygons)
+
+    if(useVolume)
+    {
+        if(!"volume" %in% colnames(cd))
+        {
+            warning("Volume column not found in colData.\nComputing area from polygons instead.")
+            area <- computeAreaFromPolygons(polygons)
+        }
+        area <- cd$volume
+    }else {
+        area <- computeAreaFromPolygons(polygons)
+    }
+    cd$Area_um <- area
     cd$AspectRatio <- computeAspectRatioFromPolygons(polygons)
     if (keepPolygons) cd <- .addPolygonsToCD(cd, polygons, polygonsCol)
     return(cd)

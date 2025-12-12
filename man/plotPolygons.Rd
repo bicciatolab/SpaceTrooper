@@ -16,7 +16,9 @@ plotPolygons(
   borderCol = NA,
   borderAlpha = 1,
   borderLineWidth = 0.1,
-  drawBorders = TRUE
+  drawBorders = TRUE,
+  scaleBar = TRUE,
+  micronConvFact = 0.12
 )
 }
 \arguments{
@@ -47,6 +49,12 @@ are stored (default is "polygons.global")}
 \item{borderLineWidth}{Width of polygon borders. Default is `0.1`.}
 
 \item{drawBorders}{Logical; whether to draw borders. Default is `TRUE`.}
+
+\item{scaleBar}{A logical value indicating whether to add a scale bar to the
+plot. (Default is `TRUE`)}
+
+\item{micronConvFact}{Numeric conversion factor from pixels to microns.
+DEFAULT is `0.12`.}
 }
 \value{
 A `ggplot` object representing the polygon plot of the spatial data.

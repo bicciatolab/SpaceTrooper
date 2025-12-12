@@ -53,7 +53,7 @@ for further details.
 }
 \examples{
 example(spatialPerCellQC)
-spe <- computeSpatialOutlier(spe, computeBy="log2CountArea", method="both")
-table(spe$log2CountArea_outlier_mc)
-table(spe$log2CountArea_outlier_sc)
+spe <- computeSpatialOutlier(spe, computeBy="log2SignalDensity", method="both")
+table(spe$log2SignalDensity_outlier_mc)
+table(spe$log2SignalDensity_outlier_sc)
 }

@@ -8,7 +8,7 @@ getModelFormula(formulaVars, verbose = FALSE)
 }
 \arguments{
 \item{formulaVars}{A named character vector mapping variable names
-(e.g. `"log2CountArea"`, `"Area_um"`, etc.) to their corresponding
+(e.g. `"log2SignalDensity"`, `"Area_um"`, etc.) to their corresponding
 outlier label columns, typically from
 `metadata(spe)$formula_variables`.}
 
@@ -16,7 +16,7 @@ outlier label columns, typically from
 }
 \value{
 `character`
-  A one‐sided formula as a string (e.g. "~ log2CountArea + ...").
+  A one‐sided formula as a string (e.g. "~ log2SignalDensity + ...").
 }
 \description{
 Returns the right‐hand side of a model formula string based on formula

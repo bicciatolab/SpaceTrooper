@@ -3,8 +3,8 @@ utils::globalVariables(c(
     "log2AspectRatio_outlier_mc",
     "log2AspectRatio_outlier_sc",
     "dist_border",
-    "log2CountArea_outlier_train",
-    "log2CountArea",
+    "log2SignalDensity_outlier_train",
+    "log2SignalDensity",
     "log2AspectRatio",
     "cell_id",
     "cell_ID",
@@ -19,5 +19,12 @@ utils::globalVariables(c(
     "y_mm",
     ".data",
     "fov_name",
-    "n_points"
+    "n_points",
+    "label",
+    "x",
+    "xmax",
+    "xmin",
+    "y",
+    "ymax",
+    "ymin"
 ))

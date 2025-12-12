@@ -91,6 +91,22 @@ centroids of the cells in purple.
 When an experiment has multiple FoVs, you can see the map and the topological
 organization of the FoVs, together with their identifiers.
 
+
+# Visualizing cell centroids
+To focus on cell centroids, use the `plotCentroids` function. It provides
+a `colour_by` argument, similar to `scater`, to colour the centroids by the 
+values present in the indicated column.
+Additionally, if you have a column with a color palette it automatically maps it
+to the values passed in the `colour_by` argument.
+
+```{r plot-centroids-labels}
+# Plot the centroids of the cells in the SPE
+plotCentroids(spe, size=0.5)
+plotCentroids(spe, colourBy="Mean.DAPI", size=0.5)
+```
+
+Notice that with this plot the FoV identifier is not shown.
+
 # Quality control 
 
 The `spatialPerCellQC` function, inspired by `scater::addPerCellQC`, computes
@@ -125,7 +141,7 @@ plotMetricHist(spe, metric="sum")
 # Plot a histogram of cell areas (Area_um)
 plotMetricHist(spe, metric="Area_um")
 # Plot a histogram of proportion of counts respect to the cell area in micron 
-plotMetricHist(spe, metric="log2CountArea")
+plotMetricHist(spe, metric="log2SignalDensity")
 # Plot a histogram of proportion of negative probe counts respect to the total
 # counts in cells
 plotMetricHist(spe, metric="log2Ctrl_total_ratio")
@@ -133,7 +149,7 @@ plotMetricHist(spe, metric="log2Ctrl_total_ratio")
 
 These plots show, respectively, the distributions of the total counts (`sum`),
 of the Area in micron (`Area_um`), the relationship between the counts and 
-the Area of each cell (`log2CountArea`) and the proportion between the 
+the Area of each cell (`log2SignalDensity`) and the proportion between the 
 negative probes counts and the total counts of each cell 
 (`log2Ctrl_total_ratio`).
 
@@ -297,8 +313,8 @@ The `plotZoomFovsMap` function allows you to visualize a map of the FoVs with
 a zoom-in of selected FoVs, colored by the `colour_by` argument.
 
 ```{r plot-zoom-fov}
-plotZoomFovsMap(spe, fovs=c(201), colourBy="QC_score")
-plotZoomFovsMap(spe, fovs=c(201), colourBy="low_qcscore")
+plotZoomFovsMap(spe, fovs=201, colourBy="QC_score", csize=0.5, scaleBarMap=TRUE, scaleBarPol=FALSE)
+plotZoomFovsMap(spe, fovs=201, colourBy="low_qcscore", csize=0.5, scaleBarMap=TRUE, scaleBarPol=FALSE)
 ```
 
 We see on the left side the map of all the FoVs (only the FoV 16 in this case),

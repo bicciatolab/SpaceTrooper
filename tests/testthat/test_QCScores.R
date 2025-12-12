@@ -19,7 +19,7 @@ test_that("spatialPerCellQC adds per‐cell metrics to colData", {
     cd <- colData(spe)
     # at least these should now be in colData()
     required <- c("sum", "detected", "total", "control_sum", "target_sum",
-                  "Area_um", "log2AspectRatio", "log2CountArea")
+                  "Area_um", "log2AspectRatio", "log2SignalDensity")
     expect_true(all(required %in% colnames(cd)))
 })
 

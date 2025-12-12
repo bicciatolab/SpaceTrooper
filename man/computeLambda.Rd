@@ -14,7 +14,7 @@ A data frame for training that must include:
 
 \item{modelFormula}{`character`
 A character string representing the model formula
- `~ log2CountArea + ...`, as returned by `getModelFormula()`.}
+ `~ log2SignalDensity + ...`, as returned by `getModelFormula()`.}
 }
 \value{
 `numeric`
