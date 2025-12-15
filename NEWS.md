@@ -1,3 +1,7 @@
+# Changes in version 1.1.3
+
+* fixing verbose message in QC functions.
+
 # Changes in version 1.1.2
 
 * adding volume instead of area for MERFISH.
