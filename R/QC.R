@@ -411,7 +411,9 @@ computeQCScore <- function(spe, bestLambda=NULL, verbose=FALSE) {
 
     if (verbose) {
         message("Model coefficients for every term used in the formula:")
-        message(round(predict(model, s=bestLambda, type="coefficients"),2))
+        message(paste(round(predict(model, s=bestLambda, type="coefficients"),
+                            2),
+                    collapse = " "))
     }
 
     full_matrix <- model.matrix(as.formula(model_formula), data=df)
@@ -1001,7 +1003,7 @@ checkOutliers <- function(spe, verbose=FALSE) {
     if (verbose) {
         for (i in names(out_var)) {
             message("Outliers found for ", i, ":")
-            message(table(cd[[out_var[i]]]))
+            message(paste(table(cd[[out_var[i]]]), collapse = " "))
         }
     }
     stopifnot(
