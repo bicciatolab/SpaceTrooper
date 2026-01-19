@@ -1,52 +1,167 @@
 # SpaceTrooper
+[![R](https://img.shields.io/badge/R-%3E%3D4.4.0-blue)](https://www.r-project.org/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/license/mit)
 
-SpaceTrooper is a R/Bioconductor package for the preprocessing and quality 
-control of imaging-based spatial transcriptomics and proteomics data.
+`SpaceTrooper` is an `R/Bioconductor` package for Quality Control
+of imaging-based spatial transcriptomics and proteomics data. It provides 
+multi-platform data harmonization, cell-level QC, and visualization utilities 
+for **CosMx**, **Xenium**, and **MERFISH** technologies.
 
-<p align="center">
-
-<img src="https://raw.githubusercontent.com/drighelli/SpaceTrooper/main/inst/SpaceTrooper_logo.png" alt="SpaceTrooper Logo" width="200"/>
-
+<p align="left">
+	<img src="inst/SpaceTrooper_logo.png" alt="SpaceTrooper Logo" width="150"/>
 </p>
 
-The package is in Bioconductor since version 3.22, and it can be installed by 
-aid of the `BiocManager` package, if you are using the proper Bioconductor 
-version (3.22).
-
-Please install the latest stable version of the package package with 
-
-`BiocManager::install("SpaceTrooper)` 
 
 
-# Installing via Github
+`SpaceTrooper` main highlights:
+- Read and harmonize imaging-based spatial data into SpatialExperiment objects.
+- Compute polygon-derived metrics (area, aspect ratio, borders).
+- Calculate QC metrics, detect spatial outliers and calculate Quality Score.
+- Visualize polygons, centroids, metrics, and QC terms.
+- Support CosMx RNA/Protein Assay, Xenium, and MERFISH data.
 
-## Requirements
+<p align="left">
+	<img src="inst/GraphAbstract.png" alt="SpaceTrooper Logo" height="500"/>
+</p>
 
-On the other hand, if you want to install the package from Github, it could be 
-unstable and R version must be at least 4.4.0.
 
-We always suggest to use the latest version of the package present on the 
-official Release of Bioconductor.
+<br/><br/>
 
-`BiocManager::install("drighelli/SpaceTrooper", ref="devel")`
 
-If you were able to install the package correctly, CONGRATULATIONS!!! 🎉🎉🎉
+## System requirements and installation
 
-# Introduction to the package 
+### Requirements
+`SpaceTrooper` depends on **R version >= 4.4.0**, **Bioconductor >= 3.22** and **SpatialExperiment (1.20.0)**.
+The package has been tested on Windows, macOS, and Linux.
 
-We provide three additional vignettes for the package usage, first one is focused
-on imaging-based Spatial Transcriptomics technologies.
+### Bioconductor (Release 3.22)
+The stable version of the package is in `Bioconductor 3.22`, and it can be installed with the following code.
+If you already have Bioconductor 3.22, it usually takes less than a minute.
 
-The second one is focused on CosMx protein technologies.
+```r
+if (!requireNamespace("BiocManager", quietly = TRUE)) {
+	install.packages("BiocManager")
+}
+BiocManager::install("SpaceTrooper")
+```
 
-The third one is to describe how to switch from an already-loaded dataset with SpatialExperimentIO package and then upload the object to work with SpaceTrooper.
+### Bioconductor (devel)
+The latest development version of `SpaceTrooper` can be downloaded as follows. 
+Please remember that it is stable only if using an R version >= 4.4.0.
 
-See the compiled version of the vignettes in the 
-[official Bioconductor landing page](https://bioconductor.org/packages/devel/bioc/html/SpaceTrooper.html)
-or visit the [Vignette folder](https://github.com/drighelli/SpaceTrooper/tree/main/vignettes).
+```r
+if (!requireNamespace("BiocManager", quietly = TRUE)) {
+	install.packages("BiocManager")
+}
+BiocManager::install(version='devel')
+BiocManager::install("SpaceTrooper")
+```
 
-# Issues
+### Anaconda (for conda/mamba environments)
+`SpaceTrooper` package can be installed also in an anaconda environment, using the provided installation file [SpaceTrooper.yml](inst/SpaceTrooper.yml). Before proceeding with this installation, you have to install the latest `Anaconda` distribution from the [Anaconda](https://www.anaconda.com/download) official page.
+To create the environment run the following code:
 
-Please report any issue on GH [here](https://github.com/drighelli/SpaceTrooper/issues)!
+```bash
+conda env create -f SpaceTrooper.yml
+conda activate SpaceTrooper
 
-Thanks for checking out!🌸
+# If you installed Miniconda distribution you have to run 'mamba' instead of 'conda'
+# mamba env create -f SpaceTrooper.yml
+# mamba activate SpaceTrooper
+```
+
+Once the environment is activated, open `R` and install the latest developmental `SpaceTrooper` version as described above.
+
+```r
+if (!requireNamespace("BiocManager", quietly = TRUE)) {
+	install.packages("BiocManager")
+}
+BiocManager::install("drighelli/SpaceTrooper", ref="devel") 
+```
+<br/><br/>
+
+
+## Quick start
+
+The typical `SpaceTrooper` workflow require the following steps:
+
+1. read a dataset into a SpatialExperiment object
+2. load existing polygon data (optionally)
+3. calculate per cell-QC metrics
+4. compute QS
+5. visualize polygons, centroids, and QC summaries.
+
+Minimal example pipeline:
+
+```r
+library(SpaceTrooper)
+
+# 1. Read a dataset (choose the reader that matches your platform).
+spe <- readCosmxSPE("path/to/cosmx")
+# spe <- readXeniumSPE("path/to/xenium")
+# spe <- readMerfishSPE("path/to/merfish")
+
+# 2. Add polygons from existing polygon data.
+spe <- readAndAddPolygonsToSPE(spe, boundariesType="csv")
+
+# 3. Calculate and add QC metrics to cell metadata.
+spe <- spatialPerCellQC(spe)
+
+# 4. Compute QS and, optionally, flag cells with a score higher than 'qsThreshold'.
+spe <- computeQCScore(spe)
+spe <- computeQCScoreFlags(spe, qsThreshold=0.5)
+
+# 5. Visualization
+## Visualize cells as dots in their centroid coordinates, colored by a column in `colData(spe)` (e.g., QS computed above).
+plotCentroids(spe, colourBy='QC_score')
+
+## Visualize cells using their polygon shapes, colored by a column in `colData(spe)` (e.g., QS computed above).
+## To visualize polygons step 2 is mandatory.
+## Polygons can be cumbersome to plot for large datasets (e.g., entire slides with more than 100,000 cells), hence centroids may be preferred. 
+plotPolygons(spe, colourBy='QC_score')
+
+## Plot the individual terms that combine into the QS formula.
+plotQScoreTerms(spe)
+```
+<br/><br/>
+
+
+## Data support
+`SpaceTrooper` provides readers and QC utilities tailored to:
+
+- **CosMx** RNA and protein data
+- **Xenium**
+- **MERFISH**
+
+<br/><br/>
+
+
+## Vignettes
+The package includes three vignettes that cover:
+- [Imaging-based spatial transcriptomics workflows](vignettes/spatial_transcriptomics_example.html)
+- [CosMx protein workflows](vignettes/spatial_proteomics_example.html)
+- [Importing SpatialExperimentIO objects and SpaceTrooper utility functions](vignettes/utils.html)
+
+
+Refer to the first vignette if working with CosMx, Xenium or MERFISH spatial trancriptomics platforms; refer to the second vignette if working with CosMx Protein Assay data. Third vignette illustrates how SPE objects obtained with SpatialExperimentIO can be imported into our pipeline, along with some other package utility functions and plots. 
+
+Function-level help is available through standard R documentation, for example:
+
+```r
+?computeQCScore
+?plotPolygons
+```
+
+<br/><br/>
+
+
+## Issues
+Please report bugs or feature requests at:
+[https://github.com/drighelli/SpaceTrooper/issues](https://github.com/drighelli/SpaceTrooper/issues).
+
+## License
+`SpaceTrooper` is released under a [MIT license](LICENSE) file.
+
+## Citations
+
+Benedetta Banzi, Dario Righelli, Matteo Marchionni, Oriana Romano, Mattia Forcato, Davide Risso, Silvio Bicciato. *SpaceTrooper: a quality control framework for imaging-based spatial omics data*. bioRxiv 2025.12.24.696336; doi: [https://doi.org/10.64898/2025.12.24.696336](https://doi.org/10.64898/2025.12.24.696336)
