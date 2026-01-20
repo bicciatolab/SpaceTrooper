@@ -43,7 +43,7 @@
 #' polygons file path into the object metadata.
 #'
 #'
-#' readCosmxProteinSPE is a wrapper of readCosmxSPE, it only changes the
+#' readCosmxProteinSPE is a wrapper of readCosmxSPE, it changes the
 #' technology metadata in Nanostring_CosMx_Protein.
 #'
 #' @author Dario Righelli, Benedetta Banzi
