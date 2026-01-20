@@ -13,7 +13,8 @@ updateCosmxProteinSPE(
   metadataFPattern = "metadata_file.csv",
   polygonsFPattern = "polygons.csv",
   fovPosFPattern = "fov_positions_file.csv",
-  fovdims = c(xdim = 4256, ydim = 4256)
+  fovdims = c(xdim = 4256, ydim = 4256),
+  keepPolygons = FALSE
 )
 }
 \arguments{
@@ -36,6 +37,9 @@ column names in the per-cell metadata. Default
 \item{fovPosFPattern}{Character pattern for the FOV positions file.}
 
 \item{fovdims}{Named numeric vector with FOV size in pixels.}
+
+\item{keepPolygons}{Logical indicating if the polygons need to be loaded into
+memory or not (Default is `FALSE`).}
 }
 \value{
 SpatialExperiment object with updated technology metadata.

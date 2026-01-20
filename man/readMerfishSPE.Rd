@@ -9,12 +9,13 @@ readMerfishSPE(
   sampleName = "sample01",
   computeMissingMetrics = TRUE,
   keepPolygons = FALSE,
-  boundariesType = c("HDF5", "parquet"),
+  boundariesType = c("parquet", "HDF5"),
   countmatFPattern = "cell_by_gene.csv",
   metadataFPattern = "cell_metadata.csv",
   polygonsFPattern = "cell_boundaries.parquet",
   coordNames = c("center_x", "center_y"),
-  polygonsCol = "polygons"
+  polygonsCol = "polygons",
+  useVolume = TRUE
 )
 }
 \arguments{
@@ -38,8 +39,8 @@ If `TRUE`, attach raw polygon geometries as extra columns in `colData`.
 Default: `FALSE`.}
 
 \item{boundariesType}{`character(1)`
-One of `"HDF5"` or `"parquet"`. If `"HDF5"`, uses a folder of HDF5
-polygon files; if `"parquet"`, reads a single Parquet file of boundaries.}
+One of `"parquet"` or `"HDF5"`. If `"parquet"`, reads a single Parquet
+file of boundaries; if `"HDF5"`, uses a folder of HDF5 polygon files.}
 
 \item{countmatFPattern}{`character(1)`
 Regex passed to `list.files()` to find the count matrix CSV. Default:
@@ -58,6 +59,9 @@ Default: `c("center_x", "center_y")`.}
 
 \item{polygonsCol}{character indicating the name of the polygons column to
 add into the colData (default is `polygons`).}
+
+\item{useVolume}{`logical(1)` If `TRUE`, prefer a "volume" column in the
+metadata for area (when present). Default: `TRUE`.}
 }
 \value{
 A `SpatialExperiment` object with:
@@ -71,6 +75,25 @@ A `SpatialExperiment` object with:
 `readMerfishSPE()` imports MERFISH/Merscore outputs (counts, metadata,
 and optionally cell boundary polygons) from a directory and builds a
 SpatialExperiment object.
+}
+\details{
+The function searches `dirName` for three resources using the provided
+filename patterns: the count matrix (`countmatFPattern`), the cell metadata
+(`metadataFPattern`), and the polygon resource (`polygonsFPattern`). The
+count matrix and metadata are expected to contain a `cell_id` column
+(aliases `V1`, `cell`, or `EntityID` are renamed). If `computeMissingMetrics`
+is TRUE, `computeMissingMetricsMerfish()` is invoked and receives `useVolume`.
+
+The returned `SpatialExperiment` contains:
+- `assays$counts`: gene × cell count matrix (rows = genes, cols = `cell_id`);
+- `colData`: per-cell metadata (may be reordered by the function);
+- spatial coordinates named by `coordNames`;
+- `metadata$polygons`: path(s) matched by `polygonsFPattern`;
+- `metadata$technology`: `"Vizgen_MERFISH"`.
+
+Side effects: the function may reorder `colData` columns, attach polygon
+file paths to `metadata(spe)$polygons`, and (when requested) append
+`Area_um` and `AspectRatio` to `colData`.
 }
 \examples{
 path <- system.file("extdata", "Merfish_Tiny",

@@ -9,7 +9,8 @@ updateCosmxSPE(
   dirName,
   sampleName = "sample01",
   polygonsFPattern = "polygons.csv",
-  fovdims = c(xdim = 4256, ydim = 4256)
+  fovdims = c(xdim = 4256, ydim = 4256),
+  keepPolygons = FALSE
 )
 }
 \arguments{
@@ -25,6 +26,9 @@ locate polygon files. Default \code{"polygons.csv"}.}
 
 \item{fovdims}{Named numeric vector with entries \code{xdim} and \code{ydim}
 representing the FOV dimensions in pixels.}
+
+\item{keepPolygons}{Logical indicating if the polygons need to be loaded into
+memory or not (Default is `FALSE`).}
 }
 \value{
 A SpatialExperiment object with updated metadata and column names.
