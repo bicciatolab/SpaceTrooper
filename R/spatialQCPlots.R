@@ -413,7 +413,7 @@ plotZoomFovsMap <- function(spe, fovs=NULL, title=NULL,
         stopifnot(is.logical(scaleBars), length(scaleBars) == 1L)
         scaleBarMap <- scaleBars
         scaleBarPol <- scaleBars
-  }
+    }
     map <- plotCellsFovs(spefovs, pointCol=mapPointCol,
         numbersCol=mapNumbersCol, alphaNumbers=mapAlphaNumbers,
         sampleId=NULL, size=csize, alpha=calpha, scaleBar=scaleBarMap)
@@ -762,7 +762,7 @@ qcFlagPlots <- function(spe, fov=unique(spe$fov),
                   fill = c("black", "white"), color = "grey",
                 inherit.aes = FALSE) +
         geom_text(data = label_data,
-                  aes(x = x, y = y, label = label), color = "grey40",
-                  inherit.aes = FALSE, size = 3, hjust = 0.2)
+                aes(x = x, y = y, label = label), color = "grey40",
+                inherit.aes = FALSE, size = 3, hjust = 0.2)
     return(p)
 }
