@@ -21,9 +21,53 @@
 #' @return A `SpatialExperiment` object with added QC metrics in `colData`.
 #'
 #' @details
-#' Calculates sums and detected counts for control and target probes,
-#' computes ratio and count‐area metrics, converts coords to microns for
-#' CosMx, and drops zero‐count cells.
+#' @details
+#' The function computes and appends per‑cell QC metrics to `colData(spe)` and
+#' may subset the returned SpatialExperiment.
+#'
+#' Key behaviours and expectations:
+#' - Feature detection: negative‑probe patterns supplied in `negProbList` are
+#' used to build `subsets_*` groups passed to `scater::addPerCellQC()`
+#' (via `use_altexps` when requested). `addPerCellQC()` must be able to find
+#' matching feature names (`rownames` of spe) and will create `subsets_*_sum`
+#' and `subsets_*_detected` columns used below.
+#' - Required columns: the function expects `sum`, `detected` and `total`
+#' (from `addPerCellQC()` and the SPE assays) to be present; these are used to
+#' compute `control_sum`, `control_detected`, `target_sum` and
+#' `target_detected.`
+#' - Control metrics: `control_sum` and `control_detected` are computed by
+#' summing matching `subsets_*` columns; `target_*` metrics are computed as
+#' the complement vs sum / detected.
+#' - Ratios and logs: `ctrl_total_ratio` (`control` / 9) and its stabilized
+#' log2 transform `log2Ctrl_total_ratio` are added.
+#' - Coordinate and area handling:
+#' - For CosMx technologies (Nanostring_CosMx and Nanostring_CosMx_Protein)
+#' spatial coordinates are converted from pixels to microns using
+#' `micronConvFact` and appended to `colData` (column names have px -> um).
+#' - For CosMx, `Area_um` is derived from an existing Area column scaled by
+#' micronConvFact^2 and `.computeBorderDistanceCosMx()` is invoked to
+#' compute `dist_border`.
+#' - For Nanostring_CosMx_Protein, a legacy `Area.um2` column (if present)
+#' is renamed to `Area_um` to standardize naming.
+#' - For Xenium (10X_Xenium), if `Area_um` is missing the function will
+#' attempt to use `cell_area` as a fallback and issue a warning.
+#' - Aspect ratio: if `AspectRatio` exists it is logged (`log2AspectRatio`); if
+#' missing a warning is emitted.
+#' - Signal density: `SignalDensity` is computed as `sum` / `Area_um` for most
+#' technologies; for Nanostring_CosMx_Protein it is set to total. A
+#' log transform `log2SignalDensity` is also added.
+#' - Zero‑count removal: when `rmZeros = TRUE` cells with `sum == 0` are
+#' removed from the returned SpatialExperiment (message printed).
+#' - Side effects: the function modifies `colData(spe)` (adds multiple new
+#' columns), may add spatial coordinates into `colData` if missing, and may
+#' subset the SPE to remove zero‑count cells. It issues warnings when expected
+#' inputs (e.g. area, aspect ratio, polygon‑derived fields) are missing or
+#' when fallbacks are used.
+#'
+#' Use this information to ensure the input SpatialExperiment contains the
+#' necessary assays and fields (feature names, `sum`/`detected`/`total`,
+#' `Area`/`cell_area` when available) so metrics are computed and assigned
+#' correctly.
 #'
 #' @importFrom SummarizedExperiment colData
 #' @importFrom scater addPerCellQC
