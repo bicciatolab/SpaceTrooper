@@ -994,7 +994,7 @@ checkOutliers <- function(spe, verbose=FALSE) {
         warnstop <- match.arg(warnstop)
         m1 <- paste0("Not enough outlier cells for ", var, ".\n")
         m2 <- switch(warnstop,
-                s="Warning: In this version of SpaceTrooper, presence of outliers
+                s="In this version of SpaceTrooper, presence of outliers
                 for log2SignalDensity is required to compute QC score.",
                 w="This variable will not be used in the final formula")
         return(paste0(m1, m2))

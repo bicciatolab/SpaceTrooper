@@ -17,11 +17,11 @@ for **CosMx**, **Xenium**, and **MERFISH** technologies.
 - Read and harmonize imaging-based spatial data into SpatialExperiment objects.
 - Compute polygon-derived metrics (area, aspect ratio, borders).
 - Calculate QC metrics, detect spatial outliers and calculate Quality Score.
-- Visualize polygons, centroids, metrics, and QC terms.
+- Visualize computed metrics on centroids or polygons.
 - Support CosMx RNA/Protein Assay, Xenium, and MERFISH data.
 
 <p align="left">
-	<img src="inst/GraphAbstract.png" alt="SpaceTrooper Logo" height="500"/>
+	<img src="inst/GraphAbstract.jpg" alt="SpaceTrooper Logo" height="500"/>
 </p>
 
 
@@ -119,9 +119,6 @@ plotCentroids(spe, colourBy='QC_score')
 ## To visualize polygons step 2 is mandatory.
 ## Polygons can be cumbersome to plot for large datasets (e.g., entire slides with more than 100,000 cells), hence centroids may be preferred. 
 plotPolygons(spe, colourBy='QC_score')
-
-## Plot the individual terms that combine into the QS formula.
-plotQScoreTerms(spe)
 ```
 <br/><br/>
 
@@ -138,9 +135,10 @@ plotQScoreTerms(spe)
 
 ## Vignettes
 The package includes three vignettes that cover:
-- [Imaging-based spatial transcriptomics workflows](vignettes/spatial_transcriptomics_example.html)
-- [CosMx protein workflows](vignettes/spatial_proteomics_example.html)
-- [Importing SpatialExperimentIO objects and SpaceTrooper utility functions](vignettes/utils.html)
+
+- [Imaging-based spatial transcriptomics workflows](https://bioconductor.org/packages/devel/bioc/vignettes/SpaceTrooper/inst/doc/RNA_tutorial_vignette.html)
+- [CosMx protein workflow](https://bioconductor.org/packages/devel/bioc/vignettes/SpaceTrooper/inst/doc/Protein_tutorial_vignette.html)
+- [SpaceTrooper utilities](https://bioconductor.org/packages/devel/bioc/vignettes/SpaceTrooper/inst/doc/SpaceTrooper_utilities.html)
 
 
 Refer to the first vignette if working with CosMx, Xenium or MERFISH spatial trancriptomics platforms; refer to the second vignette if working with CosMx Protein Assay data. Third vignette illustrates how SPE objects obtained with SpatialExperimentIO can be imported into our pipeline, along with some other package utility functions and plots. 
