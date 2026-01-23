@@ -1,6 +1,8 @@
 ---
 title: "CosMx Protein Assay Data Quality Control with SpaceTrooper"
-author: "Benedetta Banzi"
+author: 
+    - name: "Benedetta Banzi"
+    - name: "Dario Righelli"
 date: "`r BiocStyle::doc_date()`"
 output:
     BiocStyle::html_document:
@@ -16,7 +18,7 @@ editor_options:
 
 ```{r setup, include=FALSE}
 # Set chunk options: suppress echo, messages, and warnings in code output
-knitr::opts_chunk$set(echo = TRUE, message = TRUE, warning = TRUE)
+knitr::opts_chunk$set(echo = TRUE, message = FALSE, warning = FALSE)
 ```
 ## Introduction
 
@@ -116,7 +118,7 @@ only for visualization purposes. They are stored as an `sf` object within
 This step is not mandatory for CosMx, because the pipeline can be executed even
 without them. 
 
-```{r load-poly}
+```{r load-poly, message = TRUE}
 # polygon loading
 spe <- readAndAddPolygonsToSPE(spe, boundariesType="csv")
 ```
@@ -143,7 +145,7 @@ custom vector, as shown below.
 By default, the function automatically removes 0 count cells, but this can be 
 handled with the `rmZeros` parameter.
 
-```{r cosmx-analysis-qc}
+```{r cosmx-analysis-qc, message = TRUE}
 spe <- spatialPerCellQC(spe, rmZeros=TRUE,
         negProbList=c("Ms IgG1", "Rb IgG"))
 
@@ -190,7 +192,7 @@ low-quality and 1 high-quality.
 We are setting a seed to ensure reproducibility in this tutorial, because there 
 are stochastic processes underlying QS computation.
 
-```{r cosmx-analysis-score}
+```{r cosmx-analysis-score, message = TRUE}
 set.seed(1713)
 
 spe <- computeQCScore(spe)
@@ -204,7 +206,7 @@ Subsequently, it is possible also to assess which cells have a QS lower than a
 certain threshold (default is 0.5) with the following function. It creates a
 new column called `low_qcscore` inside of `colData`.
 
-```{r cosmx-analysis-score2}
+```{r cosmx-analysis-score2, message = TRUE}
 spe <- computeQCScoreFlags(spe, qsThreshold=0.5)
 
 table(spe$low_qcscore)
@@ -297,7 +299,7 @@ plotPolygons(spe, colourBy="low_qcscore") +
 You can rerun`computeQCScoreFlags` to check how many cells would be flagged 
 using another threshold.
 
-```{r cosmx-analysis-score3}
+```{r cosmx-analysis-score3, message = TRUE}
 spe <- computeQCScoreFlags(spe, qsThreshold=0.75)
 
 table(spe$low_qcscore)
