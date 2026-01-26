@@ -121,8 +121,9 @@ readCosmxProteinSPE <- function(dirName, sampleName="sample01",
     if(length(grep("x_mm", colnames(fovpos))!=0)) {
         fovpos <- fovpos |>
             dplyr::mutate(x_global_px = x_mm/0.12028*10^3,
-                        y_global_px = (y_mm/0.12028*10^3) - 4256)
+                          y_global_px = (y_mm/0.12028*10^3))
     }
+
     idx <- fovpos$fov %in% unique(spe$fov)
     fovpos <- fovpos[idx, ]
 

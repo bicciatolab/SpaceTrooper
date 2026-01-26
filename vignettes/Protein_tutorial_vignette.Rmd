@@ -1,0 +1,343 @@
+---
+title: "CosMx Protein Assay Data Quality Control with SpaceTrooper"
+author: 
+    - name: "Benedetta Banzi"
+    - name: "Dario Righelli"
+date: "`r BiocStyle::doc_date()`"
+output:
+    BiocStyle::html_document:
+        toc: true
+        toc_float: true
+vignette: >
+    %\VignetteIndexEntry{CosMx Protein Assay Data Quality Control with SpaceTrooper}
+    %\VignetteEncoding{UTF-8}
+    %\VignetteEngine{knitr::rmarkdown}
+editor_options:
+    chunk_output_type: console
+---
+
+```{r setup, include=FALSE}
+# Set chunk options: suppress echo, messages, and warnings in code output
+knitr::opts_chunk$set(echo = TRUE, message = FALSE, warning = FALSE)
+```
+## Introduction
+
+`SpaceTrooper` is an `R/Bioconductor` package for Quality Control (QC)
+of imaging-based spatial transcriptomics and proteomics data. It provides 
+multi-platform data harmonization, cell-level QC, and visualization utilities. 
+The package leverages [SpatialExperiment](https://www.bioconductor.org/packages/release/bioc/html/SpatialExperiment.html) objects to support data from 
+**CosMx**, **Xenium**, and **MERFISH** technologies.
+
+## Installation
+
+To install the latest version of `SpaceTrooper`, use the following commands. You 
+can find other installation options in the README file on the [GitHub repo](https://github.com/drighelli/SpaceTrooper/tree/devel):
+
+```{r install, eval=FALSE}
+# Install BiocManager if not already installed, then install SpaceTrooper
+if (!requireNamespace("BiocManager", quietly = TRUE))
+    install.packages("BiocManager")
+
+BiocManager::install(version='devel')
+BiocManager::install("SpaceTrooper")
+```
+
+## Quality Control pipeline
+
+In this section, we show how to run the standard `SpaceTrooper` workflow on  
+Spatial Proteomics data obtained with CosMx Protein Assay, to perform QC by 
+computing the Quality Score (QS). 
+
+For demonstration purposes, we showcase a small subset of the CosMx human tonsil
+dataset analyzed also in the [paper](https://www.biorxiv.org/content/10.64898/2025.12.24.696336v1).  
+
+### Load example data
+
+`SpaceTrooper` provides a reading function to load data into a 
+`SpatialExperiment` object. For more details on how to correctly specify the 
+inputs, please refer to the [SpaceTrooper utilities](https://bioconductor.org/packages/devel/bioc/vignettes/SpaceTrooper/inst/doc/SpaceTrooper_utilities.html) vignette.
+
+```{r load-cosmx}
+library(SpaceTrooper)
+library(ggplot2)
+
+protfolder <- system.file( "extdata", "S01_prot", package="SpaceTrooper")
+spe <- readCosmxProteinSPE(protfolder, sampleName = "CosMx_Protein_Tonsil")
+
+spe
+```
+
+### Field of View (FOVs) visualization
+
+In this section, we show how to plot each cell position onto the map of the 
+Fields of View (FOVs), whose coordinates are provided only for CosMx technology.
+
+**IMPORTANT**: we have noticed that according to CosMx version, there could be a 
+misalignment of FOVs and cell centroids, that can be easily corrected with a 
+single line of code. Therefore, it is crucial to generate this plot to check for 
+any spatial shift, as such misalignment directly affects the QS computation.
+
+```{r plot-fovs}
+# to check misalignment
+plotCellsFovs(spe, size = 3, alpha = 0.7)
+```
+
+If any misalignment is observed, it can be corrected by adjusting the FoV 
+coordinates directly. And this is exactly the case. Indeed, FoVs are shifted 
+upward by one FoV height (which, for CosMx technology, corresponds to 4,256 
+pixels). You can correct this by subtracting that value from the FoVs y 
+coordinates:
+
+```{r fov-correction}
+# code line for shift correction
+metadata(spe)$fov_positions$y_global_px <- metadata(spe)$fov_positions$y_global_px - 4256
+```
+
+Rerun the FoV plot to check whether the shift was corrected.
+
+```{r plot-fovs-2}
+# check shift correction
+plotCellsFovs(spe, size = 3, alpha = 0.7)
+```
+
+Cell centroids, shown in dark red, now are all contained by FoV boundaries,
+hence FoVs and cell centroids are aligned after shift correction.
+
+The dataset is a subset with just a single FoVs, whose number is displayed at 
+the center.
+
+When an experiment has multiple FoVs, you can see the map and the topological
+organization of the FoVs, together with their numbers.
+
+### Load polygons
+
+In this section we show how to load polygons after `SpatialExperiment` creation, 
+only for visualization purposes. They are stored as an `sf` object within 
+`colData`.
+
+This step is not mandatory for CosMx, because the pipeline can be executed even
+without them. 
+
+```{r load-poly, message = TRUE}
+# polygon loading
+spe <- readAndAddPolygonsToSPE(spe, boundariesType="csv")
+```
+
+Please pay attention to any warnings. Cell polygons with fewer than four 
+vertices cannot be handled by the geometry packages used by `SpaceTrooper`. 
+Therefore, the corresponding cells are discarded from the `SpatialExperiment` 
+object.
+
+### Add QC metrics
+
+The following sections will work the same way for all types of data.
+
+The `spatialPerCellQC` function computes additional metrics per each cell, that
+are saved inside the `SpatialExperiment`and accessible through `colData(spe)`. 
+It is mandatory to run this function before computing QS.
+
+The `negProbList` parameter is, by default, a vector containing all control probe 
+patterns encountered so far across the supported technologies. Because these 
+patterns continue to evolve, some may not yet be included. If you find that your
+control probe patterns are missing from the default list, you can define a 
+custom vector, as shown below.
+
+By default, the function automatically removes 0 count cells, but this can be 
+handled with the `rmZeros` parameter.
+
+```{r cosmx-analysis-qc, message = TRUE}
+spe <- spatialPerCellQC(spe, rmZeros=TRUE,
+        negProbList=c("Ms IgG1", "Rb IgG"))
+
+colnames(colData(spe))
+```
+
+Several metrics are added, both derived from protein assay and cell 
+morphology. Some of them are directly used to compute QS:
+
+- **log2SignalDensity**: log2-transformed ratio between total protein 
+    intensity per cell and cell area in µm²
+- **Area_um**: cell area in µm²;
+- **log2Ctrl_total_ratio**: log2-transformed ratio between total negative 
+    control protein intensity and total total protein intensity per cell;
+- **log2AspectRatio**: log2-transformed ratio between cell maximum length along 
+    the x dimension and cell maximum length along the y dimension (pixels). This
+    metric is taken in absolute value and combined with **dist_border** to 
+    consider only cells within 50 pixels from the nearest FoV border (only for 
+    CosMx technology).
+
+For a better detailed explanation of the other metrics, please refer to 
+the [SpaceTrooper utilities](https://bioconductor.org/packages/devel/bioc/vignettes/SpaceTrooper/inst/doc/SpaceTrooper_utilities.html) vignette.
+
+### Compute Quality Score
+
+`computeQCScore` function calculates QS per each cell. QS combines several
+metrics into a formula: **log2SignalDensity**, corresponding to signal density, 
+**Area_um**, i.e. cell size, **log2Ctrl_total_ratio**, namely background signal 
+and **log2AspectRatio** combined with **dist_border**, which jointly correspond 
+to the border effect (only for CosMx technology). 
+
+`glmnet` package is used to estimate the coefficients of the formula, resulting 
+in a robust score that captures low-quality cells. During model training, the
+selected cells are used as good or bad examples to learn how each term in the 
+formula contributes to cell quality.
+
+**IMPORTANT**: please, pay attention to any warning. If a term has too few bad 
+examples (fewer than 0.1% of the total number of cells), it is excluded from the 
+formula and therefore not used in the QS computation.
+
+The QS (stored as `QC_score` in `coldata`) ranges from 0 to 1, with 0 meaning 
+low-quality and 1 high-quality.
+
+We are setting a seed to ensure reproducibility in this tutorial, because there 
+are stochastic processes underlying QS computation.
+
+```{r cosmx-analysis-score, message = TRUE}
+set.seed(1713)
+
+spe <- computeQCScore(spe)
+
+format(summary(spe$QC_score), scientific=FALSE, digits = 4)
+```
+
+In this case, all the terms were used as no warning appeared.
+
+Subsequently, it is possible also to assess which cells have a QS lower than a 
+certain threshold (default is 0.5) with the following function. It creates a
+new column called `low_qcscore` inside of `colData`.
+
+```{r cosmx-analysis-score2, message = TRUE}
+spe <- computeQCScoreFlags(spe, qsThreshold=0.5)
+
+table(spe$low_qcscore)
+```
+
+Using this threshold, 274 cells are flagged as low-quality. We do not suggest a 
+fixed default threshold, but it is advisable to check the QS distribution before
+setting any threshold.
+
+### Data visualization
+
+SpaceTrooper comes with several functions to view cells and metrics.
+
+To view the distribution of whatever quantitative metric, `plotMetricHist` comes 
+in handy.
+
+```{r plot-hist}
+# view quantitative metric distribution
+plotMetricHist(spe, metric = "QC_score")
+```
+
+The QS distribution exhibits a left tail starting around 0.75. 
+
+Cell visualization can be obtained by using either centroids (recommended when 
+the dataset has a large number of cells) or polygons. 
+
+`plotCentroids` plots cell centroids that can be colored by a certain metric
+contained in the `colData` slot, by using the `colour_by` parameter.
+
+Additionally, if you have a palette column in `colData`, containing colors for
+each cell, it can be given to `palette` parameter, so that it automatically 
+matches the column passed in `colour_by`. As an example, we are using the 
+cell types obtained as described in the [paper](https://www.biorxiv.org/content/10.64898/2025.12.24.696336v1) with their own color palette.
+
+```{r plot-centroids-labels}
+labf <- system.file(file.path("extdata", "S01_prot",
+                            "labels_tiny.tsv"), package="SpaceTrooper")
+labs <- read.table(file=labf, sep="\t", header=TRUE, comment.char = "")
+
+spe$labels <- as.factor(labs[match(spe$cell_id, labs$cell_id),]$label)
+spe$labels_colors <- as.factor(labs[match(spe$cell_id, labs$cell_id),]$lab_color)
+
+plotCentroids(spe, colourBy="labels", size=3, palette="labels_colors")
+```
+
+Cell centroids colored by cell types allow to view the spatial distribution of
+cell populations in the sample.
+
+When possible, polygon visualization gives a better overview of the 
+cells' spatial organization and morphological characteristics.
+Polygons are stored as an `sf` object within `colData`, so they can be
+viewed using standard `ggplot2` functions. For CosMx technology, the polygons
+must be explicitly loaded as described in [Load polygons](#Load polygons).
+SpaceTrooper provides `plotPolygons` function that works just like 
+`plotCentroids` but takes polygons instead of centroids.
+
+```{r plot-polygons-fov-1}
+plotPolygons(spe, colourBy="log2SignalDensity")
+plotPolygons(spe, colourBy="Area_um")
+plotPolygons(spe, colourBy="log2Ctrl_total_ratio")
+plotPolygons(spe, colourBy="log2AspectRatio")
+```
+
+We can see in `yellow` and `darkviolet` that there are few cells with extreme 
+values of either `log2SignalDensity`, `Area_um`, `log2Ctrl_total_ratio` and 
+`log2AspectRatio`.
+
+Since all plotting functions are based on `ggplot2`, you can easily customize 
+the graphical outputs by adding standard ggplot2 components.
+
+```{r plot-polygons-fov-2}
+plotPolygons(spe, colourBy="QC_score") + 
+    scale_fill_viridis_c(option = "plasma")
+```
+
+We can see that the QS is able to detect both the aspects highlighted by 
+`log2SignalDensity`,`Area_um`, `log2Ctrl_total_ratio` or 
+`log2AspectRatio`. Cells that showed either lower signal 
+density, bigger size, higher background signal or border effect also display 
+low QS (darker color).
+
+It's up to the user to choose an appropriate threshold to flag cells according 
+to the observed QS distribution. 
+
+```{r plot-polygons-fov-3}
+plotPolygons(spe, colourBy="low_qcscore") + 
+    scale_fill_manual(values=c("TRUE"="red", "FALSE" = "#c0c8cf"))
+```
+
+You can rerun`computeQCScoreFlags` to check how many cells would be flagged 
+using another threshold.
+
+```{r cosmx-analysis-score3, message = TRUE}
+spe <- computeQCScoreFlags(spe, qsThreshold=0.75)
+
+table(spe$low_qcscore)
+```
+
+Using this threshold, 527 cells are flagged as low-quality.
+
+```{r plot-polygons-fov-4}
+plotPolygons(spe, colourBy="low_qcscore") + 
+    scale_fill_manual(values=c("TRUE"="red", "FALSE" = "#c0c8cf"))
+```
+
+The threshold is more stringent and more cells are flagged compared to the
+previous one. It's up to you to choose a threshold that better suits your
+analysis needs.
+
+## Conclusion
+
+In this vignette, we explored the main functionalities of the `SpaceTrooper`
+package for imaging-based spatial omics data QC. 
+
+For further insights on SpaceTrooper package usage, please refer to the [SpaceTrooper utilities](https://bioconductor.org/packages/devel/bioc/vignettes/SpaceTrooper/inst/doc/SpaceTrooper_utilities.html) vignette.
+
+Main steps shown are:
+
+- data loading: CosMx Protein Assay
+- Quality Control: 
+    - per-cell QC metrics
+    - Quality Score: a score combining **signal density**, **cell size**, 
+    **background noise** and  **border effect**
+- visualization: 
+    - centroids: with ggplot2
+    - polygons: sf + ggplot2
+
+## Session Information
+
+```{r sessionInfo}
+sessionInfo()
+```
+
+
