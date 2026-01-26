@@ -40,15 +40,42 @@ metadata(spe)$fov_dim)}
 plot. (Default is `TRUE`)}
 
 \item{micronConvFact}{Numeric conversion factor from pixels to microns.
-DEFAULT is `0.12`.}
+Default is `0.12`.}
 }
 \value{
 A `ggplot` object showing cell centroids and FoV boundaries.
 }
 \description{
-Plot cell centroids in FoVs
-Creates a scatter plot with cell centroids arranged in their FoVs as an
-overlapping grid.
+Plot cell centroids in FoVs, creating a map of the whole experiment, where
+cells are plotted as points and FoV boundaries and numbers are overlaid.
+}
+\details{
+The function expects spe (a SpatialExperiment) to include field-of-view
+metadata in metadata(spe):
+- `metadata(spe)$fov_positions`: a matrix or data.frame
+(or list with named elements) containing at minimum `x_global_px`, `y_global_px`,
+and `fov`. Values `x_global_px`/`y_global_px` are in pixels and represent
+the origin (top-left) of each FoV.
+- `metadata(spe)$fov_dim` (or the `fovDim` argument): a named numeric with
+`xdim` and `ydim` giving FoV width/height in pixels.
+
+For each FoV the rectangle is drawn as:
+- `xmin` = `x_global_px`,
+- `xmax` = `x_global_px` + `xdim`,
+- `ymin` = `y_global_px`,
+- `ymax` = `y_global_px` + `ydim`.
+
+`sampleId`: if `NULL` no plot title is added; if a vector of length > 1 is
+provided the first element is used. Prefer passing a single sample identifier
+string.
+`micronConvFact` is the conversion factor from pixels to micrometers (µm/pixel).
+It is forwarded to `.plotScaleBar()` and controls how the scale bar is labeled
+(useful for technologies where coordinates are in pixels but the scale should
+display µm).
+The function uses the coordinates returned by `spatialCoords(spe)` and the
+names from `spatialCoordsNames(spe)`. It performs basic input checks but
+assumes the described metadata structures are present; if they are missing
+or malformed the function will raise an informative error.
 }
 \examples{
 example(readCosmxSPE)

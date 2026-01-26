@@ -6,7 +6,7 @@
 #' Read and Construct a SpatialExperiment Object from CosMx Data
 #'
 #' This function reads in data from Nanostring CosMx files and constructs a
-#' `SpatialExperiment` object, optionally including polygon data.
+#' `SpatialExperiment` object, optionally including polygons data.
 #'
 #' @param dirName A character string specifying the directory containing the
 #' CosMx data files.
@@ -25,15 +25,25 @@
 #' FOV positions file. Default is `"fov_positions_file.csv"`.
 #' @param fovdims A named numeric vector specifying the dimensions of the FOV
 #' in pixels. Default is `c(xdim=4256, ydim=4256)`.
+#' @param keepPolygons Logical indicating if the polygons need to be loaded into
+#' memory or not (Default is `FALSE`).
 #'
 #' @return A `SpatialExperiment` object containing the read CosMx data,
 #' including count matrices, metadata, and optionally polygons.
 #'
-#' @details The function reads in the specified files for count matrices,
-#' metadata, and FOV positions, and constructs a `SpatialExperiment` object.
-#' Optionally, polygon data can be read and added to the object.
+#' @details The function firstly relies on
+#' \link[SpatialExperimentIO]{readCosmxSXE} to read in the specified files
+#' for count matrices, metadata, and FOV positions constructing a
+#' `SpatialExperiment` object.
+#' Then it harmonizes the object to have the same metadata as for the other
+#' technologies, setting the colData names as required in further QC analysis.
 #'
-#' readCosmxProteinSPE is a wrapper of readCosmxSPE, it only changes the
+#' Optionally, polygons data can be read and added to the object by seeting
+#' the `keepPolygons` argument to `TRUE`, otherwise it only stores the
+#' polygons file path into the object metadata.
+#'
+#'
+#' readCosmxProteinSPE is a wrapper of readCosmxSPE, it changes the
 #' technology metadata in Nanostring_CosMx_Protein.
 #'
 #' @author Dario Righelli, Benedetta Banzi
@@ -53,16 +63,17 @@ readCosmxSPE <- function(dirName, sampleName="sample01",
     coordNames=c("CenterX_global_px", "CenterY_global_px"),
     countMatFPattern="exprMat_file.csv", metadataFPattern="metadata_file.csv",
     polygonsFPattern="polygons.csv", fovPosFPattern="fov_positions_file.csv",
-    fovdims=c(xdim=4256, ydim=4256)) {
+    fovdims=c(xdim=4256, ydim=4256), keepPolygons=FALSE) {
 
     stopifnot(all(names(fovdims) == c("xdim", "ydim"), file.exists(dirName)))
 
     spe <- SpatialExperimentIO::readCosmxSXE(dirName=dirName, returnType="SPE",
         countMatPattern=countMatFPattern, metaDataPattern=metadataFPattern,
         coordNames=coordNames, addFovPos=TRUE, fovPosPattern=fovPosFPattern,
-        altExps=NULL,addParquetPaths=FALSE)
+        altExps=NULL, addParquetPaths=FALSE)
 
-    spe <- .setupCosmxSPE(spe, dirName, sampleName, polygonsFPattern, fovdims)
+    spe <- .setupCosmxSPE(spe, dirName, sampleName, polygonsFPattern, fovdims,
+        keepPolygons)
     return(spe)
 }
 
@@ -72,10 +83,11 @@ readCosmxProteinSPE <- function(dirName, sampleName="sample01",
     coordNames=c("CenterX_global_px", "CenterY_global_px"),
     countMatFPattern="exprMat_file.csv", metadataFPattern="metadata_file.csv",
     polygonsFPattern="polygons.csv", fovPosFPattern="fov_positions_file.csv",
-    fovdims=c(xdim=4256, ydim=4256)) {
+    fovdims=c(xdim=4256, ydim=4256), keepPolygons=FALSE) {
 
     spe <- readCosmxSPE(dirName, sampleName, coordNames, countMatFPattern,
-        metadataFPattern, polygonsFPattern, fovPosFPattern, fovdims)
+        metadataFPattern, polygonsFPattern, fovPosFPattern, fovdims,
+        keepPolygons)
 
     metadata(spe)$technology <- "Nanostring_CosMx_Protein"
     return(spe)
@@ -147,7 +159,8 @@ readCosmxProteinSPE <- function(dirName, sampleName="sample01",
 #'   locate polygon files. Default \code{"polygons.csv"}.
 #' @param fovdims Named numeric vector with entries \code{xdim} and \code{ydim}
 #'   representing the FOV dimensions in pixels.
-#'
+#' @param keepPolygons Logical indicating if the polygons need to be loaded into
+#' memory or not (Default is `FALSE`).
 #' @details
 #' The function standardizes CosMx SPE structure by:
 #' - creating unique cell names of the form \code{f<fov>_c<cell_ID>};
@@ -168,11 +181,12 @@ readCosmxProteinSPE <- function(dirName, sampleName="sample01",
 #' spe <- updateCosmxSPE(spe, dirName=cospath, sampleName="DBKero_Tiny")
 updateCosmxSPE <- function(spe, dirName, sampleName="sample01",
                         polygonsFPattern="polygons.csv",
-                        fovdims=c(xdim=4256, ydim=4256)) {
+                        fovdims=c(xdim=4256, ydim=4256), keepPolygons=FALSE) {
     stopifnot("spe is not a SpatialExperiment"=is(spe, "SpatialExperiment"))
     stopifnot("fovdims not x|y dim"=all(names(fovdims) == c("xdim", "ydim")))
     stopifnot("dirName not exists"=file.exists(dirName))
-    spe <- .setupCosmxSPE(spe, dirName, sampleName, polygonsFPattern, fovdims)
+    spe <- .setupCosmxSPE(spe, dirName, sampleName, polygonsFPattern, fovdims,
+        keepPolygons)
     return(spe)
 }
 
@@ -189,6 +203,8 @@ updateCosmxSPE <- function(spe, dirName, sampleName="sample01",
 #' Default \code{"polygons.csv"}.
 #' @param fovdims Named numeric vector \code{c(xdim=, ydim=)} giving
 #' field-of-view size.
+#' @param keepPolygons Logical indicating if the polygons need to be loaded into
+#' memory or not (Default is `FALSE`).
 #'
 #' @return Updated SpatialExperiment object.
 #'
@@ -196,7 +212,7 @@ updateCosmxSPE <- function(spe, dirName, sampleName="sample01",
 #' @noRd
 .setupCosmxSPE <- function(spe, dirName, sampleName="sample01",
                             polygonsFPattern="polygons.csv",
-                            fovdims=c(xdim=4256, ydim=4256))
+                            fovdims=c(xdim=4256, ydim=4256), keepPolygons=FALSE)
 {
     pol_file <- list.files(dirName, polygonsFPattern, full.names=TRUE)
     cn <- paste0("f", spe$fov, "_c", spe$cell_ID)
@@ -211,6 +227,7 @@ updateCosmxSPE <- function(spe, dirName, sampleName="sample01",
 
     names(colData(spe))[names(colData(spe)) == "cell_ID"] <- "cellID"
     spe$sample_id <- sampleName
+    if (keepPolygons) spe <- readAndAddPolygonsToSPE(spe)
     return(spe)
 }
 
@@ -232,6 +249,8 @@ updateCosmxSPE <- function(spe, dirName, sampleName="sample01",
 #' @param polygonsFPattern Character pattern for the polygon file(s).
 #' @param fovPosFPattern Character pattern for the FOV positions file.
 #' @param fovdims Named numeric vector with FOV size in pixels.
+#' @param keepPolygons Logical indicating if the polygons need to be loaded into
+#' memory or not (Default is `FALSE`).
 #'
 #' @details
 #' This function sets \code{metadata(spe)$technology <- "Nanostring_CosMx_Protein"}.
@@ -251,10 +270,11 @@ updateCosmxProteinSPE <- function(spe, dirName, sampleName="sample01",
     coordNames=c("CenterX_global_px", "CenterY_global_px"),
     countMatFPattern="exprMat_file.csv", metadataFPattern="metadata_file.csv",
     polygonsFPattern="polygons.csv", fovPosFPattern="fov_positions_file.csv",
-    fovdims=c(xdim=4256, ydim=4256)) {
+    fovdims=c(xdim=4256, ydim=4256), keepPolygons=FALSE) {
 
     stopifnot(is(spe, "SpatialExperiment"))
-    spe <- updateCosmxSPE(spe, dirName, sampleName, polygonsFPattern, fovdims)
+    spe <- updateCosmxSPE(spe, dirName, sampleName, polygonsFPattern, fovdims,
+        keepPolygons)
     metadata(spe)$technology <- "Nanostring_CosMx_Protein"
     return(spe)
 }

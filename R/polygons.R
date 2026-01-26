@@ -162,16 +162,27 @@ readPolygons <- function(polygonsFile, type=c("csv", "parquet", "h5"),
 #' with the provided SpatialExperiment (SPE) object and adds the polygons to the
 #' SPE.
 #'
+#' @details
+#' The function first checks the technology specified in the SPE's metadata.
+#' Based on the technology, it reads the appropriate polygon data using
+#' the corresponding reading function:
+#' - For "Nanostring_CosMx" or "Nanostring_CosMx_Protein", it uses
+#' `readPolygonsCosmx()`.
+#' - For "Vizgen_MERFISH", it uses `readPolygonsMerfish()`.
+#' - For "10X_Xenium", it uses `readPolygonsXenium()`.
+#' After reading the polygons, it adds them to the SPE using
+#' `addPolygonsToSPE()`.
+#'
 #' @param spe A \code{SpatialExperiment} object. The object should contain
 #' metadata with the field \code{"technology"}, specifying the technology used
 #' (e.g., "Nanostring_CosMx", "Vizgen_MERFISH", or "10X_Xenium").
+#' @param polygonsCol character indicating the name of the polygons column to
+#' add into the colData (default is `polygons`).
 #' @param keepMultiPol Logical. If \code{TRUE}, multi-polygon features will be
 #' kept when reading the boundary data. Defaults to \code{TRUE}.
 #' @param boundariesType Character. Specifies the type of boundary file format
 #' to read. Options are \code{"HDF5"} or \code{"parquet"}. Defaults to
 #' \code{"HDF5"}.
-#' @param polygonsCol character indicating the name of the polygons column to
-#' add into the colData (default is `polygons`).
 #'
 #' @return A \code{SpatialExperiment} object with the added polygon data.
 #'

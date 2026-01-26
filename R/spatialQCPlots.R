@@ -3,9 +3,8 @@
 #' @rdname plotCellsFovs
 #'
 #' @description
-#' Plot cell centroids in FoVs
-#' Creates a scatter plot with cell centroids arranged in their FoVs as an
-#' overlapping grid.
+#' Plot cell centroids in FoVs, creating a map of the whole experiment, where
+#' cells are plotted as points and FoV boundaries and numbers are overlaid.
 #'
 #' @param spe A `SpatialExperiment` object with `fov` in `colData`.
 #' @param sampleId Character string identifying which sample to plot.
@@ -20,9 +19,37 @@
 #' @param scaleBar A logical value indicating whether to add a scale bar to the
 #' plot. (Default is `TRUE`)
 #' @param micronConvFact Numeric conversion factor from pixels to microns.
-#' DEFAULT is `0.12`.
+#' Default is `0.12`.
 #'
 #' @return A `ggplot` object showing cell centroids and FoV boundaries.
+#'
+#' @details
+#' The function expects spe (a SpatialExperiment) to include field-of-view
+#' metadata in metadata(spe):
+#' - `metadata(spe)$fov_positions`: a matrix or data.frame
+#' (or list with named elements) containing at minimum `x_global_px`, `y_global_px`,
+#' and `fov`. Values `x_global_px`/`y_global_px` are in pixels and represent
+#' the origin (top-left) of each FoV.
+#' - `metadata(spe)$fov_dim` (or the `fovDim` argument): a named numeric with
+#' `xdim` and `ydim` giving FoV width/height in pixels.
+#'
+#' For each FoV the rectangle is drawn as:
+#' - `xmin` = `x_global_px`,
+#' - `xmax` = `x_global_px` + `xdim`,
+#' - `ymin` = `y_global_px`,
+#' - `ymax` = `y_global_px` + `ydim`.
+#'
+#' `sampleId`: if `NULL` no plot title is added; if a vector of length > 1 is
+#' provided the first element is used. Prefer passing a single sample identifier
+#' string.
+#' `micronConvFact` is the conversion factor from pixels to micrometers (µm/pixel).
+#' It is forwarded to `.plotScaleBar()` and controls how the scale bar is labeled
+#' (useful for technologies where coordinates are in pixels but the scale should
+#' display µm).
+#' The function uses the coordinates returned by `spatialCoords(spe)` and the
+#' names from `spatialCoordsNames(spe)`. It performs basic input checks but
+#' assumes the described metadata structures are present; if they are missing
+#' or malformed the function will raise an informative error.
 #'
 #' @importFrom ggplot2 ggplot aes annotate geom_point geom_text ggtitle
 #' coord_fixed
@@ -70,7 +97,7 @@ plotCellsFovs <- function(spe, sampleId=unique(spe$sample_id),
         .fov_image_theme(backColor="white", backBorder="white",
                         titleCol="black") + ggplot2::coord_fixed()
     if(scaleBar) {
-        ggp <- .plotScaleBar(ggp, spe)
+        ggp <- .plotScaleBar(ggp, spe, micronConvFact)
     }
     return(ggp)
 }
@@ -104,7 +131,7 @@ plotCellsFovs <- function(spe, sampleId=unique(spe$sample_id),
 #' @param size A numeric value specifying the size of the points. (Default is
 #' `0.05`)
 #' @param alpha A numeric value specifying the transparency level of the points.
-#' (Default is `0.2`)
+#' (Default is `0.8`)
 #' @param aspectRatio A numeric value specifying the aspect ratio of the plot.
 #' (Default is `1`)
 #' @param scaleBar A logical value indicating whether to add a scale bar to the
@@ -114,6 +141,24 @@ plotCellsFovs <- function(spe, sampleId=unique(spe$sample_id),
 #'
 #' @return A `ggplot` object representing the spatial coordinates plot of
 #' polygon centroids.
+#'
+#' @details
+#' This function plots cell centroids from a `SpatialExperiment` object using
+#' coordinates returned by `spatialCoords(spe)` and the coordinate names from
+#' `spatialCoordsNames(spe)` (the function expects at least two spatial
+#' coordinate dimensions). If `colourBy` is `NULL` all points are drawn using
+#' `pointCol`; otherwise the function colors points using the specified
+#' `colData` column or a provided palette.
+#'
+#' Requirements and inputs:
+#' - `spe` must be a `SpatialExperiment` with valid spatial coordinates.
+#' - If `colourBy` is provided and is the name of a `colData` column, that
+#'   column must exist and be suitable for plotting (factor/logical for
+#'   discrete palettes, numeric for continuous palettes).
+#' - `palette` may be either (a) a vector of color values (used directly) or
+#'   (b) the name of a column in `colData(spe)` from which a palette will be
+#'   built via `createPaletteFromColData()`. The function detects which mode
+#'   to use at runtime.
 #'
 #' @import SpatialExperiment
 #' @importFrom ggplot2 geom_point aes_string theme_bw theme ggtitle guides
@@ -139,7 +184,7 @@ plotCentroids <- function(spe, colourBy=NULL, colourLog=FALSE,
                     aes(x=.data[[spatialCoordsNames(spe)[1]]],
                         y=.data[[spatialCoordsNames(spe)[2]]])) +
             geom_point(colour=pointCol, fill=pointCol,
-                        size=size, alpha=alpha) + ggplot2::ggtitle(sampleId) +
+                        size=size, alpha=alpha) +
             ggplot2::theme_bw() + ggplot2::coord_fixed()
     } else {
         if(colourLog) {
@@ -176,7 +221,7 @@ plotCentroids <- function(spe, colourBy=NULL, colourLog=FALSE,
         theme(aspect.ratio=aspectRatio, plot.title=element_text(hjust=0.5))
     if(!isNegativeProbe) ggp <- ggp + theme_bw()
     if(scaleBar) {
-        ggp <- .plotScaleBar(ggp, spe)
+        ggp <- .plotScaleBar(ggp, spe, micronConvFact)
     }
     return(ggp)
 }
@@ -276,6 +321,36 @@ plotMetricHist <- function(spe, metric, fillColor="#c0c8cf",
 #' DEFAULT is `0.12`.
 #'
 #' @return A `ggplot` object representing the polygon plot of the spatial data.
+#'
+#' @details
+#' Renders polygon geometries stored in `colData` of a `SpatialExperiment`
+#' object using `ggplot2::geom_sf()` and provides options for fill, borders
+#' and an optional scale bar.
+#'
+#' Input expectations:
+#' - `spe` must be a `SpatialExperiment` and `polyColumn` must name a column
+#'   in `colData(spe)` that contains polygon geometries (`sfc`/`sf` or a list
+#'   of geometry objects) suitable for `geom_sf()`.
+#' - `colourBy` supports two modes: (a) the name of a `colData` column to
+#'   map fill to data values, or (b) a literal colour name (e.g. `"darkgrey"`)
+#'   used as a constant fill.
+#'
+#' Colour / palette behaviour:
+#' - If `colourBy` refers to a `colData` column and `colourLog = TRUE`, the
+#'   function computes `log1p()` of that column in the local plotting data
+#'   frame (it does not mutate `spe`).
+#' - `palette` may be a vector of colour values (used for discrete scales).
+#'   Numeric `colourBy` values use a continuous Viridis-like scale by default.
+#'
+#' Scale bar and units:
+#' - If `scaleBar = TRUE` the function calls `.plotScaleBar()` to add a length
+#'   scale. `micronConvFact` is the conversion factor (µm per pixel) used by
+#'   `.plotScaleBar()` to label the bar in micrometres when appropriate.
+#'
+#' Robustness notes:
+#' - If `colourBy` is neither a `colData` column nor a valid colour name the
+#'   function issues a warning and falls back to the default fill.
+#'
 #' @export
 #'
 #' @importFrom ggplot2 ggplot geom_sf aes scale_fill_manual scale_fill_viridis_c
@@ -292,6 +367,7 @@ plotPolygons <- function(spe, colourBy="darkgrey", colourLog=FALSE,
     bgColor="white", fillAlpha=1, palette=NULL, borderCol=NA,
     borderAlpha=1, borderLineWidth=0.1, drawBorders=TRUE,
     scaleBar=TRUE, micronConvFact=0.12) {
+
     stopifnot(is(spe, "SpatialExperiment"))
     stopifnot("polygons" %in% names(colData(spe)))
     df <- data.frame(colData(spe))
@@ -335,7 +411,7 @@ plotPolygons <- function(spe, colourBy="darkgrey", colourLog=FALSE,
             panel.grid.minor=element_blank()
         ) + labs(title=sampleId, fill=colourBy)
     if(scaleBar) {
-        p <- .plotScaleBar(p, spe)
+        p <- .plotScaleBar(p, spe, micronConvFact)
     }
     return(p)
 }
@@ -413,7 +489,7 @@ plotZoomFovsMap <- function(spe, fovs=NULL, title=NULL,
         stopifnot(is.logical(scaleBars), length(scaleBars) == 1L)
         scaleBarMap <- scaleBars
         scaleBarPol <- scaleBars
-  }
+    }
     map <- plotCellsFovs(spefovs, pointCol=mapPointCol,
         numbersCol=mapNumbersCol, alphaNumbers=mapAlphaNumbers,
         sampleId=NULL, size=csize, alpha=calpha, scaleBar=scaleBarMap)
@@ -762,7 +838,7 @@ qcFlagPlots <- function(spe, fov=unique(spe$fov),
                   fill = c("black", "white"), color = "grey",
                 inherit.aes = FALSE) +
         geom_text(data = label_data,
-                  aes(x = x, y = y, label = label), color = "grey40",
-                  inherit.aes = FALSE, size = 3, hjust = 0.2)
+                aes(x = x, y = y, label = label), color = "grey40",
+                inherit.aes = FALSE, size = 3, hjust = 0.2)
     return(p)
 }

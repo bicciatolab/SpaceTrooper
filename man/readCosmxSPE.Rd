@@ -13,7 +13,8 @@ readCosmxSPE(
   metadataFPattern = "metadata_file.csv",
   polygonsFPattern = "polygons.csv",
   fovPosFPattern = "fov_positions_file.csv",
-  fovdims = c(xdim = 4256, ydim = 4256)
+  fovdims = c(xdim = 4256, ydim = 4256),
+  keepPolygons = FALSE
 )
 }
 \arguments{
@@ -41,6 +42,9 @@ FOV positions file. Default is `"fov_positions_file.csv"`.}
 
 \item{fovdims}{A named numeric vector specifying the dimensions of the FOV
 in pixels. Default is `c(xdim=4256, ydim=4256)`.}
+
+\item{keepPolygons}{Logical indicating if the polygons need to be loaded into
+memory or not (Default is `FALSE`).}
 }
 \value{
 A `SpatialExperiment` object containing the read CosMx data,
@@ -50,14 +54,22 @@ including count matrices, metadata, and optionally polygons.
 Read and Construct a SpatialExperiment Object from CosMx Data
 
 This function reads in data from Nanostring CosMx files and constructs a
-`SpatialExperiment` object, optionally including polygon data.
+`SpatialExperiment` object, optionally including polygons data.
 }
 \details{
-The function reads in the specified files for count matrices,
-metadata, and FOV positions, and constructs a `SpatialExperiment` object.
-Optionally, polygon data can be read and added to the object.
+The function firstly relies on
+\link[SpatialExperimentIO]{readCosmxSXE} to read in the specified files
+for count matrices, metadata, and FOV positions constructing a
+`SpatialExperiment` object.
+Then it harmonizes the object to have the same metadata as for the other
+technologies, setting the colData names as required in further QC analysis.
 
-readCosmxProteinSPE is a wrapper of readCosmxSPE, it only changes the
+Optionally, polygons data can be read and added to the object by seeting
+the `keepPolygons` argument to `TRUE`, otherwise it only stores the
+polygons file path into the object metadata.
+
+
+readCosmxProteinSPE is a wrapper of readCosmxSPE, it changes the
 technology metadata in Nanostring_CosMx_Protein.
 }
 \examples{

@@ -14,14 +14,14 @@ computeMissingMetricsMerfish(
 )
 }
 \arguments{
-\item{polFile}{path to the polygon file}
+\item{polFile}{character for the path to the polygon file. Tipically a
+parquet file or a folder of HDF5 files in the `metadata(spe)$polygons`.}
 
 \item{coldata}{`DataFrame` or `data.frame`
 Cell metadata with at least a `cell_id` column.}
 
 \item{boundariesType}{`character(1)`
-One of `"HDF5"` or `"parquet"`—passed on to
-`readPolygonsMerfish()`.}
+One of `"HDF5"` or `"parquet"`—passed on to `readPolygonsMerfish()`.}
 
 \item{keepPolygons}{`logical(1)`
 If `TRUE`, cbinds the raw polygon `sf` columns onto `coldata`.}
@@ -29,12 +29,14 @@ If `TRUE`, cbinds the raw polygon `sf` columns onto `coldata`.}
 \item{polygonsCol}{character indicating the name of the polygons column to
 add into the colData (default is `polygons`).}
 
-\item{useVolume}{`logical(1)` it assigns the area from the "volume" column}
+\item{useVolume}{`logical(1)` it assigns the area from the "volume" column.
+If the column is not present it computes the area from the polygons.
+Default: `TRUE`.}
 }
 \value{
 A `DataFrame` (or `data.frame`) with:
   - all columns of `coldata`
-  - `um_area`: area of each cell’s polygon
+  - `Area_um`: area/volume of each cell’s polygon
   - `AspectRatio`: width/height aspect ratio
   - (optionally) the polygon geometries
 }
@@ -42,6 +44,23 @@ A `DataFrame` (or `data.frame`) with:
 `computeMissingMetricsMerfish()` takes cell metadata and boundary
 polygons, calculates per‐cell area and aspect‐ratio, and optionally
 appends the raw polygon geometries.
+}
+\details{
+`computeMissingMetricsMerfish()` reads polygon geometries via
+`readPolygonsMerfish(polFile, type=boundariesType)` where `polFile`
+is a Parquet file (parquet) or a folder of HDF5 files (HDF5). It expects
+`coldata` to contain at least `cell_id`.
+
+Behavior:
+- If `useVolume=TRUE` and `coldata` contains a `volume` column, the
+  returned `Area_um` is set to `volume`. Otherwise `Area_um` is computed
+  from the polygons using `computeAreaFromPolygons()`.
+- `AspectRatio` is computed from polygons using `computeAspectRatioFromPolygons()`.
+- If `keepPolygons=TRUE`, geometries are attached to the returned
+  `DataFrame` under the name given by `polygonsCol`.
+
+Important: polygons must align (in order or by matching logic) with the
+rows of `coldata`; otherwise area/aspect values may be assigned incorrectly.
 }
 \examples{
 example(readMerfishSPE)

@@ -22,8 +22,8 @@
 #'   If `TRUE`, attach raw polygon geometries as extra columns in `colData`.
 #'   Default: `FALSE`.
 #' @param boundariesType `character(1)`
-#'   One of `"HDF5"` or `"parquet"`. If `"HDF5"`, uses a folder of HDF5
-#'   polygon files; if `"parquet"`, reads a single Parquet file of boundaries.
+#' One of `"parquet"` or `"HDF5"`. If `"parquet"`, reads a single Parquet
+#' file of boundaries; if `"HDF5"`, uses a folder of HDF5 polygon files.
 #' @param countmatFPattern `character(1)`
 #'   Regex passed to `list.files()` to find the count matrix CSV. Default:
 #'   `"cell_by_gene.csv"`.
@@ -37,13 +37,35 @@
 #'   Default: `c("center_x", "center_y")`.
 #' @param polygonsCol character indicating the name of the polygons column to
 #' add into the colData (default is `polygons`).
-#'
+#' @param useVolume `logical(1)` If `TRUE`, prefer a "volume" column in the
+#' metadata for area (when present). Default: `TRUE`.
 #' @return A `SpatialExperiment` object with:
 #'   - `assays$counts`: gene × cell count matrix
 #'   - `colData`: per‐cell metadata (including computed metrics)
 #'   - spatial coordinates named by `coordNames`
 #'   - `metadata$polygons`: path to the boundaries file
 #'   - `metadata$technology`: `"Vizgen_MERFISH"`.
+#'
+#' @details
+#' The function searches `dirName` for three resources using the provided
+#' filename patterns: the count matrix (`countmatFPattern`), the cell metadata
+#' (`metadataFPattern`), and the polygon resource (`polygonsFPattern`). The
+#' count matrix and metadata are expected to contain a `cell_id` column
+#' (aliases `V1`, `cell`, or `EntityID` are renamed). If `computeMissingMetrics`
+#' is TRUE, `computeMissingMetricsMerfish()` is invoked and receives `useVolume`.
+#'
+#' The returned `SpatialExperiment` contains:
+#' - `assays$counts`: gene × cell count matrix (rows = genes, cols = `cell_id`);
+#' - `colData`: per-cell metadata (may be reordered by the function);
+#' - spatial coordinates named by `coordNames`;
+#' - `metadata$polygons`: path(s) matched by `polygonsFPattern`;
+#' - `metadata$technology`: `"Vizgen_MERFISH"`.
+#'
+#' Side effects: the function may reorder `colData` columns, attach polygon
+#' file paths to `metadata(spe)$polygons`, and (when requested) append
+#' `Area_um` and `AspectRatio` to `colData`.
+#'
+#'
 #' @author Dario Righelli, Benedetta Banzi
 #' @export
 #' @importFrom data.table fread
@@ -62,10 +84,11 @@
 #' spe
 readMerfishSPE <- function(dirName, sampleName="sample01",
     computeMissingMetrics=TRUE, keepPolygons=FALSE,
-    boundariesType=c("HDF5", "parquet"), countmatFPattern="cell_by_gene.csv",
+    boundariesType=c("parquet", "HDF5"), countmatFPattern="cell_by_gene.csv",
     metadataFPattern="cell_metadata.csv",
     polygonsFPattern="cell_boundaries.parquet",
-    coordNames=c("center_x", "center_y"), polygonsCol="polygons") {
+    coordNames=c("center_x", "center_y"), polygonsCol="polygons",
+    useVolume=TRUE) {
 
     countmat_file <- list.files(dirName, countmatFPattern, full.names=TRUE)
     metadata_file <- list.files(dirName, metadataFPattern, full.names=TRUE)
@@ -91,7 +114,7 @@ readMerfishSPE <- function(dirName, sampleName="sample01",
     if (computeMissingMetrics) {
         message("Computing missing metrics, this could take a while...")
         cd <- computeMissingMetricsMerfish(pol_file, colData, boundariesType,
-                                            keepPolygons, polygonsCol)
+                                            keepPolygons, polygonsCol, useVolume)
     }
     spe <- SpatialExperiment::SpatialExperiment(sample_id=sampleName,
         assays=list(counts=counts), colData=cd,
@@ -108,24 +131,42 @@ readMerfishSPE <- function(dirName, sampleName="sample01",
 #' `computeMissingMetricsMerfish()` takes cell metadata and boundary
 #' polygons, calculates per‐cell area and aspect‐ratio, and optionally
 #' appends the raw polygon geometries.
-#'
+#' @param polFile character for the path to the polygon file. Tipically a
+#' parquet file or a folder of HDF5 files in the `metadata(spe)$polygons`.
 #' @param coldata `DataFrame` or `data.frame`
 #' Cell metadata with at least a `cell_id` column.
 #' @param boundariesType `character(1)`
-#'   One of `"HDF5"` or `"parquet"`—passed on to
-#'   `readPolygonsMerfish()`.
+#' One of `"HDF5"` or `"parquet"`—passed on to `readPolygonsMerfish()`.
 #' @param keepPolygons `logical(1)`
-#'   If `TRUE`, cbinds the raw polygon `sf` columns onto `coldata`.
+#' If `TRUE`, cbinds the raw polygon `sf` columns onto `coldata`.
 #' @param polygonsCol character indicating the name of the polygons column to
 #' add into the colData (default is `polygons`).
-#' @param polFile path to the polygon file
-#' @param useVolume `logical(1)` it assigns the area from the "volume" column
+#' @param useVolume `logical(1)` it assigns the area from the "volume" column.
+#' If the column is not present it computes the area from the polygons.
+#' Default: `TRUE`.
 #'
 #' @return A `DataFrame` (or `data.frame`) with:
 #'   - all columns of `coldata`
-#'   - `um_area`: area of each cell’s polygon
+#'   - `Area_um`: area/volume of each cell’s polygon
 #'   - `AspectRatio`: width/height aspect ratio
 #'   - (optionally) the polygon geometries
+#'
+#' @details
+#' `computeMissingMetricsMerfish()` reads polygon geometries via
+#' `readPolygonsMerfish(polFile, type=boundariesType)` where `polFile`
+#' is a Parquet file (parquet) or a folder of HDF5 files (HDF5). It expects
+#' `coldata` to contain at least `cell_id`.
+#'
+#' Behavior:
+#' - If `useVolume=TRUE` and `coldata` contains a `volume` column, the
+#'   returned `Area_um` is set to `volume`. Otherwise `Area_um` is computed
+#'   from the polygons using `computeAreaFromPolygons()`.
+#' - `AspectRatio` is computed from polygons using `computeAspectRatioFromPolygons()`.
+#' - If `keepPolygons=TRUE`, geometries are attached to the returned
+#'   `DataFrame` under the name given by `polygonsCol`.
+#'
+#' Important: polygons must align (in order or by matching logic) with the
+#' rows of `coldata`; otherwise area/aspect values may be assigned incorrectly.
 #'
 #' @export
 #' @importFrom S4Vectors DataFrame
@@ -136,23 +177,24 @@ readMerfishSPE <- function(dirName, sampleName="sample01",
 #' colData(spe) <- cd
 #' cd
 computeMissingMetricsMerfish <- function(polFile, coldata,
-    boundariesType=c("parquet","HDF5"), keepPolygons=FALSE,
+    boundariesType=c("parquet", "HDF5"), keepPolygons=FALSE,
     polygonsCol="polygons", useVolume=TRUE) {
 
     boundariesType <- match.arg(boundariesType)
     polygons <- readPolygonsMerfish(polFile, type=boundariesType)
     cd <- DataFrame(coldata)
 
-    if(useVolume)
+    if (useVolume)
     {
         if(!"volume" %in% colnames(cd))
         {
             warning("Volume column not found in colData.\nComputing area from polygons instead.")
             area <- computeAreaFromPolygons(polygons)
-        }
-        warning("Volume is used to compute QC score for MERFISH technology.
+        } else {
+            warning("Volume is used to compute QC score for MERFISH technology.
                 For simplicity, it is renamed as Area_um.")
-        area <- cd$volume
+            area <- cd$volume
+        }
     }else {
         area <- computeAreaFromPolygons(polygons)
     }

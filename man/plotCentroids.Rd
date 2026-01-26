@@ -48,7 +48,7 @@ vector of colors used to create a gradient.}
 `0.05`)}
 
 \item{alpha}{A numeric value specifying the transparency level of the points.
-(Default is `0.2`)}
+(Default is `0.8`)}
 
 \item{aspectRatio}{A numeric value specifying the aspect ratio of the plot.
 (Default is `1`)}
@@ -68,6 +68,24 @@ Plot Spatial Coordinates for a SpatialExperiment Object
 This function generates a ggplot of spatial coordinates from a
 `SpatialExperiment` object, optionally coloring the points by a specified
 column in `colData`.
+}
+\details{
+This function plots cell centroids from a `SpatialExperiment` object using
+coordinates returned by `spatialCoords(spe)` and the coordinate names from
+`spatialCoordsNames(spe)` (the function expects at least two spatial
+coordinate dimensions). If `colourBy` is `NULL` all points are drawn using
+`pointCol`; otherwise the function colors points using the specified
+`colData` column or a provided palette.
+
+Requirements and inputs:
+- `spe` must be a `SpatialExperiment` with valid spatial coordinates.
+- If `colourBy` is provided and is the name of a `colData` column, that
+  column must exist and be suitable for plotting (factor/logical for
+  discrete palettes, numeric for continuous palettes).
+- `palette` may be either (a) a vector of color values (used directly) or
+  (b) the name of a column in `colData(spe)` from which a palette will be
+  built via `createPaletteFromColData()`. The function detects which mode
+  to use at runtime.
 }
 \examples{
 example(readCosmxSPE)
