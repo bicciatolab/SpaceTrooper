@@ -45,16 +45,19 @@ if (!requireNamespace("BiocManager", quietly = TRUE)) {
 BiocManager::install("SpaceTrooper")
 ```
 
+We suggest to use the latest development (devel) version of `SpaceTrooper` (1.1.3) which can be downloaded as 
+explained in the following section.
+
 ### Bioconductor (devel)
-The latest development version of `SpaceTrooper` can be downloaded as follows. 
+The devel version of `SpaceTrooper` can be downloaded as follows. 
 Please remember that it is stable only if using an R version >= 4.4.0.
 
 ```r
 if (!requireNamespace("BiocManager", quietly = TRUE)) {
 	install.packages("BiocManager")
 }
-BiocManager::install(version='devel')
-BiocManager::install("SpaceTrooper")
+
+BiocManager::install("SpaceTrooper", ref="devel")
 ```
 
 ### Anaconda (for conda/mamba environments)

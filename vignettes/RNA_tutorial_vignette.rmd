@@ -28,19 +28,6 @@ multi-platform data harmonization, cell-level QC, and visualization utilities.
 The package leverages [SpatialExperiment](https://www.bioconductor.org/packages/release/bioc/html/SpatialExperiment.html) objects to support data from 
 **CosMx**, **Xenium**, and **MERFISH** technologies.
 
-## Installation
-
-To install the latest version of `SpaceTrooper`, use the following commands. You 
-can find other installation options in the README file on the [GitHub repo](https://github.com/drighelli/SpaceTrooper/tree/devel):
-
-```{r install, eval=FALSE}
-# Install BiocManager if not already installed, then install SpaceTrooper
-if (!requireNamespace("BiocManager", quietly = TRUE))
-    install.packages("BiocManager")
-
-BiocManager::install(version='devel')
-BiocManager::install("SpaceTrooper")
-```
 
 ## Quality Control pipeline
 
