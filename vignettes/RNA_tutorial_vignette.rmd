@@ -38,8 +38,7 @@ can find other installation options in the README file on the [GitHub repo](http
 if (!requireNamespace("BiocManager", quietly = TRUE))
     install.packages("BiocManager")
 
-BiocManager::install(version='devel')
-BiocManager::install("SpaceTrooper")
+BiocManager::install("SpaceTrooper", ref="devel")
 ```
 
 ## Quality Control pipeline
