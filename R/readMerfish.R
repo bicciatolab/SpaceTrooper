@@ -191,9 +191,11 @@ computeMissingMetricsMerfish <- function(polFile, coldata,
             warning("Volume column not found in colData.\nComputing area from polygons instead.")
             area <- computeAreaFromPolygons(polygons)
         } else {
+            warning("Volume is used to compute QC score for MERFISH technology.
+                For simplicity, it is renamed as Area_um.")
             area <- cd$volume
         }
-    } else {
+    }else {
         area <- computeAreaFromPolygons(polygons)
     }
     cd$Area_um <- area
