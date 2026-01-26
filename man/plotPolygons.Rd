@@ -62,6 +62,35 @@ A `ggplot` object representing the polygon plot of the spatial data.
 \description{
 Plot polygons from a `SpatialExperiment` object using ggplot2.
 }
+\details{
+Renders polygon geometries stored in `colData` of a `SpatialExperiment`
+object using `ggplot2::geom_sf()` and provides options for fill, borders
+and an optional scale bar.
+
+Input expectations:
+- `spe` must be a `SpatialExperiment` and `polyColumn` must name a column
+  in `colData(spe)` that contains polygon geometries (`sfc`/`sf` or a list
+  of geometry objects) suitable for `geom_sf()`.
+- `colourBy` supports two modes: (a) the name of a `colData` column to
+  map fill to data values, or (b) a literal colour name (e.g. `"darkgrey"`)
+  used as a constant fill.
+
+Colour / palette behaviour:
+- If `colourBy` refers to a `colData` column and `colourLog = TRUE`, the
+  function computes `log1p()` of that column in the local plotting data
+  frame (it does not mutate `spe`).
+- `palette` may be a vector of colour values (used for discrete scales).
+  Numeric `colourBy` values use a continuous Viridis-like scale by default.
+
+Scale bar and units:
+- If `scaleBar = TRUE` the function calls `.plotScaleBar()` to add a length
+  scale. `micronConvFact` is the conversion factor (µm per pixel) used by
+  `.plotScaleBar()` to label the bar in micrometres when appropriate.
+
+Robustness notes:
+- If `colourBy` is neither a `colData` column nor a valid colour name the
+  function issues a warning and falls back to the default fill.
+}
 \examples{
 example(readAndAddPolygonsToSPE)
 plotPolygons(spe, colourBy="Mean.DAPI")

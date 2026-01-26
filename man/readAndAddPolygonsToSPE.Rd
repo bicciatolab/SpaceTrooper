@@ -36,6 +36,17 @@ This function reads polygon boundary data based on the technology associated
 with the provided SpatialExperiment (SPE) object and adds the polygons to the
 SPE.
 }
+\details{
+The function first checks the technology specified in the SPE's metadata.
+Based on the technology, it reads the appropriate polygon data using
+the corresponding reading function:
+- For "Nanostring_CosMx" or "Nanostring_CosMx_Protein", it uses
+`readPolygonsCosmx()`.
+- For "Vizgen_MERFISH", it uses `readPolygonsMerfish()`.
+- For "10X_Xenium", it uses `readPolygonsXenium()`.
+After reading the polygons, it adds them to the SPE using
+`addPolygonsToSPE()`.
+}
 \examples{
 example(readCosmxSPE)
 spe <- readAndAddPolygonsToSPE(spe)

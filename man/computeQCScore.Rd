@@ -26,7 +26,7 @@ number of available outliers for each metric.
 For CosMx datasets, also CosMx Protein, the QC Score formula is
 defined as follows:
 
-QC score ~ count density - aspect ratio - control-total ratio
+QC score ~ count density - aspect ratio - control-total ratio - area
 
 count density is total counts-to-area ratio, aspect ratio represents
 FOV border effect typical of CosMx datasets and control-total ratio is
@@ -40,12 +40,15 @@ Inclusion of metrics in the formula depends also on the number of available
 outliers. If the number of outliers for each metric is < 0.1% out of the
 entire dataset, the metric will be excluded from the QC score formula.
 
-To automatically define the formula coefficient weights, model training
-is performed through ridge regression.
+- Model fitting: ridge (L2) logistic regression is fitted (via `glmnet`) on
+the balanced training set. The function uses `trainModel()` for fitting
+and `computeLambda()` (cross‑validation) to select lambda unless
+`bestLambda` is supplied.
 
-Because of the randomness in the training set selection, results may vary so
-that it is possible to set a fixed lambda value previously computed with
-`computeLambda` preceeded by `computeTrainDF` and `getModelFormula`.
+- Lmbda details: because of the randomness in the training set selection,
+results may vary so that it is possible to set a fixed lambda value
+previously  computed with `computeLambda` preceeded by `computeTrainDF` and
+`getModelFormula`.
 This is useful for reproducibility across different runs.
 Otherwise, an easier way is to let be lambda computed internally, just set
 a seed with `set.seed()` before running `computeQCScore`.
