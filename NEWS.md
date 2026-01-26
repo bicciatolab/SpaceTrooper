@@ -1,3 +1,10 @@
+# Changes in version 1.1.4
+
+* updating documentation along multiple functions
+* adding graphical abstract
+* updating README
+* updating Vignettes and providing better data examples
+
 # Changes in version 1.1.3
 
 * fixing verbose message in QC functions.
