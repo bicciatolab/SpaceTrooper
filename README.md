@@ -45,8 +45,8 @@ if (!requireNamespace("BiocManager", quietly = TRUE)) {
 BiocManager::install("SpaceTrooper")
 ```
 
-We suggest to use the latest development (devel) version of `SpaceTrooper` (1.1.3) which can be downloaded as 
-explained in the following section.
+We suggest to use the a version of `SpaceTrooper` higher or equal to 1.1.3, which can be downloaded as 
+explained in the "devel" section.
 
 ### Bioconductor (devel)
 The devel version of `SpaceTrooper` can be downloaded as follows. 
@@ -61,16 +61,22 @@ BiocManager::install("SpaceTrooper", ref="devel")
 ```
 
 ### Anaconda (for conda/mamba environments)
-`SpaceTrooper` package can be installed also in an anaconda environment, using the provided installation file [SpaceTrooper.yml](inst/SpaceTrooper.yml). Before proceeding with this installation, you have to install the latest `Anaconda` distribution from the [Anaconda](https://www.anaconda.com/download) official page.
+
+`SpaceTrooper` package can be installed in a Conda-compatible environment on Linux (x86_64), using the provided installation file [SpaceTrooper.yml](inst/SpaceTrooper.yml). 
+Before proceeding with the provided installation, you have to install a Conda-compatible distribution, such as [Anaconda](https://www.anaconda.com/download).
+
 To create the environment run the following code:
 
 ```bash
 conda env create -f SpaceTrooper.yml
 conda activate SpaceTrooper
+```
 
-# If you installed Miniconda distribution you have to run 'mamba' instead of 'conda'
-# mamba env create -f SpaceTrooper.yml
-# mamba activate SpaceTrooper
+Otherwise, if you installed Mamba/Micromamba distribution you have to run 'mamba' instead of 'conda'
+
+```bash
+mamba env create -f SpaceTrooper.yml
+mamba activate SpaceTrooper
 ```
 
 Once the environment is activated, open `R` and install the latest developmental `SpaceTrooper` version as described above.
@@ -79,7 +85,7 @@ Once the environment is activated, open `R` and install the latest developmental
 if (!requireNamespace("BiocManager", quietly = TRUE)) {
 	install.packages("BiocManager")
 }
-BiocManager::install("drighelli/SpaceTrooper", ref="devel") 
+BiocManager::install("SpaceTrooper", ref="devel") 
 ```
 <br/><br/>
 
