@@ -138,7 +138,7 @@ The package includes three vignettes that cover:
 
 - [Imaging-based spatial transcriptomics workflows](https://bioconductor.org/packages/devel/bioc/vignettes/SpaceTrooper/inst/doc/RNA_tutorial_vignette.html)
 - [CosMx protein workflow](https://bioconductor.org/packages/devel/bioc/vignettes/SpaceTrooper/inst/doc/Protein_tutorial_vignette.html)
-- [SpaceTrooper utilities](https://bioconductor.org/packages/devel/bioc/vignettes/SpaceTrooper/inst/doc/SpaceTrooper_utilities.html)
+- [SpaceTrooper interoperability](https://bioconductor.org/packages/devel/bioc/vignettes/SpaceTrooper/inst/doc/interoperability.html)
 
 
 Refer to the first vignette if working with CosMx, Xenium or MERFISH spatial trancriptomics platforms; refer to the second vignette if working with CosMx Protein Assay data. Third vignette illustrates how SPE objects obtained with SpatialExperimentIO can be imported into our pipeline, along with some other package utility functions and plots. 
