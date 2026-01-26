@@ -104,13 +104,15 @@ spe_cos_raw <- SpatialExperimentIO::readCosmxSXE(
     altExps=NULL,
     addParquetPaths=FALSE
 )
-spe_cos_std<-updateCosmxSPE(
+
+spe_cos_std <- updateCosmxSPE(
     spe=spe_cos_raw,
     dirName=cospath,
     sampleName="DBKero_Tiny",
     polygonsFPattern="polygons.csv",
     fovdims=c(xdim=4256, ydim=4256)
 )
+
 identical(spe_cos_std, spe_cos)
 ```
 
@@ -171,7 +173,8 @@ spe_xen_b <- SpatialExperimentIO::readXeniumSXE(
     addExperimentXenium=FALSE,
     altExps=NULL,
     addParquetPaths=FALSE
-)
+) 
+
 spe_xen_b <- updateXeniumSPE(
     spe=spe_xen_b,
     dirName=xepath,
@@ -182,7 +185,8 @@ spe_xen_b <- updateXeniumSPE(
     polygonsCol="polygons",
     txPattern="transcripts",
     addFOVs=FALSE
-)
+) 
+
 spe_xen_b
 ```
 
